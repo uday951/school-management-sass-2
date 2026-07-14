@@ -1,0 +1,4028 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  PLATFORM_SUPER_ADMIN
+  SCHOOL_ADMIN
+  STUDENT
+  GUARDIAN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INVITED
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum SchoolStatus {
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum SchoolType {
+  PRIMARY
+  SECONDARY
+  HIGHER_SECONDARY
+  COMBINED
+  PRESCHOOL
+  INTERNATIONAL
+}
+
+enum BoardType {
+  CBSE
+  ICSE
+  STATE
+  IB
+  CAMBRIDGE
+  OTHER
+}
+
+model User {
+  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
+  firstName          String
+  lastName           String
+  email              String          @unique
+  phone              String?
+  passwordHash       String
+  userType           UserType
+  tenantId           String?         @db.ObjectId
+  roleId             String?         @db.ObjectId
+  status             UserStatus      @default(ACTIVE)
+  emailVerifiedAt    DateTime?
+  lastLoginAt        DateTime?
+  mustChangePassword Boolean         @default(false)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  tenant             Tenant?         @relation(fields: [tenantId], references: [id])
+  role               Role?           @relation(fields: [roleId], references: [id])
+  refreshSessions    RefreshSession[]
+  employee           Employee?
+  student            Student?
+  guardian           Guardian?
+  importJobs         ImportJob[]
+  createdInvites     SchoolInvite[]
+  onboardingApplications StudentOnboardingRequest[] @relation("ApplicantRelation")
+  onboardingReviews      StudentOnboardingRequest[] @relation("ReviewerRelation")
+  childClaims        ChildClaimRequest[]        @relation("GuardianClaimRelation")
+  reviewedClaims     ChildClaimRequest[]        @relation("ClaimReviewerRelation")
+  requestedCorrections AttendanceCorrectionRequest[] @relation("CorrectionRequester")
+  reviewedCorrections  AttendanceCorrectionRequest[] @relation("CorrectionReviewer")
+
+  @@index([tenantId])
+  @@index([userType])
+  @@index([roleId])
+}
+
+model Tenant {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  slug          String         @unique
+  status        TenantStatus   @default(ACTIVE)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  archivedAt    DateTime?
+
+  schools       School[]
+  users         User[]
+  academicYears AcademicYear[]
+  departments   Department[]
+  gradeLevels   GradeLevel[]
+  sections      Section[]
+  subjects      Subject[]
+  classSubjects ClassSubject[]
+  roles         Role[]
+  students      Student[]
+  enrollments   StudentEnrollment[]
+  guardians     Guardian[]
+  employees     Employee[]
+  employeeDepartments EmployeeDepartment[]
+  employeeQualifications EmployeeQualification[]
+  employeeExperiences EmployeeExperience[]
+  employeeDocuments EmployeeDocument[]
+  teacherAssignments TeacherAssignment[]
+  classTeacherAssignments ClassTeacherAssignment[]
+  departmentHeadAssignments DepartmentHeadAssignment[]
+  importJobs                ImportJob[]
+  feeCategories             FeeCategory[]
+  feeComponents             FeeComponent[]
+  feeStructures             FeeStructure[]
+  feeStructureItems         FeeStructureItem[]
+  feeStructureTargets       FeeStructureTarget[]
+  feeInstallments           FeeInstallment[]
+  feeInstallmentItems       FeeInstallmentItem[]
+  studentFeeAssignments     StudentFeeAssignment[]
+  feeCharges                FeeCharge[]
+  concessionSchemes         ConcessionScheme[]
+  studentConcessions        StudentConcession[]
+  feeAdjustments            FeeAdjustment[]
+  payments                  Payment[]
+  paymentAllocations        PaymentAllocation[]
+  receipts                  Receipt[]
+  paymentReversals          PaymentReversal[]
+  refundRecords             RefundRecord[]
+  financeSettings           FinanceSettings[]
+  importRows                ImportRow[]
+  schoolInvites             SchoolInvite[]
+  onboardingRequests        StudentOnboardingRequest[]
+  childClaims               ChildClaimRequest[]
+  attendancePolicies        AttendancePolicy[]
+  attendanceSessions        AttendanceSession[]
+  attendanceRecords         AttendanceRecord[]
+  attendanceCorrectionRequests AttendanceCorrectionRequest[]
+  attendanceCorrectionItems AttendanceCorrectionItem[]
+
+  staffAttendanceRecords    StaffAttendanceRecord[]
+  staffAttendanceSettings   StaffAttendanceSettings[]
+  leaveTypes                LeaveType[]
+  leavePolicies             LeavePolicy[]
+  leavePolicyRules          LeavePolicyRule[]
+  leaveBalances             EmployeeLeaveBalance[]
+  leaveRequests             LeaveRequest[]
+  announcements             Announcement[]
+  announcementAudiences     AnnouncementAudience[]
+  announcementRecipients    AnnouncementRecipient[]
+  notifications             Notification[]
+  homeworks                 Homework[]
+  assignments               Assignment[]
+  assignmentSubmissions     AssignmentSubmission[]
+  assignmentGrades          AssignmentGrade[]
+  studyMaterials            StudyMaterial[]
+
+  rooms                 Room[]
+  workingDays           SchoolWorkingDay[]
+  bellSchedules         BellSchedule[]
+  bellPeriods           BellPeriod[]
+  workingDaySchedules   WorkingDaySchedule[]
+  timetables            Timetable[]
+  timetableEntries      TimetableEntry[]
+  teacherAvailabilities TeacherAvailability[]
+  scheduleOverrides     ScheduleOverride[]
+  substitutions         Substitution[]
+
+  academicTerms          AcademicTerm[]
+  examCycles             ExamCycle[]
+  exams                  Exam[]
+  examTargets            ExamTarget[]
+  examSubjects           ExamSubject[]
+  assessmentComponents  AssessmentComponent[]
+  gradeScales            GradeScale[]
+  gradeBoundaries        GradeBoundary[]
+  marksEntries           MarksEntry[]
+  marksSubmissions       MarksSubmission[]
+  marksCorrectionRequests MarksCorrectionRequest[]
+  subjectResults         SubjectResult[]
+  studentResults         StudentResult[]
+  resultPolicies         ResultPolicy[]
+  reportCardTemplates    ReportCardTemplate[]
+  reportCards            ReportCard[]
+  remarks                StudentExamRemark[]
+  coScholasticAreas      CoScholasticArea[]
+  coScholasticEntries    CoScholasticEntry[]
+
+  librarySettings             LibrarySettings[]
+  bookCategories              BookCategory[]
+  authors                     Author[]
+  publishers                  Publisher[]
+  books                       Book[]
+  bookAuthors                 BookAuthor[]
+  bookCopies                  BookCopy[]
+  libraryLoans                LibraryLoan[]
+  libraryFines                LibraryFine[]
+  bookReservations            BookReservation[]
+  transportSettings           TransportSettings[]
+  vehicles                    Vehicle[]
+  driverProfiles              DriverProfile[]
+  transportRoutes             TransportRoute[]
+  transportStops              TransportStop[]
+  routeStops                  RouteStop[]
+  transportTrips              TransportTrip[]
+  studentTransportAssignments StudentTransportAssignment[]
+  transportAttendances        TransportAttendance[]
+  transportOverrides          TransportOverride[]
+  calendarEvents              CalendarEvent[]
+  calendarEventAudiences      CalendarEventAudience[]
+  workingDayExceptions        WorkingDayException[]
+  visitors                    Visitor[]
+  visitRecords                VisitRecord[]
+  studentGatePasses           StudentGatePass[]
+
+  @@index([status])
+}
+
+model School {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String         @db.ObjectId
+  name            String
+  code            String         @unique
+  slug            String         @unique
+  schoolType      SchoolType
+  board           BoardType
+  establishedYear Int?
+  officialEmail   String         @unique
+  officialPhone   String
+  website         String?
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  country         String         @default("India")
+  postalCode      String
+  logoUrl         String?
+  status          SchoolStatus   @default(ONBOARDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  archivedAt      DateTime?
+
+  tenant          Tenant         @relation(fields: [tenantId], references: [id])
+  academicYears   AcademicYear[]
+  departments     Department[]
+  gradeLevels     GradeLevel[]
+  sections        Section[]
+  subjects        Subject[]
+  classSubjects   ClassSubject[]
+  roles           Role[]
+  students        Student[]
+  enrollments     StudentEnrollment[]
+  guardians       Guardian[]
+  employees       Employee[]
+  employeeDepartments EmployeeDepartment[]
+  employeeQualifications EmployeeQualification[]
+  employeeExperiences EmployeeExperience[]
+  employeeDocuments EmployeeDocument[]
+  teacherAssignments TeacherAssignment[]
+  classTeacherAssignments ClassTeacherAssignment[]
+  departmentHeadAssignments DepartmentHeadAssignment[]
+  importJobs                ImportJob[]
+  schoolInvites             SchoolInvite[]
+  onboardingRequests        StudentOnboardingRequest[]
+  attendancePolicies        AttendancePolicy[]
+  attendanceSessions        AttendanceSession[]
+  attendanceCorrectionRequests AttendanceCorrectionRequest[]
+
+  rooms                 Room[]
+  bellSchedules         BellSchedule[]
+  timetables            Timetable[]
+  scheduleOverrides     ScheduleOverride[]
+
+  academicTerms         AcademicTerm[]
+  examCycles            ExamCycle[]
+  exams                 Exam[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([board])
+  @@index([schoolType])
+  @@index([createdAt])
+}
+
+model RefreshSession {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  userAgent   String?
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  actorUserId String   @db.ObjectId
+  actorEmail  String
+  tenantId    String?  @db.ObjectId
+  schoolId    String?  @db.ObjectId
+  action      String
+  entityType  String
+  entityId    String?  @db.ObjectId
+  oldValues   Json?
+  newValues   Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum AcademicYearStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model AcademicYear {
+  id         String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String             @db.ObjectId
+  schoolId   String             @db.ObjectId
+  name       String
+  code       String?
+  startDate  DateTime
+  endDate    DateTime
+  status     AcademicYearStatus @default(PLANNED)
+  isCurrent  Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  archivedAt DateTime?
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id])
+  school     School             @relation(fields: [schoolId], references: [id])
+  classSubjects ClassSubject[]
+  enrollments   StudentEnrollment[]
+  teacherAssignments TeacherAssignment[]
+  classTeacherAssignments ClassTeacherAssignment[]
+  invites                 SchoolInvite[]
+  onboardingRequests      StudentOnboardingRequest[]
+  attendanceSessions      AttendanceSession[]
+  timetables              Timetable[]
+
+  academicTerms           AcademicTerm[]
+  feeStructures           FeeStructure[]
+  feeCharges              FeeCharge[]
+  studentConcessions      StudentConcession[]
+  payments                Payment[]
+  studentFeeAssignments   StudentFeeAssignment[]
+  examCycles              ExamCycle[]
+  exams                   Exam[]
+  coScholasticAreas       CoScholasticArea[]
+
+  homeworks               Homework[]
+  assignments             Assignment[]
+  studyMaterials          StudyMaterial[]
+
+  @@unique([tenantId, schoolId, name])
+  @@index([tenantId, schoolId])
+}
+
+enum DepartmentType {
+  ACADEMIC
+  ADMINISTRATIVE
+  SUPPORT
+  OTHER
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model Department {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String         @db.ObjectId
+  schoolId    String         @db.ObjectId
+  name        String
+  code        String
+  type        DepartmentType @default(ACADEMIC)
+  description String?
+  status      Status         @default(ACTIVE)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  archivedAt  DateTime?
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id])
+  school      School         @relation(fields: [schoolId], references: [id])
+  subjects    Subject[]
+  primaryEmployees Employee[] @relation("PrimaryDepartment")
+  employeeDepartments EmployeeDepartment[]
+  departmentHeadAssignments DepartmentHeadAssignment[]
+
+  @@unique([tenantId, schoolId, code])
+  @@index([tenantId, schoolId])
+}
+
+model GradeLevel {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String         @db.ObjectId
+  schoolId     String         @db.ObjectId
+  name         String
+  code         String
+  displayOrder Int            @default(0)
+  description  String?
+  status       Status         @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  archivedAt   DateTime?
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  school       School         @relation(fields: [schoolId], references: [id])
+  sections     Section[]
+  classSubjects ClassSubject[]
+  enrollments   StudentEnrollment[]
+  teacherAssignments TeacherAssignment[]
+  classTeacherAssignments ClassTeacherAssignment[]
+  invites                 SchoolInvite[]
+  onboardingRequests      StudentOnboardingRequest[]
+  attendanceSessions      AttendanceSession[]
+  timetables              Timetable[]
+
+  examTargets             ExamTarget[]
+  feeStructureTargets     FeeStructureTarget[]
+  examSubjects            ExamSubject[]
+  marksSubmissions        MarksSubmission[]
+
+  homeworks               Homework[]
+  assignments             Assignment[]
+  studyMaterials          StudyMaterial[]
+
+  @@unique([tenantId, schoolId, code])
+  @@index([tenantId, schoolId])
+}
+
+model Section {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String         @db.ObjectId
+  schoolId     String         @db.ObjectId
+  gradeLevelId String         @db.ObjectId
+  name         String
+  code         String?
+  capacity     Int?
+  displayOrder Int            @default(0)
+  status       Status         @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  archivedAt   DateTime?
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  school       School         @relation(fields: [schoolId], references: [id])
+  gradeLevel   GradeLevel     @relation(fields: [gradeLevelId], references: [id])
+  classSubjects ClassSubject[]
+  enrollments   StudentEnrollment[]
+  teacherAssignments TeacherAssignment[]
+  classTeacherAssignments ClassTeacherAssignment[]
+  invites                 SchoolInvite[]
+  onboardingRequests      StudentOnboardingRequest[]
+  attendanceSessions      AttendanceSession[]
+  timetables              Timetable[]
+
+  examTargets             ExamTarget[]
+  feeStructureTargets     FeeStructureTarget[]
+  marksSubmissions        MarksSubmission[]
+
+  homeworks               Homework[]
+  assignments             Assignment[]
+  studyMaterials          StudyMaterial[]
+
+  @@unique([tenantId, schoolId, gradeLevelId, name])
+  @@index([tenantId, schoolId])
+}
+
+enum SubjectType {
+  CORE
+  ELECTIVE
+  OPTIONAL
+  ACTIVITY
+  OTHER
+}
+
+model Subject {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String         @db.ObjectId
+  schoolId     String         @db.ObjectId
+  name         String
+  code         String
+  description  String?
+  subjectType  SubjectType    @default(CORE)
+  departmentId String?        @db.ObjectId
+  status       Status         @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  archivedAt   DateTime?
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  school       School         @relation(fields: [schoolId], references: [id])
+  department   Department?    @relation(fields: [departmentId], references: [id])
+  classSubjects ClassSubject[]
+  teacherAssignments TeacherAssignment[]
+  timetableEntries TimetableEntry[]
+  scheduleOverrides ScheduleOverride[]
+
+  examSubjects      ExamSubject[]
+
+  homeworks         Homework[]
+  assignments       Assignment[]
+  studyMaterials    StudyMaterial[]
+
+  @@unique([tenantId, schoolId, code])
+  @@index([tenantId, schoolId])
+}
+
+model ClassSubject {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  gradeLevelId   String       @db.ObjectId
+  subjectId      String       @db.ObjectId
+  academicYearId String       @db.ObjectId
+  sectionId      String?      @db.ObjectId
+  isMandatory    Boolean      @default(true)
+  displayOrder   Int          @default(0)
+  status         Status       @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  school         School       @relation(fields: [schoolId], references: [id])
+  gradeLevel     GradeLevel   @relation(fields: [gradeLevelId], references: [id])
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  section        Section?     @relation(fields: [sectionId], references: [id])
+
+  @@unique([tenantId, schoolId, academicYearId, gradeLevelId, sectionId, subjectId])
+  @@index([tenantId, schoolId])
+}
+
+model Role {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String?  @db.ObjectId
+  schoolId    String?  @db.ObjectId
+  name        String
+  code        String
+  scope       String   @default("SCHOOL")
+  isSystem    Boolean  @default(false)
+  description String?
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
+  school      School?  @relation(fields: [schoolId], references: [id])
+  users       User[]
+
+  @@unique([tenantId, schoolId, code])
+  @@index([tenantId, schoolId])
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  WITHDRAWN
+  TRANSFERRED
+  GRADUATED
+  ARCHIVED
+}
+
+model Student {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String       @db.ObjectId
+  schoolId        String       @db.ObjectId
+  userId          String?      @unique @db.ObjectId
+  admissionNumber String
+  studentCode     String?
+  firstName       String
+  middleName      String?
+  lastName        String
+  preferredName   String?
+  photoUrl        String?
+  dateOfBirth     DateTime
+  gender          String
+  bloodGroup      String?
+  nationality     String?
+  motherTongue    String?
+  personalEmail   String?
+  personalPhone   String?
+  status          StudentStatus @default(ACTIVE)
+  admissionDate   DateTime
+  joiningType     String?
+  previousSchoolName String?
+  previousClassName  String?
+  
+  // Address info
+  currentAddressLine1 String
+  currentAddressLine2 String?
+  currentCity         String
+  currentState        String
+  currentCountry      String
+  currentPostalCode   String
+  
+  permanentAddressLine1 String
+  permanentAddressLine2 String?
+  permanentCity         String
+  permanentState        String
+  permanentCountry      String
+  permanentPostalCode   String
+  sameAsCurrentAddress  Boolean @default(true)
+
+  // Emergency / Restricted info
+  emergencyContactName         String?
+  emergencyContactRelationship String?
+  emergencyContactPhone        String?
+  allergies                    String?
+  medicalNotes                 String?
+  specialAssistanceNotes       String?
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  archivedAt      DateTime?
+
+  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  school          School       @relation(fields: [schoolId], references: [id])
+  enrollments     StudentEnrollment[]
+  guardians       StudentGuardian[]
+  documents       StudentDocument[]
+  user            User?                   @relation(fields: [userId], references: [id])
+  childClaims     ChildClaimRequest[]
+  attendanceRecords AttendanceRecord[]
+
+  marksEntries          MarksEntry[]
+  feeCharges            FeeCharge[]
+  studentConcessions    StudentConcession[]
+  feeAdjustments        FeeAdjustment[]
+  payments              Payment[]
+  refundRecords         RefundRecord[]
+  studentFeeAssignments StudentFeeAssignment[]
+  subjectResults        SubjectResult[]
+  overallResults        StudentResult[]
+  reportCards           ReportCard[]
+  remarks               StudentExamRemark[]
+  coScholasticEntries   CoScholasticEntry[]
+  assignmentSubmissions AssignmentSubmission[]
+
+  libraryLoans          LibraryLoan[]
+  libraryFines          LibraryFine[]
+  bookReservations      BookReservation[]
+  transportAssignments  StudentTransportAssignment[]
+  transportAttendances  TransportAttendance[]
+  transportOverrides    TransportOverride[]
+  studentGatePasses     StudentGatePass[]
+
+  @@unique([tenantId, schoolId, admissionNumber])
+  @@index([tenantId, schoolId])
+  @@index([status])
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  TRANSFERRED
+  WITHDRAWN
+  CANCELLED
+}
+
+model StudentEnrollment {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  schoolId       String           @db.ObjectId
+  studentId      String           @db.ObjectId
+  academicYearId String           @db.ObjectId
+  gradeLevelId   String           @db.ObjectId
+  sectionId      String           @db.ObjectId
+  rollNumber     String?
+  enrollmentDate DateTime
+  status         EnrollmentStatus @default(ACTIVE)
+  isCurrent      Boolean          @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  archivedAt     DateTime?
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  school         School           @relation(fields: [schoolId], references: [id])
+  student        Student          @relation(fields: [studentId], references: [id])
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id])
+  gradeLevel     GradeLevel       @relation(fields: [gradeLevelId], references: [id])
+  section        Section          @relation(fields: [sectionId], references: [id])
+
+  marksEntries          MarksEntry[]
+  feeCharges            FeeCharge[]
+  studentConcessions    StudentConcession[]
+  payments              Payment[]
+  studentFeeAssignments StudentFeeAssignment[]
+  subjectResults        SubjectResult[]
+  overallResults        StudentResult[]
+  reportCards           ReportCard[]
+  remarks               StudentExamRemark[]
+  assignmentSubmissions AssignmentSubmission[]
+
+  studentTransportAssignments StudentTransportAssignment[]
+  studentGatePasses           StudentGatePass[]
+
+  @@index([tenantId, schoolId])
+  @@index([studentId])
+  @@index([academicYearId])
+}
+
+model Guardian {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String            @db.ObjectId
+  schoolId       String            @db.ObjectId
+  userId         String?           @unique @db.ObjectId
+  firstName      String
+  middleName     String?
+  lastName       String
+  phone          String
+  alternatePhone String?
+  email          String?
+  occupation     String?
+  employer       String?
+  status         Status            @default(ACTIVE)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  archivedAt     DateTime?
+
+  tenant         Tenant            @relation(fields: [tenantId], references: [id])
+  school         School            @relation(fields: [schoolId], references: [id])
+  students       StudentGuardian[]
+  user           User?             @relation(fields: [userId], references: [id])
+  pickupGatePasses StudentGatePass[]
+
+  @@index([tenantId, schoolId])
+  @@index([phone])
+}
+
+model StudentGuardian {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String   @db.ObjectId
+  schoolId               String   @db.ObjectId
+  studentId              String   @db.ObjectId
+  guardianId             String   @db.ObjectId
+  relationship           String
+  isPrimary              Boolean  @default(false)
+  isEmergencyContact     Boolean  @default(false)
+  isAuthorizedPickup     Boolean  @default(false)
+  receivesAcademicUpdates Boolean  @default(false)
+  receivesAttendanceUpdates Boolean @default(false)
+  receivesFeeUpdates     Boolean  @default(false)
+  hasPortalAccess        Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  student                Student  @relation(fields: [studentId], references: [id])
+  guardian               Guardian @relation(fields: [guardianId], references: [id])
+
+  @@unique([tenantId, schoolId, studentId, guardianId])
+  @@index([tenantId, schoolId])
+}
+
+enum DocumentVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model StudentDocument {
+  id                 String                     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String                     @db.ObjectId
+  schoolId           String                     @db.ObjectId
+  studentId          String                     @db.ObjectId
+  documentType       String
+  title              String
+  fileUrl            String?
+  storageKey         String?
+  mimeType           String?
+  fileSize           Int?
+  issueDate          DateTime?
+  expiryDate         DateTime?
+  verificationStatus DocumentVerificationStatus @default(PENDING)
+  uploadedByUserId   String                     @db.ObjectId
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  archivedAt         DateTime?
+
+  student            Student                    @relation(fields: [studentId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([studentId])
+}
+
+enum EmployeeType {
+  TEACHING
+  ADMINISTRATIVE
+  SUPPORT
+  MANAGEMENT
+  OTHER
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERN
+  VISITING
+  OTHER
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  RESIGNED
+  TERMINATED
+  RETIRED
+  ARCHIVED
+}
+
+model Employee {
+  id                         String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                   String                  @db.ObjectId
+  schoolId                   String                  @db.ObjectId
+  userId                     String?                 @unique @db.ObjectId
+  employeeNumber             String
+  firstName                  String
+  middleName                 String?
+  lastName                   String
+  preferredName              String?
+  photoUrl                   String?
+  dateOfBirth                DateTime?
+  gender                     String?
+  bloodGroup                 String?
+  personalEmail              String?
+  workEmail                  String?
+  personalPhone              String?
+  workPhone                  String?
+  employeeType               EmployeeType
+  employmentType             EmploymentType
+  designation                String
+  primaryDepartmentId        String?                 @db.ObjectId
+  joiningDate                DateTime
+  confirmationDate           DateTime?
+  contractStartDate          DateTime?
+  contractEndDate            DateTime?
+  reportingManagerEmployeeId String?                 @db.ObjectId
+  status                     EmployeeStatus          @default(ACTIVE)
+  
+  // Addresses
+  currentAddressLine1        String?
+  currentAddressLine2        String?
+  currentCity                String?
+  currentState               String?
+  currentCountry             String?                 @default("India")
+  currentPostalCode          String?
+
+  permanentAddressLine1      String?
+  permanentAddressLine2      String?
+  permanentCity              String?
+  permanentState             String?
+  permanentCountry           String?                 @default("India")
+  permanentPostalCode        String?
+  sameAsCurrentAddress       Boolean                 @default(true)
+
+  // Emergency Contact
+  emergencyContactName       String?
+  emergencyContactRelationship String?
+  emergencyContactPhone      String?
+  notes                      String?
+  createdAt                  DateTime                @default(now())
+  updatedAt                  DateTime                @updatedAt
+  archivedAt                 DateTime?
+
+  tenant                     Tenant                  @relation(fields: [tenantId], references: [id])
+  school                     School                  @relation(fields: [schoolId], references: [id])
+  user                       User?                   @relation(fields: [userId], references: [id])
+  primaryDepartment          Department?             @relation("PrimaryDepartment", fields: [primaryDepartmentId], references: [id])
+  departments                EmployeeDepartment[]
+  qualifications             EmployeeQualification[]
+  experiences                EmployeeExperience[]
+  documents                  EmployeeDocument[]
+  teacherAssignments         TeacherAssignment[]
+  classTeacherAssignments    ClassTeacherAssignment[]
+  departmentHeadAssignments  DepartmentHeadAssignment[]
+  teacherAvailabilities      TeacherAvailability[]
+  timetableEntries           TimetableEntry[]
+  originalSubstitutions      Substitution[] @relation("OriginalTeacher")
+  substituteSubstitutions    Substitution[] @relation("SubstituteTeacher")
+  scheduleOverrides          ScheduleOverride[]
+
+  staffAttendanceRecords     StaffAttendanceRecord[]
+  leaveBalances              EmployeeLeaveBalance[]
+  leaveRequests              LeaveRequest[]
+  homeworks                  Homework[]
+  assignments                Assignment[]
+  studyMaterials             StudyMaterial[]
+
+  libraryLoans               LibraryLoan[]
+  libraryFines               LibraryFine[]
+  bookReservations           BookReservation[]
+  driverProfile              DriverProfile?
+
+  @@unique([tenantId, schoolId, employeeNumber])
+  @@index([tenantId, schoolId])
+  @@index([status])
+}
+
+model EmployeeDepartment {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String    @db.ObjectId
+  schoolId     String    @db.ObjectId
+  employeeId   String    @db.ObjectId
+  departmentId String    @db.ObjectId
+  isPrimary    Boolean   @default(false)
+  startDate    DateTime?
+  endDate      DateTime?
+  status       Status    @default(ACTIVE)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  school       School    @relation(fields: [schoolId], references: [id])
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([tenantId, schoolId, employeeId, departmentId])
+  @@index([tenantId, schoolId])
+}
+
+model EmployeeQualification {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId          String    @db.ObjectId
+  schoolId          String    @db.ObjectId
+  employeeId        String    @db.ObjectId
+  qualificationName String
+  specialization    String?
+  institution       String
+  universityOrBoard String?
+  startYear         Int?
+  completionYear    Int?
+  gradeOrPercentage String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  tenant            Tenant    @relation(fields: [tenantId], references: [id])
+  school            School    @relation(fields: [schoolId], references: [id])
+  employee          Employee  @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([employeeId])
+}
+
+model EmployeeExperience {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String    @db.ObjectId
+  schoolId         String    @db.ObjectId
+  employeeId       String    @db.ObjectId
+  organizationName String
+  designation      String
+  startDate        DateTime
+  endDate          DateTime?
+  isCurrent        Boolean   @default(false)
+  description      String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+  school           School    @relation(fields: [schoolId], references: [id])
+  employee         Employee  @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([employeeId])
+}
+
+model EmployeeDocument {
+  id                 String                     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String                     @db.ObjectId
+  schoolId           String                     @db.ObjectId
+  employeeId         String                     @db.ObjectId
+  documentType       String
+  title              String
+  fileUrl            String?
+  storageKey         String?
+  mimeType           String?
+  fileSize           Int?
+  issueDate          DateTime?
+  expiryDate         DateTime?
+  verificationStatus DocumentVerificationStatus @default(PENDING)
+  uploadedByUserId   String                     @db.ObjectId
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  archivedAt         DateTime?
+
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id])
+  school             School                     @relation(fields: [schoolId], references: [id])
+  employee           Employee                   @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([employeeId])
+}
+
+model TeacherAssignment {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  academicYearId String       @db.ObjectId
+  employeeId     String       @db.ObjectId
+  subjectId      String       @db.ObjectId
+  gradeLevelId   String       @db.ObjectId
+  sectionId      String       @db.ObjectId
+  assignmentType String       @default("PRIMARY")
+  status         Status       @default(ACTIVE)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  school         School       @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+  gradeLevel     GradeLevel   @relation(fields: [gradeLevelId], references: [id])
+  section        Section      @relation(fields: [sectionId], references: [id])
+
+  @@unique([tenantId, schoolId, academicYearId, employeeId, subjectId, gradeLevelId, sectionId])
+  @@index([tenantId, schoolId])
+  @@index([employeeId])
+}
+
+model ClassTeacherAssignment {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  academicYearId String       @db.ObjectId
+  gradeLevelId   String       @db.ObjectId
+  sectionId      String       @db.ObjectId
+  employeeId     String       @db.ObjectId
+  isPrimary      Boolean      @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  status         Status       @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  school         School       @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  gradeLevel     GradeLevel   @relation(fields: [gradeLevelId], references: [id])
+  section        Section      @relation(fields: [sectionId], references: [id])
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+
+  @@unique([tenantId, schoolId, academicYearId, gradeLevelId, sectionId, employeeId])
+  @@index([tenantId, schoolId])
+}
+
+model DepartmentHeadAssignment {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String     @db.ObjectId
+  schoolId     String     @db.ObjectId
+  departmentId String     @db.ObjectId
+  employeeId   String     @db.ObjectId
+  startDate    DateTime
+  endDate      DateTime?
+  status       Status     @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
+  school       School     @relation(fields: [schoolId], references: [id])
+  department   Department @relation(fields: [departmentId], references: [id])
+  employee     Employee   @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, schoolId])
+}
+
+enum ImportJobStatus {
+  UPLOADED
+  VALIDATING
+  READY
+  IMPORTING
+  COMPLETED
+  COMPLETED_WITH_ERRORS
+  FAILED
+  CANCELLED
+}
+
+enum ImportRowValidationStatus {
+  VALID
+  INVALID
+  WARNING
+  DUPLICATE
+}
+
+enum ImportRowImportStatus {
+  PENDING
+  IMPORTED
+  FAILED
+}
+
+model ImportJob {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String          @db.ObjectId
+  schoolId        String          @db.ObjectId
+  type            String          @default("STUDENT")
+  fileName        String
+  status          ImportJobStatus @default(UPLOADED)
+  totalRows       Int             @default(0)
+  validRows       Int             @default(0)
+  invalidRows     Int             @default(0)
+  importedRows    Int             @default(0)
+  failedRows      Int             @default(0)
+  createdByUserId String          @db.ObjectId
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  school          School          @relation(fields: [schoolId], references: [id])
+  createdBy       User            @relation(fields: [createdByUserId], references: [id])
+  rows            ImportRow[]
+
+  @@index([tenantId, schoolId])
+}
+
+model ImportRow {
+  id                  String                    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String                    @db.ObjectId
+  importJobId         String                    @db.ObjectId
+  rowNumber           Int
+  rawData             Json
+  normalizedData      Json?
+  validationStatus    ImportRowValidationStatus @default(VALID)
+  errors              Json?
+  warnings            Json?
+  importStatus        ImportRowImportStatus     @default(PENDING)
+  createdStudentId    String?                   @db.ObjectId
+  createdEnrollmentId String?                   @db.ObjectId
+  createdGuardianId   String?                   @db.ObjectId
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  tenant              Tenant                    @relation(fields: [tenantId], references: [id])
+  importJob           ImportJob                 @relation(fields: [importJobId], references: [id])
+
+  @@index([tenantId])
+  @@index([importJobId])
+}
+
+enum InviteType {
+  SCHOOL
+  CLASS
+  SECTION
+  PARENT
+}
+
+enum InviteStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  DISABLED
+}
+
+model SchoolInvite {
+  id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String                 @db.ObjectId
+  schoolId        String                 @db.ObjectId
+  inviteType      InviteType
+  codeHash        String                 @unique
+  publicCode      String                 @unique
+  academicYearId  String?                @db.ObjectId
+  classId         String?                @db.ObjectId
+  sectionId       String?                @db.ObjectId
+  createdByUserId String                 @db.ObjectId
+  status          InviteStatus           @default(ACTIVE)
+  expiresAt       DateTime?
+  maxUses         Int?
+  usageCount      Int                    @default(0)
+  requireApproval Boolean                @default(true)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  revokedAt       DateTime?
+
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
+  school          School                 @relation(fields: [schoolId], references: [id])
+  academicYear    AcademicYear?          @relation(fields: [academicYearId], references: [id])
+  class           GradeLevel?            @relation(fields: [classId], references: [id])
+  section         Section?               @relation(fields: [sectionId], references: [id])
+  createdBy       User                   @relation(fields: [createdByUserId], references: [id])
+  studentRequests StudentOnboardingRequest[]
+
+  @@index([tenantId, schoolId])
+}
+
+enum OnboardingRequestStatus {
+  DRAFT
+  PENDING
+  NEEDS_CORRECTION
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model StudentOnboardingRequest {
+  id                      String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                String                  @db.ObjectId
+  schoolId                String                  @db.ObjectId
+  inviteId                String?                 @db.ObjectId
+  applicantUserId         String?                 @db.ObjectId
+  requestedAcademicYearId String?                 @db.ObjectId
+  requestedClassId        String?                 @db.ObjectId
+  requestedSectionId      String?                 @db.ObjectId
+  personalData            Json
+  admissionData           Json
+  addressData             Json?
+  guardianData            Json?
+  status                  OnboardingRequestStatus @default(PENDING)
+  submittedAt             DateTime                @default(now())
+  reviewedByUserId        String?                 @db.ObjectId
+  reviewedAt              DateTime?
+  rejectionReason         String?
+  correctionMessage       String?
+  createdStudentId        String?                 @db.ObjectId
+  createdEnrollmentId     String?                 @db.ObjectId
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+
+  tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
+  school                  School                  @relation(fields: [schoolId], references: [id])
+  invite                  SchoolInvite?           @relation(fields: [inviteId], references: [id])
+  applicant               User?                   @relation("ApplicantRelation", fields: [applicantUserId], references: [id])
+  academicYear            AcademicYear?           @relation(fields: [requestedAcademicYearId], references: [id])
+  class                   GradeLevel?             @relation(fields: [requestedClassId], references: [id])
+  section                 Section?                @relation(fields: [requestedSectionId], references: [id])
+  reviewedBy              User?                   @relation("ReviewerRelation", fields: [reviewedByUserId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([status])
+}
+
+enum ChildClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ChildClaimRequest {
+  id                     String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String           @db.ObjectId
+  guardianUserId         String           @db.ObjectId
+  studentId              String?          @db.ObjectId
+  studentAdmissionNumber String
+  studentDateOfBirth     DateTime
+  relationship           String
+  guardianData           Json?
+  status                 ChildClaimStatus @default(PENDING)
+  submittedAt            DateTime         @default(now())
+  reviewedByUserId       String?          @db.ObjectId
+  reviewedAt             DateTime?
+  rejectionReason        String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  tenant                 Tenant           @relation(fields: [tenantId], references: [id])
+  guardianUser           User             @relation("GuardianClaimRelation", fields: [guardianUserId], references: [id])
+  student                Student?         @relation(fields: [studentId], references: [id])
+  reviewedBy             User?            @relation("ClaimReviewerRelation", fields: [reviewedByUserId], references: [id])
+
+  @@index([tenantId])
+  @@index([guardianUserId])
+  @@index([status])
+}
+
+enum AttendanceType {
+  DAILY
+  PERIOD
+}
+
+enum AttendanceSessionStatus {
+  DRAFT
+  SUBMITTED
+  LOCKED
+  REOPENED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  HALF_DAY
+  EXCUSED
+  LEAVE
+}
+
+enum CorrectionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model AttendancePolicy {
+  id                        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                  String   @db.ObjectId
+  schoolId                  String   @db.ObjectId
+  dailyEnabled              Boolean  @default(true)
+  periodEnabled             Boolean  @default(false)
+  allowLate                 Boolean  @default(true)
+  allowHalfDay              Boolean  @default(true)
+  allowExcused              Boolean  @default(true)
+  allowLeave                Boolean  @default(true)
+  minimumRequiredPercentage Float    @default(75.0)
+  lateWeight                Float    @default(1.0)
+  halfDayWeight             Float    @default(0.5)
+  excusedWeight             Float    @default(1.0)
+  leaveWeight               Float    @default(1.0)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  tenant                    Tenant   @relation(fields: [tenantId], references: [id])
+  school                    School   @relation(fields: [schoolId], references: [id])
+
+  @@unique([tenantId, schoolId])
+}
+
+model AttendanceSession {
+  id                   String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String                  @db.ObjectId
+  schoolId             String                  @db.ObjectId
+  academicYearId       String                  @db.ObjectId
+  classId              String                  @db.ObjectId
+  sectionId            String                  @db.ObjectId
+  attendanceDate       DateTime
+  attendanceType       AttendanceType          @default(DAILY)
+  subjectId            String?                 @db.ObjectId
+  teacherAssignmentId  String?                 @db.ObjectId
+  periodNumber         Int?
+  periodLabel          String?
+  status               AttendanceSessionStatus @default(DRAFT)
+  markedByUserId       String                  @db.ObjectId
+  markedByEmployeeId   String?                 @db.ObjectId
+  submittedAt          DateTime?
+  lockedAt             DateTime?
+  lockedByUserId       String?                 @db.ObjectId
+  notes                String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  archivedAt           DateTime?
+
+  tenant               Tenant                  @relation(fields: [tenantId], references: [id])
+  school               School                  @relation(fields: [schoolId], references: [id])
+  academicYear         AcademicYear            @relation(fields: [academicYearId], references: [id])
+  class                GradeLevel              @relation(fields: [classId], references: [id])
+  section              Section                 @relation(fields: [sectionId], references: [id])
+  records              AttendanceRecord[]
+  correctionRequests   AttendanceCorrectionRequest[]
+
+  @@unique([tenantId, schoolId, academicYearId, classId, sectionId, attendanceDate, attendanceType, periodNumber, subjectId])
+  @@index([tenantId, schoolId])
+  @@index([attendanceDate])
+  @@index([status])
+}
+
+model AttendanceRecord {
+  id                   String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String           @db.ObjectId
+  attendanceSessionId  String           @db.ObjectId
+  studentId            String           @db.ObjectId
+  studentEnrollmentId  String           @db.ObjectId
+  status               AttendanceStatus
+  arrivalTime          DateTime?
+  departureTime        DateTime?
+  reason               String?
+  remarks              String?
+  markedByUserId       String           @db.ObjectId
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  tenant               Tenant            @relation(fields: [tenantId], references: [id])
+  session              AttendanceSession @relation(fields: [attendanceSessionId], references: [id], onDelete: Cascade)
+  student              Student           @relation(fields: [studentId], references: [id])
+
+  @@unique([tenantId, attendanceSessionId, studentId])
+  @@index([tenantId])
+  @@index([studentId])
+}
+
+model AttendanceCorrectionRequest {
+  id                   String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String                  @db.ObjectId
+  schoolId             String                  @db.ObjectId
+  attendanceSessionId  String                  @db.ObjectId
+  requestedByUserId    String                  @db.ObjectId
+  reason               String
+  status               CorrectionRequestStatus @default(PENDING)
+  reviewedByUserId     String?                 @db.ObjectId
+  reviewedAt           DateTime?
+  reviewComment        String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  tenant               Tenant                  @relation(fields: [tenantId], references: [id])
+  school               School                  @relation(fields: [schoolId], references: [id])
+  session              AttendanceSession       @relation(fields: [attendanceSessionId], references: [id], onDelete: Cascade)
+  requestedBy          User                    @relation("CorrectionRequester", fields: [requestedByUserId], references: [id])
+  reviewedBy           User?                   @relation("CorrectionReviewer", fields: [reviewedByUserId], references: [id])
+  items                AttendanceCorrectionItem[]
+
+  @@index([tenantId, schoolId])
+  @@index([status])
+}
+
+model AttendanceCorrectionItem {
+  id                   String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String                  @db.ObjectId
+  correctionRequestId  String                  @db.ObjectId
+  attendanceRecordId   String                  @db.ObjectId
+  oldStatus            AttendanceStatus
+  requestedStatus      AttendanceStatus
+  reason               String?
+
+  tenant               Tenant                  @relation(fields: [tenantId], references: [id])
+  request              AttendanceCorrectionRequest @relation(fields: [correctionRequestId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+enum BellPeriodType {
+  TEACHING
+  BREAK
+  LUNCH
+  ASSEMBLY
+  ACTIVITY
+  OTHER
+}
+
+enum TimetableStatus {
+  DRAFT
+  PUBLISHED
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum TimetableEntryType {
+  SUBJECT
+  BREAK
+  LUNCH
+  ASSEMBLY
+  ACTIVITY
+  FREE
+  OTHER
+}
+
+enum AvailabilityType {
+  AVAILABLE
+  UNAVAILABLE
+  PREFERRED
+}
+
+enum OverrideType {
+  REPLACE
+  CANCEL
+  ROOM_CHANGE
+  TEACHER_CHANGE
+  SPECIAL_ACTIVITY
+}
+
+enum SubstitutionStatus {
+  ASSIGNED
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  CANCELLED
+}
+
+enum RoomType {
+  CLASSROOM
+  LAB
+  LIBRARY
+  AUDITORIUM
+  SPORTS
+  OTHER
+}
+
+model Room {
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String     @db.ObjectId
+  schoolId   String     @db.ObjectId
+  name       String
+  code       String?
+  roomType   RoomType   @default(CLASSROOM)
+  capacity   Int?
+  status     Status     @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  archivedAt DateTime?
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id])
+  school     School     @relation(fields: [schoolId], references: [id])
+  timetableEntries TimetableEntry[]
+  scheduleOverrides ScheduleOverride[]
+
+  @@unique([tenantId, schoolId, name])
+  @@index([tenantId, schoolId])
+}
+
+model SchoolWorkingDay {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  dayOfWeek      String       // MONDAY, TUESDAY, etc.
+  isWorkingDay   Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, schoolId, dayOfWeek])
+}
+
+model BellSchedule {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  name           String
+  description    String?
+  status         Status       @default(ACTIVE)
+  isDefault      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  archivedAt     DateTime?
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  school         School       @relation(fields: [schoolId], references: [id])
+  bellPeriods    BellPeriod[]
+  daySchedules   WorkingDaySchedule[]
+
+  @@unique([tenantId, schoolId, name])
+  @@index([tenantId, schoolId])
+}
+
+model BellPeriod {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  bellScheduleId String       @db.ObjectId
+  name           String
+  periodNumber   Int?
+  periodType     BellPeriodType @default(TEACHING)
+  startTime      String       // HH:MM (e.g. "09:00")
+  endTime        String       // HH:MM (e.g. "09:45")
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  bellSchedule   BellSchedule @relation(fields: [bellScheduleId], references: [id], onDelete: Cascade)
+  timetableEntries TimetableEntry[]
+  scheduleOverrides ScheduleOverride[]
+
+  @@index([tenantId])
+}
+
+model WorkingDaySchedule {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  schoolId       String       @db.ObjectId
+  dayOfWeek      String       // MONDAY, TUESDAY, etc.
+  bellScheduleId String       @db.ObjectId
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  bellSchedule   BellSchedule @relation(fields: [bellScheduleId], references: [id])
+
+  @@unique([tenantId, schoolId, dayOfWeek])
+}
+
+model Timetable {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String          @db.ObjectId
+  schoolId       String          @db.ObjectId
+  academicYearId String          @db.ObjectId
+  classId        String          @db.ObjectId
+  sectionId      String          @db.ObjectId
+  name           String?
+  versionNumber  Int             @default(1)
+  status         TimetableStatus @default(DRAFT)
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  createdByUserId String         @db.ObjectId
+  publishedByUserId String?      @db.ObjectId
+  publishedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  archivedAt     DateTime?
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  school         School          @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear    @relation(fields: [academicYearId], references: [id])
+  class          GradeLevel      @relation(fields: [classId], references: [id])
+  section        Section         @relation(fields: [sectionId], references: [id])
+  entries        TimetableEntry[]
+
+  @@index([tenantId, schoolId])
+  @@index([classId, sectionId])
+  @@index([status])
+}
+
+model TimetableEntry {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String             @db.ObjectId
+  timetableId         String             @db.ObjectId
+  dayOfWeek           String             // MONDAY, TUESDAY, etc.
+  bellPeriodId        String             @db.ObjectId
+  subjectId           String?            @db.ObjectId
+  employeeId          String?            @db.ObjectId
+  teacherAssignmentId String?            @db.ObjectId
+  roomId              String?            @db.ObjectId
+  entryType           TimetableEntryType @default(SUBJECT)
+  notes               String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  timetable           Timetable          @relation(fields: [timetableId], references: [id], onDelete: Cascade)
+  bellPeriod          BellPeriod         @relation(fields: [bellPeriodId], references: [id])
+  subject             Subject?           @relation(fields: [subjectId], references: [id])
+  teacher             Employee?          @relation(fields: [employeeId], references: [id])
+  room                Room?              @relation(fields: [roomId], references: [id])
+  substitutions       Substitution[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([roomId])
+}
+
+model TeacherAvailability {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String           @db.ObjectId
+  schoolId         String           @db.ObjectId
+  employeeId       String           @db.ObjectId
+  dayOfWeek        String           // MONDAY, TUESDAY, etc.
+  startTime        String           // HH:MM
+  endTime          String           // HH:MM
+  availabilityType AvailabilityType @default(UNAVAILABLE)
+  reason           String?
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  employee         Employee         @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([employeeId])
+}
+
+model ScheduleOverride {
+  id                    String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId              String       @db.ObjectId
+  schoolId              String       @db.ObjectId
+  date                  DateTime
+  originalTimetableEntryId String?   @db.ObjectId
+  classId               String?      @db.ObjectId
+  sectionId             String?      @db.ObjectId
+  bellPeriodId          String       @db.ObjectId
+  overrideType          OverrideType @default(REPLACE)
+  subjectId             String?      @db.ObjectId
+  employeeId            String?      @db.ObjectId
+  roomId                String?      @db.ObjectId
+  reason                String
+  status                Status       @default(ACTIVE)
+  createdByUserId       String       @db.ObjectId
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  tenant                Tenant       @relation(fields: [tenantId], references: [id])
+  school                School       @relation(fields: [schoolId], references: [id])
+  bellPeriod            BellPeriod   @relation(fields: [bellPeriodId], references: [id])
+  subject               Subject?     @relation(fields: [subjectId], references: [id])
+  teacher               Employee?    @relation(fields: [employeeId], references: [id])
+  room                  Room?        @relation(fields: [roomId], references: [id])
+
+  @@index([tenantId, schoolId])
+  @@index([date])
+}
+
+model Substitution {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String             @db.ObjectId
+  schoolId             String             @db.ObjectId
+  date                 DateTime
+  timetableEntryId     String             @db.ObjectId
+  originalEmployeeId   String             @db.ObjectId
+  substituteEmployeeId String             @db.ObjectId
+  reason               String?
+  status               SubstitutionStatus @default(ASSIGNED)
+  assignedByUserId     String             @db.ObjectId
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  tenant               Tenant             @relation(fields: [tenantId], references: [id])
+  timetableEntry       TimetableEntry     @relation(fields: [timetableEntryId], references: [id])
+  originalTeacher      Employee           @relation("OriginalTeacher", fields: [originalEmployeeId], references: [id])
+  substituteTeacher    Employee           @relation("SubstituteTeacher", fields: [substituteEmployeeId], references: [id])
+
+  @@unique([tenantId, schoolId, date, timetableEntryId])
+  @@index([tenantId, schoolId])
+  @@index([date])
+}
+
+enum AcademicTermType {
+  TERM
+  SEMESTER
+  QUARTER
+  CUSTOM
+}
+
+enum ExamCycleStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum ExamType {
+  UNIT_TEST
+  MID_TERM
+  FINAL
+  PRACTICAL
+  INTERNAL
+  EXTERNAL
+  CUSTOM
+}
+
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  MARKS_ENTRY_OPEN
+  MARKS_ENTRY_CLOSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum ResultStatus {
+  NOT_CALCULATED
+  CALCULATED
+  UNDER_REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+enum GradingMode {
+  MARKS
+  GRADE_ONLY
+  MARKS_AND_GRADE
+}
+
+enum AssessmentComponentType {
+  THEORY
+  PRACTICAL
+  INTERNAL
+  EXTERNAL
+  ASSIGNMENT
+  PROJECT
+  ORAL
+  LAB
+  CUSTOM
+}
+
+enum GradeScaleBasis {
+  PERCENTAGE
+  MARKS
+  GPA
+}
+
+enum EntryStatus {
+  DRAFT
+  SUBMITTED
+  LOCKED
+  REOPENED
+}
+
+enum SpecialStatus {
+  ABSENT
+  EXEMPT
+  NOT_APPLICABLE
+  WITHHELD
+}
+
+enum CorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum SubjectResultStatus {
+  PASS
+  FAIL
+  ABSENT
+  EXEMPT
+  WITHHELD
+  NOT_APPLICABLE
+}
+
+enum OverallResultStatus {
+  PASS
+  FAIL
+  WITHHELD
+  INCOMPLETE
+}
+
+enum ReportCardTemplateStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model AcademicTerm {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  schoolId       String           @db.ObjectId
+  academicYearId String           @db.ObjectId
+  name           String
+  code           String?
+  termType       AcademicTermType @default(TERM)
+  startDate      DateTime
+  endDate        DateTime
+  sortOrder      Int              @default(0)
+  status         Status           @default(ACTIVE)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  archivedAt     DateTime?
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  school         School           @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id])
+  examCycles     ExamCycle[]
+  exams          Exam[]
+
+  @@unique([tenantId, schoolId, academicYearId, name])
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([academicYearId])
+}
+
+model ExamCycle {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  schoolId       String           @db.ObjectId
+  academicYearId String           @db.ObjectId
+  academicTermId String?          @db.ObjectId
+  name           String
+  code           String?
+  description    String?
+  status         ExamCycleStatus  @default(DRAFT)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  school         School           @relation(fields: [schoolId], references: [id])
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id])
+  academicTerm   AcademicTerm?    @relation(fields: [academicTermId], references: [id])
+  exams          Exam[]
+
+  @@unique([tenantId, schoolId, academicYearId, academicTermId, name])
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([academicYearId])
+  @@index([academicTermId])
+}
+
+model Exam {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String           @db.ObjectId
+  schoolId        String           @db.ObjectId
+  academicYearId  String           @db.ObjectId
+  academicTermId  String?          @db.ObjectId
+  examCycleId     String?          @db.ObjectId
+  name            String
+  code            String?
+  description     String?
+  examType        ExamType         @default(FINAL)
+  status          ExamStatus       @default(DRAFT)
+  startDate       DateTime?
+  endDate         DateTime?
+  resultStatus    ResultStatus     @default(NOT_CALCULATED)
+  createdByUserId String           @db.ObjectId
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  archivedAt      DateTime?
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  school           School           @relation(fields: [schoolId], references: [id])
+  academicYear     AcademicYear     @relation(fields: [academicYearId], references: [id])
+  academicTerm     AcademicTerm?    @relation(fields: [academicTermId], references: [id])
+  examCycle        ExamCycle?       @relation(fields: [examCycleId], references: [id])
+  targets          ExamTarget[]
+  subjects         ExamSubject[]
+  marksEntries     MarksEntry[]
+  marksSubmissions MarksSubmission[]
+  results          StudentResult[]
+  subjectResults   SubjectResult[]
+  reportCards      ReportCard[]
+  remarks          StudentExamRemark[]
+  coScholastic     CoScholasticEntry[]
+  marksCorrectionRequests MarksCorrectionRequest[]
+
+  @@unique([tenantId, schoolId, academicYearId, examCycleId, name])
+  @@index([tenantId])
+  @@index([schoolId])
+  @@index([academicYearId])
+  @@index([examCycleId])
+}
+
+model ExamTarget {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  examId         String           @db.ObjectId
+  classId        String           @db.ObjectId
+  sectionId      String?          @db.ObjectId
+  createdAt      DateTime         @default(now())
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  exam           Exam             @relation(fields: [examId], references: [id], onDelete: Cascade)
+  class          GradeLevel       @relation(fields: [classId], references: [id])
+  section        Section?         @relation(fields: [sectionId], references: [id])
+
+  @@unique([tenantId, examId, classId, sectionId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([classId])
+  @@index([sectionId])
+}
+
+model ExamSubject {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  examId         String           @db.ObjectId
+  classId        String           @db.ObjectId
+  subjectId      String           @db.ObjectId
+  maximumMarks   Float
+  passMarks      Float
+  weightage      Float?
+  gradingMode    GradingMode      @default(MARKS_AND_GRADE)
+  isOptional     Boolean          @default(false)
+  sortOrder      Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  exam           Exam             @relation(fields: [examId], references: [id], onDelete: Cascade)
+  class          GradeLevel       @relation(fields: [classId], references: [id])
+  subject        Subject          @relation(fields: [subjectId], references: [id])
+  components     AssessmentComponent[]
+  marksEntries   MarksEntry[]
+  subjectResults SubjectResult[]
+  marksSubmissions MarksSubmission[]
+
+  @@unique([tenantId, examId, classId, subjectId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([classId])
+  @@index([subjectId])
+}
+
+model AssessmentComponent {
+  id             String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String                  @db.ObjectId
+  examSubjectId  String                  @db.ObjectId
+  name           String
+  code           String?
+  componentType  AssessmentComponentType @default(THEORY)
+  maximumMarks   Float
+  passMarks      Float?
+  weightage      Float?
+  sortOrder      Int                     @default(0)
+  isRequired     Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  tenant         Tenant                  @relation(fields: [tenantId], references: [id])
+  examSubject    ExamSubject             @relation(fields: [examSubjectId], references: [id], onDelete: Cascade)
+  marksEntries   MarksEntry[]
+
+  @@unique([tenantId, examSubjectId, name])
+  @@index([tenantId])
+  @@index([examSubjectId])
+}
+
+model GradeScale {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String           @db.ObjectId
+  name             String
+  description      String?
+  calculationBasis GradeScaleBasis  @default(PERCENTAGE)
+  isDefault        Boolean          @default(false)
+  status           Status           @default(ACTIVE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  boundaries       GradeBoundary[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model GradeBoundary {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  gradeScaleId   String           @db.ObjectId
+  grade          String
+  minimumValue   Float
+  maximumValue   Float
+  gradePoint     Float?
+  description    String?
+  sortOrder      Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  gradeScale     GradeScale       @relation(fields: [gradeScaleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, gradeScaleId, grade])
+  @@index([tenantId])
+  @@index([gradeScaleId])
+}
+
+model MarksEntry {
+  id                    String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId              String               @db.ObjectId
+  examId                String               @db.ObjectId
+  examSubjectId         String               @db.ObjectId
+  assessmentComponentId String?              @db.ObjectId
+  studentId             String               @db.ObjectId
+  studentEnrollmentId   String               @db.ObjectId
+  marksObtained         Float?
+  entryStatus           EntryStatus          @default(DRAFT)
+  specialStatus         SpecialStatus?
+  remarks               String?
+  enteredByUserId       String               @db.ObjectId
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  tenant                Tenant               @relation(fields: [tenantId], references: [id])
+  exam                  Exam                 @relation(fields: [examId], references: [id])
+  examSubject           ExamSubject          @relation(fields: [examSubjectId], references: [id])
+  assessmentComponent   AssessmentComponent? @relation(fields: [assessmentComponentId], references: [id])
+  student               Student              @relation(fields: [studentId], references: [id])
+  studentEnrollment     StudentEnrollment    @relation(fields: [studentEnrollmentId], references: [id])
+  corrections           MarksCorrectionRequest[]
+
+  @@unique([tenantId, examId, examSubjectId, assessmentComponentId, studentId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([examSubjectId])
+  @@index([assessmentComponentId])
+  @@index([studentId])
+  @@index([studentEnrollmentId])
+}
+
+model MarksSubmission {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String           @db.ObjectId
+  examId           String           @db.ObjectId
+  examSubjectId    String           @db.ObjectId
+  classId          String           @db.ObjectId
+  sectionId        String           @db.ObjectId
+  employeeId       String?          @db.ObjectId
+  status           EntryStatus      @default(DRAFT)
+  submittedByUserId String?         @db.ObjectId
+  submittedAt      DateTime?
+  lockedAt         DateTime?
+  lockedByUserId   String?          @db.ObjectId
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  exam             Exam             @relation(fields: [examId], references: [id])
+  examSubject      ExamSubject      @relation(fields: [examSubjectId], references: [id])
+  class            GradeLevel       @relation(fields: [classId], references: [id])
+  section          Section          @relation(fields: [sectionId], references: [id])
+
+  @@unique([tenantId, examId, examSubjectId, classId, sectionId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([examSubjectId])
+  @@index([classId])
+  @@index([sectionId])
+}
+
+model MarksCorrectionRequest {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String           @db.ObjectId
+  examId          String           @db.ObjectId
+  marksEntryId    String           @db.ObjectId
+  requestedByUserId String         @db.ObjectId
+  oldValue        Float?
+  requestedValue  Float?
+  reason          String
+  status          CorrectionStatus @default(PENDING)
+  reviewedByUserId String?         @db.ObjectId
+  reviewedAt      DateTime?
+  reviewComment   String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  exam            Exam             @relation(fields: [examId], references: [id])
+  marksEntry      MarksEntry       @relation(fields: [marksEntryId], references: [id])
+
+  @@index([tenantId])
+  @@index([examId])
+  @@index([marksEntryId])
+}
+
+model SubjectResult {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String              @db.ObjectId
+  examId             String              @db.ObjectId
+  studentId          String              @db.ObjectId
+  studentEnrollmentId String             @db.ObjectId
+  examSubjectId      String              @db.ObjectId
+  totalMarksObtained Float
+  maximumMarks       Float
+  percentage         Float
+  grade              String?
+  gradePoint         Float?
+  resultStatus       SubjectResultStatus @default(PASS)
+  calculationVersion String              @default("v1")
+  calculatedAt       DateTime            @default(now())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  exam               Exam                @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student            Student             @relation(fields: [studentId], references: [id])
+  studentEnrollment  StudentEnrollment   @relation(fields: [studentEnrollmentId], references: [id])
+  examSubject        ExamSubject         @relation(fields: [examSubjectId], references: [id])
+
+  @@unique([tenantId, examId, studentId, examSubjectId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@index([studentEnrollmentId])
+  @@index([examSubjectId])
+}
+
+model StudentResult {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String              @db.ObjectId
+  examId             String              @db.ObjectId
+  studentId          String              @db.ObjectId
+  studentEnrollmentId String             @db.ObjectId
+  totalMarksObtained Float
+  totalMaximumMarks  Float
+  percentage         Float
+  overallGrade       String?
+  gpa                Float?
+  cgpa               Float?
+  rank               Int?
+  resultStatus       OverallResultStatus @default(PASS)
+  calculationVersion String              @default("v1")
+  calculatedAt       DateTime            @default(now())
+  approvedAt         DateTime?
+  approvedByUserId   String?             @db.ObjectId
+  publishedAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  tenant             Tenant              @relation(fields: [tenantId], references: [id])
+  exam               Exam                @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student            Student             @relation(fields: [studentId], references: [id])
+  studentEnrollment  StudentEnrollment   @relation(fields: [studentEnrollmentId], references: [id])
+  reportCards        ReportCard[]
+
+  @@unique([tenantId, examId, studentId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@index([studentEnrollmentId])
+}
+
+model ResultPolicy {
+  id                     String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String       @db.ObjectId
+  name                   String
+  requireAllSubjectsPass Boolean      @default(true)
+  overallPassPercentage  Float?
+  componentPassRequired  Boolean      @default(false)
+  absentPolicy           String       @default("FAIL")
+  roundingMode           String       @default("ROUND_HALF_UP")
+  decimalPlaces          Int          @default(2)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  tenant                 Tenant       @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model ReportCardTemplate {
+  id                  String                   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String                   @db.ObjectId
+  name                String
+  description         String?
+  isDefault           Boolean                  @default(false)
+  status              ReportCardTemplateStatus @default(DRAFT)
+  paperSize           String                   @default("A4")
+  orientation         String                   @default("PORTRAIT")
+  showLogo            Boolean                  @default(true)
+  showAddress         Boolean                  @default(true)
+  showStudentPhoto    Boolean                  @default(false)
+  showRollNumber      Boolean                  @default(true)
+  showDateOfBirth     Boolean                  @default(true)
+  showComponents      Boolean                  @default(true)
+  showGrades          Boolean                  @default(true)
+  showGradePoints     Boolean                  @default(true)
+  showPercentage      Boolean                  @default(true)
+  showRank            Boolean                  @default(false)
+  showAttendance      Boolean                  @default(true)
+  showTeacherRemarks  Boolean                  @default(true)
+  showPrincipalRemarks Boolean                  @default(true)
+  showSignatureAreas  Boolean                  @default(true)
+  footerText          String?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  tenant              Tenant                   @relation(fields: [tenantId], references: [id])
+  reportCards         ReportCard[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model ReportCard {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String             @db.ObjectId
+  examId              String             @db.ObjectId
+  studentId           String             @db.ObjectId
+  studentEnrollmentId String             @db.ObjectId
+  studentResultId     String             @db.ObjectId
+  templateId          String             @db.ObjectId
+  snapshotData        Json
+  versionNumber       Int                @default(1)
+  status              String             @default("GENERATED")
+  generatedAt         DateTime           @default(now())
+  generatedByUserId   String             @db.ObjectId
+  publishedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  exam                Exam               @relation(fields: [examId], references: [id])
+  student             Student            @relation(fields: [studentId], references: [id])
+  studentEnrollment   StudentEnrollment  @relation(fields: [studentEnrollmentId], references: [id])
+  studentResult       StudentResult      @relation(fields: [studentResultId], references: [id])
+  template            ReportCardTemplate @relation(fields: [templateId], references: [id])
+
+  @@unique([tenantId, examId, studentId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@index([studentEnrollmentId])
+}
+
+model StudentExamRemark {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String    @db.ObjectId
+  examId              String    @db.ObjectId
+  studentId           String    @db.ObjectId
+  studentEnrollmentId String    @db.ObjectId
+  classTeacherRemark  String?
+  principalRemark     String?
+  createdByUserId     String    @db.ObjectId
+  updatedByUserId     String?   @db.ObjectId
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  tenant              Tenant    @relation(fields: [tenantId], references: [id])
+  exam                Exam      @relation(fields: [examId], references: [id])
+  student             Student   @relation(fields: [studentId], references: [id])
+  studentEnrollment   StudentEnrollment @relation(fields: [studentEnrollmentId], references: [id])
+
+  @@unique([tenantId, examId, studentId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@index([studentEnrollmentId])
+}
+
+model CoScholasticArea {
+  id             String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String              @db.ObjectId
+  academicYearId String              @db.ObjectId
+  name           String
+  code           String?
+  sortOrder      Int                 @default(0)
+  status         Status              @default(ACTIVE)
+
+  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  academicYear   AcademicYear        @relation(fields: [academicYearId], references: [id])
+  entries        CoScholasticEntry[]
+
+  @@unique([tenantId, academicYearId, name])
+  @@index([tenantId])
+  @@index([academicYearId])
+}
+
+model CoScholasticEntry {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String           @db.ObjectId
+  examId          String           @db.ObjectId
+  studentId       String           @db.ObjectId
+  areaId          String           @db.ObjectId
+  grade           String
+  remarks         String?
+  enteredByUserId String           @db.ObjectId
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  exam            Exam             @relation(fields: [examId], references: [id])
+  student         Student          @relation(fields: [studentId], references: [id])
+  area            CoScholasticArea @relation(fields: [areaId], references: [id])
+
+  @@unique([tenantId, examId, studentId, areaId])
+  @@index([tenantId])
+  @@index([examId])
+  @@index([studentId])
+  @@index([areaId])
+}
+
+enum FeeCategoryStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum FeeComponentType {
+  ONE_TIME
+  TERM
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  CUSTOM
+}
+
+enum FeeStructureStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum FeeAssignmentStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum FeeChargeStatus {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  WAIVED
+  REVERSED
+  CANCELLED
+}
+
+enum FeeChargeType {
+  STRUCTURE
+  MANUAL
+  LATE_FEE
+  OTHER
+}
+
+enum ConcessionType {
+  FIXED_AMOUNT
+  PERCENTAGE
+}
+
+enum ConcessionStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum AdjustmentType {
+  DISCOUNT
+  WAIVER
+  CREDIT
+  DEBIT
+  CORRECTION
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CHEQUE
+  UPI
+  CARD_OFFLINE
+  DEMAND_DRAFT
+  OTHER
+}
+
+enum PaymentStatus {
+  RECORDED
+  CONFIRMED
+  REVERSED
+  CANCELLED
+}
+
+enum ReceiptStatus {
+  ISSUED
+  VOID
+  REPLACED
+}
+
+enum RefundStatus {
+  RECORDED
+  COMPLETED
+  CANCELLED
+}
+
+enum LateFeeType {
+  FIXED
+  PERCENTAGE
+}
+
+model FeeCategory {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String            @db.ObjectId
+  name        String
+  code        String?
+  description String?
+  status      FeeCategoryStatus @default(ACTIVE)
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  archivedAt  DateTime?
+
+  tenant      Tenant            @relation(fields: [tenantId], references: [id])
+  components  FeeComponent[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+model FeeComponent {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String           @db.ObjectId
+  feeCategoryId      String           @db.ObjectId
+  name               String
+  code               String?
+  description        String?
+  componentType      FeeComponentType @default(CUSTOM)
+  isMandatoryDefault Boolean          @default(true)
+  status             Status           @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  archivedAt         DateTime?
+
+  tenant             Tenant           @relation(fields: [tenantId], references: [id])
+  category           FeeCategory      @relation(fields: [feeCategoryId], references: [id])
+  structureItems     FeeStructureItem[]
+  charges            FeeCharge[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([feeCategoryId])
+}
+
+model FeeStructure {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String             @db.ObjectId
+  academicYearId  String             @db.ObjectId
+  name            String
+  description     String?
+  status          FeeStructureStatus @default(DRAFT)
+  currency        String             @default("INR")
+  createdByUserId String             @db.ObjectId
+  publishedAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  archivedAt      DateTime?
+
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  academicYear    AcademicYear       @relation(fields: [academicYearId], references: [id])
+  items           FeeStructureItem[]
+  targets         FeeStructureTarget[]
+  installments    FeeInstallment[]
+  assignments     StudentFeeAssignment[]
+
+  @@index([tenantId])
+  @@index([academicYearId])
+}
+
+model FeeStructureItem {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String           @db.ObjectId
+  feeStructureId   String           @db.ObjectId
+  feeComponentId   String           @db.ObjectId
+  amountMinor      Int
+  isMandatory      Boolean          @default(true)
+  sortOrder        Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  structure        FeeStructure     @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  component        FeeComponent     @relation(fields: [feeComponentId], references: [id])
+  installmentItems FeeInstallmentItem[]
+
+  @@unique([tenantId, feeStructureId, feeComponentId])
+  @@index([tenantId])
+  @@index([feeStructureId])
+  @@index([feeComponentId])
+}
+
+model FeeStructureTarget {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String           @db.ObjectId
+  feeStructureId String           @db.ObjectId
+  classId        String           @db.ObjectId
+  sectionId      String?          @db.ObjectId
+  createdAt      DateTime         @default(now())
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  structure      FeeStructure     @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  class          GradeLevel       @relation(fields: [classId], references: [id])
+  section        Section?         @relation(fields: [sectionId], references: [id])
+
+  @@unique([tenantId, feeStructureId, classId, sectionId])
+  @@index([tenantId])
+  @@index([feeStructureId])
+}
+
+model FeeInstallment {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String             @db.ObjectId
+  feeStructureId String             @db.ObjectId
+  name           String
+  dueDate        DateTime
+  sequenceNumber Int                @default(1)
+  status         Status             @default(ACTIVE)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  tenant         Tenant             @relation(fields: [tenantId], references: [id])
+  structure      FeeStructure       @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+  items          FeeInstallmentItem[]
+  charges        FeeCharge[]
+
+  @@unique([tenantId, feeStructureId, sequenceNumber])
+  @@index([tenantId])
+  @@index([feeStructureId])
+}
+
+model FeeInstallmentItem {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String           @db.ObjectId
+  feeInstallmentId   String           @db.ObjectId
+  feeStructureItemId String           @db.ObjectId
+  amountMinor        Int
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  tenant             Tenant           @relation(fields: [tenantId], references: [id])
+  installment        FeeInstallment   @relation(fields: [feeInstallmentId], references: [id], onDelete: Cascade)
+  structureItem      FeeStructureItem @relation(fields: [feeStructureItemId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, feeInstallmentId, feeStructureItemId])
+  @@index([tenantId])
+  @@index([feeInstallmentId])
+}
+
+model StudentFeeAssignment {
+  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String               @db.ObjectId
+  academicYearId      String               @db.ObjectId
+  studentId           String               @db.ObjectId
+  studentEnrollmentId String               @db.ObjectId
+  feeStructureId      String               @db.ObjectId
+  assignmentStatus    FeeAssignmentStatus  @default(ACTIVE)
+  assignedAt          DateTime             @default(now())
+  assignedByUserId    String               @db.ObjectId
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  tenant              Tenant               @relation(fields: [tenantId], references: [id])
+  academicYear        AcademicYear         @relation(fields: [academicYearId], references: [id])
+  student             Student              @relation(fields: [studentId], references: [id])
+  enrollment          StudentEnrollment    @relation(fields: [studentEnrollmentId], references: [id])
+  structure           FeeStructure         @relation(fields: [feeStructureId], references: [id])
+  charges             FeeCharge[]
+
+  @@unique([tenantId, academicYearId, studentId, feeStructureId])
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([feeStructureId])
+}
+
+model FeeCharge {
+  id                     String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String               @db.ObjectId
+  academicYearId         String               @db.ObjectId
+  studentId              String               @db.ObjectId
+  studentEnrollmentId    String               @db.ObjectId
+  studentFeeAssignmentId String?              @db.ObjectId
+  feeComponentId         String               @db.ObjectId
+  feeInstallmentId       String?              @db.ObjectId
+  description            String
+  amountMinor            Int
+  dueDate                DateTime?
+  chargeType             FeeChargeType        @default(STRUCTURE)
+  status                 FeeChargeStatus      @default(OPEN)
+  sourceReference        String?
+  createdByUserId        String               @db.ObjectId
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  tenant                 Tenant               @relation(fields: [tenantId], references: [id])
+  academicYear           AcademicYear         @relation(fields: [academicYearId], references: [id])
+  student                Student              @relation(fields: [studentId], references: [id])
+  enrollment             StudentEnrollment    @relation(fields: [studentEnrollmentId], references: [id])
+  assignment             StudentFeeAssignment? @relation(fields: [studentFeeAssignmentId], references: [id])
+  component              FeeComponent         @relation(fields: [feeComponentId], references: [id])
+  installment            FeeInstallment?      @relation(fields: [feeInstallmentId], references: [id])
+  allocations            PaymentAllocation[]
+  adjustments            FeeAdjustment[]
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([academicYearId])
+}
+
+model ConcessionScheme {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String           @db.ObjectId
+  name               String
+  code               String?
+  description        String?
+  concessionType     ConcessionType   @default(FIXED_AMOUNT)
+  value              Int              // value is absolute amount in minor units or percentage basis points (e.g. 5000 = 50%)
+  maximumAmountMinor Int?
+  status             Status           @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  tenant             Tenant           @relation(fields: [tenantId], references: [id])
+  concessions        StudentConcession[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+model StudentConcession {
+  id                        String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                  String           @db.ObjectId
+  academicYearId            String           @db.ObjectId
+  studentId                 String           @db.ObjectId
+  studentEnrollmentId       String           @db.ObjectId
+  concessionSchemeId        String           @db.ObjectId
+  applicableFeeComponentId  String?          @db.ObjectId // optional component override
+  approvedAmountMinor       Int?             // If fixed amount
+  percentageBasisPoints     Int?             // If percentage
+  reason                    String?
+  status                    ConcessionStatus @default(PENDING)
+  approvedByUserId          String?          @db.ObjectId
+  approvedAt                DateTime?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+
+  tenant                    Tenant           @relation(fields: [tenantId], references: [id])
+  academicYear              AcademicYear     @relation(fields: [academicYearId], references: [id])
+  student                   Student          @relation(fields: [studentId], references: [id])
+  enrollment                StudentEnrollment @relation(fields: [studentEnrollmentId], references: [id])
+  scheme                    ConcessionScheme @relation(fields: [concessionSchemeId], references: [id])
+
+  @@index([tenantId])
+  @@index([studentId])
+}
+
+model FeeAdjustment {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String         @db.ObjectId
+  studentId        String         @db.ObjectId
+  academicYearId   String         @db.ObjectId
+  feeChargeId      String?        @db.ObjectId
+  adjustmentType   AdjustmentType
+  amountMinor      Int
+  reason           String
+  status           Status         @default(ACTIVE)
+  createdByUserId  String         @db.ObjectId
+  approvedByUserId String?        @db.ObjectId
+  approvedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  student          Student        @relation(fields: [studentId], references: [id])
+  charge           FeeCharge?     @relation(fields: [feeChargeId], references: [id])
+
+  @@index([tenantId])
+  @@index([studentId])
+}
+
+model Payment {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String             @db.ObjectId
+  academicYearId      String             @db.ObjectId
+  studentId           String             @db.ObjectId
+  studentEnrollmentId String?            @db.ObjectId
+  amountMinor         Int
+  paymentDate         DateTime
+  paymentMethod       PaymentMethod
+  referenceNumber     String?
+  bankName            String?
+  chequeNumber        String?
+  chequeDate          DateTime?
+  notes               String?
+  status              PaymentStatus      @default(RECORDED)
+  recordedByUserId    String             @db.ObjectId
+  idempotencyKey      String?            @unique
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  academicYear        AcademicYear       @relation(fields: [academicYearId], references: [id])
+  student             Student            @relation(fields: [studentId], references: [id])
+  enrollment          StudentEnrollment?  @relation(fields: [studentEnrollmentId], references: [id])
+  allocations         PaymentAllocation[]
+  receipts            Receipt[]
+  reversals           PaymentReversal[]
+  refunds             RefundRecord[]
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([paymentDate])
+}
+
+model PaymentAllocation {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  paymentId   String   @db.ObjectId
+  feeChargeId String   @db.ObjectId
+  amountMinor Int
+  createdAt   DateTime @default(now())
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  charge      FeeCharge @relation(fields: [feeChargeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([paymentId])
+  @@index([feeChargeId])
+}
+
+model Receipt {
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String        @db.ObjectId
+  paymentId      String        @db.ObjectId
+  receiptNumber  String
+  issuedAt       DateTime      @default(now())
+  issuedByUserId String        @db.ObjectId
+  status         ReceiptStatus @default(ISSUED)
+  snapshotData   Json
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  tenant         Tenant        @relation(fields: [tenantId], references: [id])
+  payment        Payment       @relation(fields: [paymentId], references: [id])
+
+  @@unique([tenantId, receiptNumber])
+  @@index([tenantId])
+  @@index([paymentId])
+}
+
+model PaymentReversal {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String   @db.ObjectId
+  paymentId        String   @db.ObjectId
+  reason           String
+  reversedByUserId String   @db.ObjectId
+  reversedAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  payment          Payment  @relation(fields: [paymentId], references: [id])
+
+  @@index([tenantId])
+  @@index([paymentId])
+}
+
+model RefundRecord {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String       @db.ObjectId
+  studentId        String       @db.ObjectId
+  paymentId        String?      @db.ObjectId
+  amountMinor      Int
+  refundDate       DateTime
+  refundMethod     PaymentMethod
+  referenceNumber  String?
+  reason           String
+  status           RefundStatus @default(RECORDED)
+  recordedByUserId String       @db.ObjectId
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  tenant           Tenant       @relation(fields: [tenantId], references: [id])
+  student          Student      @relation(fields: [studentId], references: [id])
+  payment          Payment?     @relation(fields: [paymentId], references: [id])
+
+  @@index([tenantId])
+  @@index([studentId])
+}
+
+model FinanceSettings {
+  id                 String      @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String      @db.ObjectId @unique
+  currency           String      @default("INR")
+  lateFeeEnabled     Boolean     @default(false)
+  graceDays          Int         @default(0)
+  lateFeeType        LateFeeType @default(FIXED)
+  lateFeeValue       Int         @default(0)
+  receiptPrefix      String      @default("RCT/")
+  receiptSequence    Int         @default(1)
+  financialYearLabel String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  tenant             Tenant      @relation(fields: [tenantId], references: [id])
+}
+
+// ==========================================
+// PHASE 10: STAFF ATTENDANCE & LEAVE MANAGEMENT
+// ==========================================
+
+enum StaffAttendanceStatus {
+  PRESENT
+  ABSENT
+  HALF_DAY
+  ON_LEAVE
+  HOLIDAY
+  WEEK_OFF
+  LATE
+  WORK_FROM_HOME
+}
+
+enum StaffAttendanceSource {
+  MANUAL
+  SELF
+  ADMIN
+  IMPORT
+}
+
+model StaffAttendanceRecord {
+  id             String                @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String                @db.ObjectId
+  employeeId     String                @db.ObjectId
+  date           DateTime
+  status         StaffAttendanceStatus
+  checkInTime    DateTime?
+  checkOutTime   DateTime?
+  source         StaffAttendanceSource @default(MANUAL)
+  remarks        String?
+  markedByUserId String?               @db.ObjectId
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  tenant         Tenant                @relation(fields: [tenantId], references: [id])
+  employee       Employee              @relation(fields: [employeeId], references: [id])
+
+  @@unique([tenantId, employeeId, date])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([date])
+}
+
+model StaffAttendanceSettings {
+  id                        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                  String   @db.ObjectId @unique
+  selfCheckInEnabled        Boolean  @default(false)
+  selfCheckOutEnabled       Boolean  @default(false)
+  lateAfterTime             String?  // e.g. "09:15"
+  halfDayAfterTime          String?  // e.g. "13:00"
+  workingHoursTargetMinutes Int?     // e.g. 480
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  tenant                    Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model LeaveType {
+  id               String                 @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String                 @db.ObjectId
+  name             String
+  code             String?
+  description      String?
+  isPaid           Boolean                @default(true)
+  requiresApproval Boolean                @default(true)
+  status           String                 @default("ACTIVE")
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  rules            LeavePolicyRule[]
+  balances         EmployeeLeaveBalance[]
+  requests         LeaveRequest[]
+
+  tenant           Tenant                 @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+}
+
+model LeavePolicy {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String            @db.ObjectId
+  name           String
+  academicYearId String?           @db.ObjectId
+  employeeType   EmployeeType?
+  status         String            @default("ACTIVE")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  rules          LeavePolicyRule[]
+
+  tenant         Tenant            @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+model LeavePolicyRule {
+  id                        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                  String   @db.ObjectId
+  leavePolicyId             String   @db.ObjectId
+  leaveTypeId               String   @db.ObjectId
+  annualAllowance           Int
+  carryForwardAllowed       Boolean  @default(false)
+  maxCarryForward           Int?
+  maxConsecutiveDays        Int?
+  requiresDocumentAfterDays Int?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  tenant                    Tenant   @relation(fields: [tenantId], references: [id])
+  policy                    LeavePolicy @relation(fields: [leavePolicyId], references: [id], onDelete: Cascade)
+  leaveType                 LeaveType   @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([tenantId, leavePolicyId, leaveTypeId])
+  @@index([tenantId])
+}
+
+model EmployeeLeaveBalance {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String   @db.ObjectId
+  employeeId     String   @db.ObjectId
+  academicYearId String   @db.ObjectId
+  leaveTypeId    String   @db.ObjectId
+  openingBalance Int
+  accrued        Int      @default(0)
+  used           Int      @default(0)
+  adjusted       Int      @default(0)
+  remaining      Int
+  updatedAt      DateTime @updatedAt
+
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  employee       Employee @relation(fields: [employeeId], references: [id])
+  leaveType      LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([tenantId, employeeId, academicYearId, leaveTypeId])
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+enum LeavePartialDayType {
+  FULL_DAY
+  FIRST_HALF
+  SECOND_HALF
+}
+
+enum LeaveRequestStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model LeaveRequest {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String               @db.ObjectId
+  employeeId       String               @db.ObjectId
+  leaveTypeId      String               @db.ObjectId
+  startDate        DateTime
+  endDate          DateTime
+  partialDayType   LeavePartialDayType  @default(FULL_DAY)
+  reason           String
+  attachmentUrl    String?
+  status           LeaveRequestStatus   @default(PENDING)
+  submittedAt      DateTime             @default(now())
+  reviewedByUserId String?              @db.ObjectId
+  reviewedAt       DateTime?
+  reviewComment    String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  tenant           Tenant               @relation(fields: [tenantId], references: [id])
+  employee         Employee             @relation(fields: [employeeId], references: [id])
+  leaveType        LeaveType            @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+}
+
+// ==========================================
+// PHASE 10: ANNOUNCEMENTS & COMMUNICATION
+// ==========================================
+
+enum AnnouncementType {
+  GENERAL
+  ACADEMIC
+  EXAM
+  HOLIDAY
+  EVENT
+  EMERGENCY
+  FEE
+  ADMINISTRATIVE
+  OTHER
+}
+
+enum AnnouncementPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  EXPIRED
+  ARCHIVED
+}
+
+model Announcement {
+  id                      String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                String               @db.ObjectId
+  title                   String
+  body                    String
+  announcementType        AnnouncementType     @default(GENERAL)
+  priority                AnnouncementPriority @default(NORMAL)
+  status                  AnnouncementStatus   @default(DRAFT)
+  publishAt               DateTime?
+  expiresAt               DateTime?
+  requiresAcknowledgement Boolean              @default(false)
+  createdByUserId        String               @db.ObjectId
+  publishedByUserId      String?              @db.ObjectId
+  publishedAt            DateTime?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  archivedAt             DateTime?
+
+  tenant                 Tenant               @relation(fields: [tenantId], references: [id])
+  audiences              AnnouncementAudience[]
+  recipients             AnnouncementRecipient[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+enum AnnouncementAudienceType {
+  ALL_SCHOOL
+  ALL_STUDENTS
+  ALL_GUARDIANS
+  ALL_EMPLOYEES
+  TEACHERS
+  DEPARTMENT
+  CLASS
+  SECTION
+  ROLE
+  USER
+}
+
+model AnnouncementAudience {
+  id             String                   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String                   @db.ObjectId
+  announcementId String                   @db.ObjectId
+  audienceType   AnnouncementAudienceType
+  targetId       String?                  // e.g. classId, sectionId, departmentId, userId, roleId
+  createdAt      DateTime                 @default(now())
+
+  tenant         Tenant                   @relation(fields: [tenantId], references: [id])
+  announcement   Announcement             @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([announcementId])
+}
+
+model AnnouncementRecipient {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String       @db.ObjectId
+  announcementId String       @db.ObjectId
+  userId         String       @db.ObjectId
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  acknowledgedAt DateTime?
+  createdAt      DateTime     @default(now())
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, announcementId, userId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model Notification {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId      String    @db.ObjectId
+  userId        String    @db.ObjectId
+  type          String
+  title         String
+  message       String
+  referenceType String?
+  referenceId   String?
+  readAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([readAt])
+}
+
+// ==========================================
+// PHASE 10: HOMEWORK & ASSIGNMENTS & STUDY MATERIALS
+// ==========================================
+
+enum HomeworkStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+model Homework {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId          String         @db.ObjectId
+  academicYearId    String         @db.ObjectId
+  classId           String         @db.ObjectId
+  sectionId         String         @db.ObjectId
+  subjectId         String         @db.ObjectId
+  teacherEmployeeId String         @db.ObjectId
+  title             String
+  description       String
+  attachmentUrl     String?
+  assignedDate      DateTime
+  dueDate           DateTime?
+  status            HomeworkStatus @default(DRAFT)
+  createdByUserId   String         @db.ObjectId
+  publishedAt       DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  archivedAt        DateTime?
+
+  tenant            Tenant         @relation(fields: [tenantId], references: [id])
+  academicYear      AcademicYear   @relation(fields: [academicYearId], references: [id])
+  class             GradeLevel     @relation(fields: [classId], references: [id])
+  section           Section        @relation(fields: [sectionId], references: [id])
+  subject           Subject        @relation(fields: [subjectId], references: [id])
+  teacher           Employee       @relation(fields: [teacherEmployeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([classId, sectionId])
+  @@index([subjectId])
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+model Assignment {
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String           @db.ObjectId
+  academicYearId      String           @db.ObjectId
+  classId             String           @db.ObjectId
+  sectionId           String           @db.ObjectId
+  subjectId           String           @db.ObjectId
+  teacherEmployeeId   String           @db.ObjectId
+  title               String
+  description         String
+  attachmentUrl       String?
+  assignedAt          DateTime
+  dueAt               DateTime
+  maximumMarks        Int?
+  allowLateSubmission Boolean          @default(false)
+  status              AssignmentStatus @default(DRAFT)
+  createdByUserId     String           @db.ObjectId
+  publishedAt         DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  tenant              Tenant           @relation(fields: [tenantId], references: [id])
+  academicYear        AcademicYear     @relation(fields: [academicYearId], references: [id])
+  class               GradeLevel       @relation(fields: [classId], references: [id])
+  section             Section          @relation(fields: [sectionId], references: [id])
+  subject             Subject          @relation(fields: [subjectId], references: [id])
+  teacher             Employee         @relation(fields: [teacherEmployeeId], references: [id])
+  submissions         AssignmentSubmission[]
+
+  @@index([tenantId])
+  @@index([classId, sectionId])
+  @@index([subjectId])
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  LATE
+  RETURNED
+  GRADED
+}
+
+model AssignmentSubmission {
+  id                  String             @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String             @db.ObjectId
+  assignmentId        String             @db.ObjectId
+  studentId           String             @db.ObjectId
+  studentEnrollmentId String             @db.ObjectId
+  submittedAt         DateTime?
+  status              SubmissionStatus   @default(DRAFT)
+  textResponse        String?
+  attachmentUrl       String?
+  isLate              Boolean            @default(false)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  grade               AssignmentGrade?
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  assignment          Assignment         @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student             Student            @relation(fields: [studentId], references: [id])
+  enrollment          StudentEnrollment  @relation(fields: [studentEnrollmentId], references: [id])
+
+  @@unique([tenantId, assignmentId, studentId])
+  @@index([tenantId])
+  @@index([assignmentId])
+  @@index([studentId])
+}
+
+model AssignmentGrade {
+  id                     String               @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String               @db.ObjectId
+  assignmentSubmissionId String               @unique @db.ObjectId
+  marksAwarded           Int?
+  feedback               String?
+  gradedByUserId         String               @db.ObjectId
+  gradedAt               DateTime             @default(now())
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  tenant                 Tenant               @relation(fields: [tenantId], references: [id])
+  submission             AssignmentSubmission @relation(fields: [assignmentSubmissionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+enum StudyMaterialType {
+  NOTES
+  PDF
+  WORKSHEET
+  PRESENTATION
+  IMAGE
+  LINK
+  OTHER
+}
+
+enum StudyMaterialStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model StudyMaterial {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId          String              @db.ObjectId
+  academicYearId    String              @db.ObjectId
+  classId           String              @db.ObjectId
+  sectionId         String?             @db.ObjectId
+  subjectId         String              @db.ObjectId
+  teacherEmployeeId String              @db.ObjectId
+  title             String
+  description       String?
+  materialType      StudyMaterialType   @default(NOTES)
+  fileAttachmentUrl String?
+  url               String?
+  status            StudyMaterialStatus @default(DRAFT)
+  publishedAt       DateTime?
+  createdByUserId   String              @db.ObjectId
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  tenant            Tenant              @relation(fields: [tenantId], references: [id])
+  academicYear      AcademicYear        @relation(fields: [academicYearId], references: [id])
+  class             GradeLevel          @relation(fields: [classId], references: [id])
+  section           Section?            @relation(fields: [sectionId], references: [id])
+  subject           Subject             @relation(fields: [subjectId], references: [id])
+  teacher           Employee            @relation(fields: [teacherEmployeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([classId])
+  @@index([subjectId])
+}
+
+// ==========================================
+// PHASE 11: LIBRARY MANAGEMENT
+// ==========================================
+
+enum BookCopyStatus {
+  AVAILABLE
+  ISSUED
+  RESERVED
+  LOST
+  DAMAGED
+  REPAIR
+  WITHDRAWN
+}
+
+enum BorrowerType {
+  STUDENT
+  EMPLOYEE
+}
+
+enum LoanStatus {
+  ISSUED
+  OVERDUE
+  RETURNED
+  LOST
+  DAMAGED
+}
+
+enum FineStatus {
+  OPEN
+  PARTIALLY_WAIVED
+  WAIVED
+  SETTLED_MANUAL
+  CANCELLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
+model LibrarySettings {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String   @db.ObjectId @unique
+  defaultStudentLoanDays Int      @default(14)
+  defaultEmployeeLoanDays Int     @default(30)
+  maxStudentBooks        Int      @default(3)
+  maxEmployeeBooks       Int      @default(5)
+  renewalAllowed         Boolean  @default(true)
+  maxRenewals            Int      @default(2)
+  fineEnabled            Boolean  @default(false)
+  finePerDayMinor        Int      @default(0)
+  graceDays              Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model BookCategory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  name        String
+  code        String?
+  description String?
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  books       Book[]
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Author {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String       @db.ObjectId
+  name      String
+  biography String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  books     BookAuthor[]
+
+  tenant    Tenant       @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Publisher {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  name        String
+  contactInfo String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  books       Book[]
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model Book {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String            @db.ObjectId
+  title           String
+  subtitle        String?
+  isbn10          String?
+  isbn13          String?
+  categoryId      String?           @db.ObjectId
+  publisherId     String?           @db.ObjectId
+  edition         String?
+  publicationYear Int?
+  language        String?
+  description     String?
+  coverFileId     String?
+  status          String            @default("ACTIVE")
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  archivedAt      DateTime?
+
+  tenant          Tenant            @relation(fields: [tenantId], references: [id])
+  category        BookCategory?     @relation(fields: [categoryId], references: [id])
+  publisher       Publisher?        @relation(fields: [publisherId], references: [id])
+  authors         BookAuthor[]
+  copies          BookCopy[]
+  reservations    BookReservation[]
+
+  @@index([tenantId])
+  @@index([categoryId])
+}
+
+model BookAuthor {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId String @db.ObjectId
+  bookId   String @db.ObjectId
+  authorId String @db.ObjectId
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author   Author @relation(fields: [authorId], references: [id])
+
+  @@unique([tenantId, bookId, authorId])
+  @@index([tenantId])
+}
+
+model BookCopy {
+  id                  String         @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String         @db.ObjectId
+  bookId              String         @db.ObjectId
+  accessionNumber     String
+  barcode             String?
+  shelfLocation       String?
+  acquisitionDate     DateTime?
+  acquisitionCostMinor Int?
+  status              BookCopyStatus @default(AVAILABLE)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  tenant              Tenant         @relation(fields: [tenantId], references: [id])
+  book                Book           @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  loans               LibraryLoan[]
+
+  @@unique([tenantId, accessionNumber])
+  @@index([tenantId])
+  @@index([bookId])
+}
+
+model LibraryLoan {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String       @db.ObjectId
+  bookCopyId       String       @db.ObjectId
+  borrowerType     BorrowerType @default(STUDENT)
+  studentId        String?      @db.ObjectId
+  employeeId       String?      @db.ObjectId
+  issuedAt         DateTime     @default(now())
+  dueAt            DateTime
+  returnedAt       DateTime?
+  status           LoanStatus   @default(ISSUED)
+  renewalCount     Int          @default(0)
+  issuedByUserId   String       @db.ObjectId
+  returnedByUserId String?      @db.ObjectId
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  fines            LibraryFine[]
+
+  tenant           Tenant       @relation(fields: [tenantId], references: [id])
+  bookCopy         BookCopy     @relation(fields: [bookCopyId], references: [id])
+  student          Student?     @relation(fields: [studentId], references: [id])
+  employee         Employee?    @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([bookCopyId])
+  @@index([studentId])
+  @@index([employeeId])
+  @@index([dueAt])
+}
+
+model LibraryFine {
+  id                String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId          String     @db.ObjectId
+  libraryLoanId     String     @db.ObjectId
+  studentId         String?    @db.ObjectId
+  employeeId        String?    @db.ObjectId
+  amountMinor       Int
+  reason            String
+  status            FineStatus @default(OPEN)
+  waivedAmountMinor Int        @default(0)
+  waivedByUserId    String?    @db.ObjectId
+  waiverReason      String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  tenant            Tenant     @relation(fields: [tenantId], references: [id])
+  loan              LibraryLoan @relation(fields: [libraryLoanId], references: [id])
+  student           Student?   @relation(fields: [studentId], references: [id])
+  employee          Employee?  @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([libraryLoanId])
+}
+
+model BookReservation {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String            @db.ObjectId
+  bookId     String            @db.ObjectId
+  studentId  String?           @db.ObjectId
+  employeeId String?           @db.ObjectId
+  reservedAt DateTime          @default(now())
+  expiresAt  DateTime?
+  status     ReservationStatus @default(ACTIVE)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  tenant     Tenant            @relation(fields: [tenantId], references: [id])
+  book       Book              @relation(fields: [bookId], references: [id])
+  student    Student?          @relation(fields: [studentId], references: [id])
+  employee   Employee?         @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+  @@index([bookId])
+}
+
+// ==========================================
+// PHASE 11: TRANSPORT MANAGEMENT
+// ==========================================
+
+enum VehicleType {
+  BUS
+  MINI_BUS
+  VAN
+  CAR
+  OTHER
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  RETIRED
+}
+
+enum TripType {
+  PICKUP
+  DROP
+  CUSTOM
+}
+
+enum TransportAttendanceStatus {
+  EXPECTED
+  BOARDED
+  ABSENT
+  DROPPED
+  SKIPPED
+}
+
+model TransportSettings {
+  id                         String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId                   String   @db.ObjectId @unique
+  transportEnabled           Boolean  @default(true)
+  capacityWarningsEnabled    Boolean  @default(true)
+  transportAttendanceEnabled Boolean  @default(false)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  tenant                     Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model Vehicle {
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String        @db.ObjectId
+  registrationNumber String
+  vehicleCode        String?
+  vehicleType        VehicleType   @default(BUS)
+  make               String?
+  model              String?
+  year               Int?
+  seatingCapacity    Int
+  status             VehicleStatus @default(ACTIVE)
+  notes              String?
+  insuranceExpiry    DateTime?
+  fitnessExpiry      DateTime?
+  permitExpiry       DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  trips              TransportTrip[]
+
+  tenant             Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, registrationNumber])
+  @@index([tenantId])
+}
+
+model DriverProfile {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId      String          @db.ObjectId
+  employeeId    String?         @unique @db.ObjectId
+  fullName      String?
+  phone         String?
+  licenseNumber String
+  licenseExpiry DateTime?
+  status        String          @default("ACTIVE")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  trips         TransportTrip[]
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  employee      Employee?       @relation(fields: [employeeId], references: [id])
+
+  @@index([tenantId])
+}
+
+model TransportRoute {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String          @db.ObjectId
+  name        String
+  code        String?
+  description String?
+  status      String          @default("ACTIVE")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  stops       RouteStop[]
+  trips       TransportTrip[]
+
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model TransportStop {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String          @db.ObjectId
+  name        String
+  code        String?
+  addressText String?
+  latitude    Float?
+  longitude   Float?
+  status      String          @default("ACTIVE")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  routes      RouteStop[]
+  pickupAssignments StudentTransportAssignment[] @relation("PickupStop")
+  dropAssignments   StudentTransportAssignment[] @relation("DropStop")
+
+  tenant      Tenant          @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model RouteStop {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId             String   @db.ObjectId
+  routeId              String   @db.ObjectId
+  stopId               String   @db.ObjectId
+  sequenceNumber       Int
+  plannedArrivalTime   String?
+  plannedDepartureTime String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant               Tenant   @relation(fields: [tenantId], references: [id])
+  route                TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stop                 TransportStop  @relation(fields: [stopId], references: [id])
+
+  @@unique([tenantId, routeId, sequenceNumber])
+  @@index([tenantId])
+}
+
+model TransportTrip {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String          @db.ObjectId
+  routeId         String          @db.ObjectId
+  vehicleId       String          @db.ObjectId
+  driverProfileId String?         @db.ObjectId
+  tripType        TripType        @default(PICKUP)
+  name            String
+  startTime       String?
+  endTime         String?
+  status          String          @default("ACTIVE")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  pickupAssignments StudentTransportAssignment[] @relation("PickupTrip")
+  dropAssignments   StudentTransportAssignment[] @relation("DropTrip")
+  attendances     TransportAttendance[]
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id])
+  route           TransportRoute  @relation(fields: [routeId], references: [id])
+  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id])
+  driver          DriverProfile?  @relation(fields: [driverProfileId], references: [id])
+
+  @@index([tenantId])
+}
+
+model StudentTransportAssignment {
+  id                  String       @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String       @db.ObjectId
+  academicYearId      String       @db.ObjectId
+  studentId           String       @db.ObjectId
+  studentEnrollmentId String       @db.ObjectId
+  pickupTripId        String?      @db.ObjectId
+  pickupStopId        String?      @db.ObjectId
+  dropTripId          String?      @db.ObjectId
+  dropStopId          String?      @db.ObjectId
+  status              String       @default("ACTIVE")
+  effectiveFrom       DateTime
+  effectiveTo         DateTime?
+  assignedByUserId    String       @db.ObjectId
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  tenant              Tenant       @relation(fields: [tenantId], references: [id])
+  student             Student      @relation(fields: [studentId], references: [id])
+  enrollment          StudentEnrollment @relation(fields: [studentEnrollmentId], references: [id])
+  pickupTrip          TransportTrip?    @relation("PickupTrip", fields: [pickupTripId], references: [id])
+  pickupStop          TransportStop?    @relation("PickupStop", fields: [pickupStopId], references: [id])
+  dropTrip            TransportTrip?    @relation("DropTrip", fields: [dropTripId], references: [id])
+  dropStop            TransportStop?    @relation("DropStop", fields: [dropStopId], references: [id])
+
+  @@unique([tenantId, academicYearId, studentId])
+  @@index([tenantId])
+}
+
+model TransportAttendance {
+  id             String                    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId       String                    @db.ObjectId
+  tripId         String                    @db.ObjectId
+  studentId      String                    @db.ObjectId
+  date           DateTime
+  status         TransportAttendanceStatus @default(EXPECTED)
+  boardedAt      DateTime?
+  droppedAt      DateTime?
+  markedByUserId String                    @db.ObjectId
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+
+  tenant         Tenant                    @relation(fields: [tenantId], references: [id])
+  trip           TransportTrip             @relation(fields: [tripId], references: [id])
+  student        Student                   @relation(fields: [studentId], references: [id])
+
+  @@unique([tenantId, tripId, studentId, date])
+  @@index([tenantId])
+}
+
+model TransportOverride {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String   @db.ObjectId
+  studentId       String   @db.ObjectId
+  date            DateTime
+  overrideType    String
+  tripId          String?  @db.ObjectId
+  stopId          String?  @db.ObjectId
+  reason          String
+  createdByUserId String   @db.ObjectId
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  student         Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([tenantId, studentId, date])
+  @@index([tenantId])
+}
+
+// ==========================================
+// PHASE 11: SCHOOL CALENDAR & EVENTS
+// ==========================================
+
+enum CalendarEventType {
+  HOLIDAY
+  ACADEMIC
+  EXAM
+  SPORTS
+  CULTURAL
+  MEETING
+  DEADLINE
+  SCHOOL_EVENT
+  STAFF_EVENT
+  OTHER
+}
+
+enum CalendarEventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  ARCHIVED
+}
+
+enum WorkingDayExceptionType {
+  WORKING_DAY
+  NON_WORKING_DAY
+}
+
+model CalendarEvent {
+  id              String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String              @db.ObjectId
+  academicYearId  String?             @db.ObjectId
+  title           String
+  description     String?
+  eventType       CalendarEventType   @default(SCHOOL_EVENT)
+  startAt         DateTime
+  endAt             DateTime
+  allDay          Boolean             @default(false)
+  locationText    String?
+  status          CalendarEventStatus @default(PUBLISHED)
+  visibility      String              @default("ALL")
+  createdByUserId String              @db.ObjectId
+  publishedAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  archivedAt      DateTime?
+  audiences       CalendarEventAudience[]
+  exceptions      WorkingDayException[]
+
+  tenant          Tenant              @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([startAt, endAt])
+}
+
+model CalendarEventAudience {
+  id              String                   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String                   @db.ObjectId
+  calendarEventId String                   @db.ObjectId
+  audienceType    AnnouncementAudienceType
+  targetId        String?
+  createdAt       DateTime                 @default(now())
+
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id])
+  calendarEvent   CalendarEvent            @relation(fields: [calendarEventId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([calendarEventId])
+}
+
+model WorkingDayException {
+  id              String                  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId        String                  @db.ObjectId
+  academicYearId  String                  @db.ObjectId
+  date            DateTime
+  exceptionType   WorkingDayExceptionType @default(NON_WORKING_DAY)
+  reason          String
+  calendarEventId String?                 @db.ObjectId
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+
+  tenant          Tenant                  @relation(fields: [tenantId], references: [id])
+  calendarEvent   CalendarEvent?          @relation(fields: [calendarEventId], references: [id])
+
+  @@unique([tenantId, date])
+  @@index([tenantId])
+}
+
+// ==========================================
+// PHASE 11: VISITOR MANAGEMENT & GATE PASS
+// ==========================================
+
+enum VisitRecordStatus {
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+enum GatePassRequestType {
+  EARLY_EXIT
+  TEMPORARY_EXIT
+  EMERGENCY_EXIT
+  OTHER
+}
+
+enum GatePassStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  EXITED
+  RETURNED
+  CANCELLED
+}
+
+model Visitor {
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String        @db.ObjectId
+  fullName           String
+  phone              String?
+  identificationType String?
+  identificationLast4 String?
+  organization       String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  visits             VisitRecord[]
+
+  tenant             Tenant        @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+}
+
+model VisitRecord {
+  id                     String            @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId               String            @db.ObjectId
+  visitorId              String            @db.ObjectId
+  visitDate              DateTime          @default(now())
+  checkInAt              DateTime          @default(now())
+  checkOutAt             DateTime?
+  purpose                String
+  personToMeetUserId     String?           @db.ObjectId
+  personToMeetEmployeeId String?           @db.ObjectId
+  badgeNumber            String?
+  status                 VisitRecordStatus @default(CHECKED_IN)
+  notes                  String?
+  createdByUserId        String            @db.ObjectId
+  checkedOutByUserId     String?           @db.ObjectId
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+
+  tenant                 Tenant            @relation(fields: [tenantId], references: [id])
+  visitor                Visitor           @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([visitorId])
+}
+
+model StudentGatePass {
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId            String              @db.ObjectId
+  studentId           String              @db.ObjectId
+  studentEnrollmentId String              @db.ObjectId
+  requestedByUserId   String              @db.ObjectId
+  requestType         GatePassRequestType @default(EARLY_EXIT)
+  reason              String
+  requestedExitAt     DateTime
+  expectedReturnAt    DateTime?
+  actualExitAt        DateTime?
+  actualReturnAt      DateTime?
+  pickupGuardianId    String?             @db.ObjectId
+  pickupVisitorId     String?             @db.ObjectId
+  status              GatePassStatus      @default(PENDING)
+  approvedByUserId    String?             @db.ObjectId
+  approvedAt          DateTime?
+  rejectedByUserId    String?             @db.ObjectId
+  rejectedAt          DateTime?
+  reviewComment       String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  tenant              Tenant              @relation(fields: [tenantId], references: [id])
+  student             Student             @relation(fields: [studentId], references: [id])
+  enrollment          StudentEnrollment   @relation(fields: [studentEnrollmentId], references: [id])
+  pickupGuardian      Guardian?           @relation(fields: [pickupGuardianId], references: [id])
+
+  @@index([tenantId])
+  @@index([studentId])
+}

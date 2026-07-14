@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "SchoolMobile",
+    "slug": "school-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.schoolsaas.mobile"
+    },
+    "ios": {
+      "bundleIdentifier": "com.schoolsaas.mobile"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
