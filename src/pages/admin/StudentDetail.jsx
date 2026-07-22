@@ -17,7 +17,8 @@ import {
   FileCard,
   FileUpload,
   SuccessDialog,
-  DeleteDialog
+  DeleteDialog,
+  Avatar
 } from '@/components/shared'
 import { 
   ArrowLeft, 
