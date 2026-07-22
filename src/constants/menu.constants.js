@@ -1,0 +1,230 @@
+import { 
+  LayoutDashboard, 
+  Settings, 
+  GraduationCap, 
+  Users, 
+  UserCheck, 
+  CalendarDays, 
+  CalendarClock, 
+  FileSpreadsheet, 
+  Receipt, 
+  Wallet, 
+  Coins, 
+  Bus, 
+  BookOpen, 
+  Package, 
+  Mail, 
+  BookMarked,
+  UserCog
+} from 'lucide-react'
+
+export const ADMIN_MENU = [
+  {
+    title: 'Dashboard',
+    path: '/admin/dashboard',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'School Setup',
+    icon: Settings,
+    children: [
+      { title: 'Institution Info', path: '/admin/setup/institution' },
+      { title: 'Campuses', path: '/admin/setup/campuses' }
+    ]
+  },
+  {
+    title: 'Academic',
+    icon: GraduationCap,
+    children: [
+      { title: 'Class Registers', path: '/admin/academics/classes' },
+      { title: 'Subjects Setup', path: '/admin/academics/subjects' }
+    ]
+  },
+  {
+    title: 'Students',
+    icon: Users,
+    children: [
+      { title: 'Student Directory', path: '/admin/students' },
+      { title: 'Admissions Onboarding', path: '/admin/students/create' }
+    ]
+  },
+  {
+    title: 'Teachers',
+    icon: UserCog,
+    children: [
+      { title: 'Teacher Directory', path: '/admin/teachers' },
+      { title: 'Onboarding Setup', path: '/admin/teachers/create' }
+    ]
+  },
+  {
+    title: 'Parents',
+    path: '/admin/parents',
+    icon: Users
+  },
+  {
+    title: 'Attendance',
+    icon: UserCheck,
+    children: [
+      { title: 'Daily Attendance', path: '/admin/attendance/roster' },
+      { title: 'Leave Approvals', path: '/admin/attendance/leaves', badge: '3' }
+    ]
+  },
+  {
+    title: 'Timetable',
+    path: '/admin/timetables',
+    icon: CalendarClock
+  },
+  {
+    title: 'Exams & Grades',
+    icon: FileSpreadsheet,
+    children: [
+      { title: 'Exams Setup', path: '/admin/exams/setup' },
+      { title: 'Results Manager', path: '/admin/exams/results' }
+    ]
+  },
+  {
+    title: 'Fees & Billing',
+    icon: Receipt,
+    children: [
+      { title: 'Invoices List', path: '/admin/fees/invoices' },
+      { title: 'Collect Payments', path: '/admin/fees/collect' }
+    ]
+  },
+  {
+    title: 'Finance & Ledger',
+    path: '/admin/finance/ledger',
+    icon: Wallet
+  },
+  {
+    title: 'Payroll System',
+    path: '/admin/payroll',
+    icon: Coins
+  },
+  {
+    title: 'Transport System',
+    path: '/admin/transport',
+    icon: Bus
+  },
+  {
+    title: 'Library catalog',
+    path: '/admin/library',
+    icon: BookOpen
+  },
+  {
+    title: 'Inventory store',
+    path: '/admin/inventory',
+    icon: Package
+  },
+  {
+    title: 'Communication',
+    icon: Mail,
+    children: [
+      { title: 'Circular logs', path: '/admin/communication/circulars' },
+      { title: 'SMS dispatchers', path: '/admin/communication/sms' }
+    ]
+  },
+  {
+    title: 'Guest registers',
+    path: '/admin/visitors',
+    icon: CalendarDays
+  },
+  {
+    title: 'School Reports',
+    path: '/admin/reports',
+    icon: BookMarked
+  },
+  {
+    title: 'Portal Settings',
+    path: '/admin/settings',
+    icon: Settings
+  }
+]
+
+export const TEACHER_MENU = [
+  {
+    title: 'Dashboard',
+    path: '/teacher/dashboard',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'My Classes',
+    path: '/teacher/classes',
+    icon: GraduationCap
+  },
+  {
+    title: 'Class Attendance',
+    icon: UserCheck,
+    children: [
+      { title: 'Roster Roll call', path: '/teacher/attendance/mark' },
+      { title: 'Student leaves', path: '/teacher/attendance/leaves', badge: 'Pending' }
+    ]
+  },
+  {
+    title: 'Homework',
+    icon: BookMarked,
+    children: [
+      { title: 'Homework Logs', path: '/teacher/homework' },
+      { title: 'Assign Tasks', path: '/teacher/homework/create' }
+    ]
+  },
+  {
+    title: 'Grades Entry',
+    path: '/teacher/exams/marks',
+    icon: FileSpreadsheet
+  },
+  {
+    title: 'Parent Chats',
+    path: '/teacher/communication',
+    icon: Mail
+  },
+  {
+    title: 'My Personal File',
+    path: '/teacher/profile',
+    icon: UserCog
+  }
+]
+
+export const PARENT_MENU = [
+  {
+    title: 'Dashboard',
+    path: '/parent/dashboard',
+    icon: LayoutDashboard
+  },
+  {
+    title: 'Child Records',
+    icon: Users,
+    children: [
+      { title: 'Profile details', path: '/parent/child/1/profile' },
+      { title: 'Attendance logs', path: '/parent/child/1/attendance' },
+      { title: 'Daily homework', path: '/parent/child/1/homework' },
+      { title: 'Term Results', path: '/parent/child/1/results' }
+    ]
+  },
+  {
+    title: 'Fee Center',
+    icon: Receipt,
+    children: [
+      { title: 'Bills & Ledger', path: '/parent/child/1/fees' }
+    ]
+  },
+  {
+    title: 'Transit details',
+    path: '/parent/child/1/transport',
+    icon: Bus
+  },
+  {
+    title: 'Leave Approvals',
+    path: '/parent/child/1/leaves',
+    icon: CalendarDays
+  },
+  {
+    title: 'Teacher messages',
+    path: '/parent/communication/chats',
+    icon: Mail
+  },
+  {
+    title: 'School documents',
+    path: '/parent/documents',
+    icon: BookOpen
+  }
+]
