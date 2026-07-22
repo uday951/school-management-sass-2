@@ -20,6 +20,8 @@ export * from './Print'
 export * from './Charts'
 export * from './Forms'
 export * from './Tables'
+export * from './SearchBar'
+export * from './Filter'
 
 // Loaders
 export { default as GlobalLoader } from './loaders/GlobalLoader'
