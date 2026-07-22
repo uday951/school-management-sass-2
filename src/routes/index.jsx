@@ -12,7 +12,8 @@ const ParentLayout = lazy(() => import('@/layouts/ParentLayout'))
 const AuthLayout = lazy(() => import('@/layouts/AuthLayout'))
 const ErrorLayout = lazy(() => import('@/layouts/ErrorLayout'))
 
-// Public / Auth Pages
+// Landing & Auth Pages
+const LandingPage = lazy(() => import('@/pages/LandingPage'))
 const Login = lazy(() => import('@/pages/auth/Login'))
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
 const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
@@ -87,9 +88,12 @@ export default function AppRoutes() {
           children: [
             // Public Routes
             {
+              path: '/',
+              element: <LandingPage />
+            },
+            {
               element: <AuthLayout />,
               children: [
-                { path: '/', element: <Navigate to="/login" replace /> },
                 { path: 'login', element: <Login /> },
                 { path: 'forgot-password', element: <ForgotPassword /> },
                 { path: 'reset-password/:token', element: <ResetPassword /> }

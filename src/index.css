@@ -96,3 +96,11 @@ body {
   @apply bg-background text-foreground;
   font-family: 'Inter', sans-serif;
 }
+
+.font-fredoka {
+  font-family: 'Fredoka', sans-serif;
+}
+
+.font-nunito {
+  font-family: 'Nunito', sans-serif;
+}
