@@ -3,7 +3,7 @@ import { FileText, Image as ImageIcon, Download, Eye, ExternalLink, X } from 'lu
 import { cn } from '@/lib/utils'
 
 export function Avatar({ src, name, size = 'md', className }) {
-  const initials = name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U'
+  const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U'
   return (
     <div className={cn(
       "rounded-full bg-primary/10 border border-border flex items-center justify-center font-bold text-primary shrink-0 select-none overflow-hidden",
