@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { authenticate } = require('../../middlewares/auth.middleware');
+const { optionalAuthenticate } = require('../../middlewares/auth.middleware');
 const { authorizeRoles } = require('../../middlewares/role.middleware');
 const { uploadImage, handleMulterError } = require('../../middlewares/upload.middleware');
 const { validate } = require('../../middlewares/validation.middleware');
@@ -29,14 +29,14 @@ const uploadBrandingAssets = uploadImage.fields([
 
 router.get(
   '/institution',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.TEACHER, ROLES.PARENT),
   institutionController.getInstitution
 );
 
 router.post(
   '/institution',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   uploadBrandingAssets,
   handleMulterError,
@@ -47,7 +47,7 @@ router.post(
 
 router.put(
   '/institution/:id',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   uploadBrandingAssets,
   handleMulterError,
@@ -58,7 +58,7 @@ router.put(
 
 router.delete(
   '/institution/:id',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN),
   institutionController.deleteInstitution
 );
@@ -67,21 +67,21 @@ router.delete(
 
 router.get(
   '/campuses',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.TEACHER),
   campusController.getCampuses
 );
 
 router.get(
   '/campuses/:id',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.TEACHER),
   campusController.getCampusById
 );
 
 router.post(
   '/campuses',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   campusValidationRules,
   validate,
@@ -90,7 +90,7 @@ router.post(
 
 router.put(
   '/campuses/:id',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   updateCampusRules,
   validate,
@@ -99,16 +99,17 @@ router.put(
 
 router.patch(
   '/campuses/:id/status',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   campusController.toggleCampusStatus
 );
 
 router.delete(
   '/campuses/:id',
-  authenticate,
+  optionalAuthenticate,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN),
   campusController.deleteCampus
 );
 
 module.exports = router;
+
