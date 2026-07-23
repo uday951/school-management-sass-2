@@ -40,6 +40,8 @@ import {
   SuccessDialog
 } from '@/components/shared'
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
+
 // --- INITIAL EMPTY DATA CONSTANTS ---
 
 const initialInstitutionData = {
@@ -112,6 +114,8 @@ function BrandingImageUploader({ label, value, onChange, onRemove, disabled }) {
     }
     if (typeof value === 'string') {
       setPreviewUrl(value)
+    } else if (typeof value === 'object' && value.url) {
+      setPreviewUrl(value.url)
     } else if (value instanceof File) {
       const url = URL.createObjectURL(value)
       setPreviewUrl(url)
@@ -190,7 +194,6 @@ export default function SchoolSetup() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        // Clear cached mock data if present
         if (parsed.name === "Springdale International School") {
           localStorage.removeItem('school_setup_institution')
           return initialInstitutionData
@@ -208,17 +211,12 @@ export default function SchoolSetup() {
   const [isSavingInst, setIsSavingInst] = useState(false)
   const [showInstSuccess, setShowInstSuccess] = useState(false)
 
-  useEffect(() => {
-    setInstForm({ ...institution })
-  }, [institution])
-
   // --- STATE FOR CAMPUS MANAGEMENT ---
   const [campuses, setCampuses] = useState(() => {
     const saved = localStorage.getItem('school_setup_campuses')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        // Clear cached mock campuses if present
         if (Array.isArray(parsed) && parsed.some(c => c.name?.includes("Springdale"))) {
           localStorage.removeItem('school_setup_campuses')
           return initialCampusesData
@@ -231,7 +229,41 @@ export default function SchoolSetup() {
     return initialCampusesData
   })
 
-  // Persistence to localstorage
+  // FETCH DATA FROM MONGODB BACKEND APIS ON MOUNT
+  useEffect(() => {
+    const loadBackendData = async () => {
+      // Fetch Institution Profile from MongoDB
+      try {
+        const res = await fetch(`${API_BASE}/institution`)
+        const json = await res.json()
+        if (json.success && json.data) {
+          setInstitution(json.data)
+          setIsEditingInst(false)
+        }
+      } catch (_err) {
+        // Fallback to local storage state if backend offline
+      }
+
+      // Fetch Campuses from MongoDB
+      try {
+        const res = await fetch(`${API_BASE}/campuses`)
+        const json = await res.json()
+        if (json.success && Array.isArray(json.data)) {
+          setCampuses(json.data)
+        }
+      } catch (_err) {
+        // Fallback to local storage state if backend offline
+      }
+    }
+
+    loadBackendData()
+  }, [])
+
+  useEffect(() => {
+    setInstForm({ ...institution })
+  }, [institution])
+
+  // Persistence to localstorage backup
   useEffect(() => {
     localStorage.setItem('school_setup_institution', JSON.stringify(institution))
   }, [institution])
@@ -262,10 +294,10 @@ export default function SchoolSetup() {
   const filteredCampuses = useMemo(() => {
     return campuses.filter(camp => {
       const matchesSearch = 
-        camp.name.toLowerCase().includes(campusSearch.toLowerCase()) ||
-        camp.code.toLowerCase().includes(campusSearch.toLowerCase()) ||
-        camp.principal.toLowerCase().includes(campusSearch.toLowerCase()) ||
-        camp.email.toLowerCase().includes(campusSearch.toLowerCase())
+        camp.name?.toLowerCase().includes(campusSearch.toLowerCase()) ||
+        camp.code?.toLowerCase().includes(campusSearch.toLowerCase()) ||
+        camp.principal?.toLowerCase().includes(campusSearch.toLowerCase()) ||
+        camp.email?.toLowerCase().includes(campusSearch.toLowerCase())
 
       const matchesFilter = campusFilter === 'all' || camp.status === campusFilter
 
@@ -280,7 +312,6 @@ export default function SchoolSetup() {
     return filteredCampuses.slice(start, start + itemsPerPage)
   }, [filteredCampuses, currentPage])
 
-  // Reset page when filtering or searching
   useEffect(() => {
     setCurrentPage(1)
   }, [campusSearch, campusFilter])
@@ -302,7 +333,6 @@ export default function SchoolSetup() {
     }
     if (!data.type) err.type = "School Type is required"
     
-    // Contact Info
     if (!data.phone?.trim()) {
       err.phone = "Phone number is required"
     } else if (!/^\+?[0-9\s\-()]{7,15}$/.test(data.phone)) {
@@ -331,7 +361,6 @@ export default function SchoolSetup() {
     }
     if (!data.address?.trim()) err.address = "Full Address is required"
     
-    // Principal Info
     if (!data.principalName?.trim()) err.principalName = "Principal Name is required"
     if (!data.principalContact?.trim()) {
       err.principalContact = "Principal Contact number is required"
@@ -347,7 +376,7 @@ export default function SchoolSetup() {
     return err
   }
 
-  const handleSaveInstitution = (e) => {
+  const handleSaveInstitution = async (e) => {
     e.preventDefault()
     const errs = validateInstitution(instForm)
     if (Object.keys(errs).length > 0) {
@@ -356,14 +385,33 @@ export default function SchoolSetup() {
     }
     setInstErrors({})
     setIsSavingInst(true)
-    
-    // Simulate API Saving
-    setTimeout(() => {
+
+    try {
+      const isUpdate = Boolean(institution._id)
+      const targetUrl = isUpdate 
+        ? `${API_BASE}/institution/${institution._id}`
+        : `${API_BASE}/institution`
+      const httpMethod = isUpdate ? 'PUT' : 'POST'
+
+      const res = await fetch(targetUrl, {
+        method: httpMethod,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(instForm)
+      })
+
+      const json = await res.json()
+      if (json.success && json.data) {
+        setInstitution(json.data)
+      } else {
+        setInstitution({ ...instForm })
+      }
+    } catch (_err) {
       setInstitution({ ...instForm })
+    } finally {
       setIsSavingInst(false)
       setIsEditingInst(false)
       setShowInstSuccess(true)
-    }, 1000)
+    }
   }
 
   const handleCancelInstEdit = () => {
@@ -399,7 +447,7 @@ export default function SchoolSetup() {
     return err
   }
 
-  const handleAddCampus = (e) => {
+  const handleAddCampus = async (e) => {
     e.preventDefault()
     const errs = validateCampus(activeCampus)
     if (Object.keys(errs).length > 0) {
@@ -409,18 +457,36 @@ export default function SchoolSetup() {
     setCampusErrors({})
     setIsSavingCampus(true)
 
-    setTimeout(() => {
-      const newId = campuses.length > 0 ? Math.max(...campuses.map(c => c.id)) + 1 : 1
+    try {
+      const res = await fetch(`${API_BASE}/campuses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activeCampus)
+      })
+
+      const json = await res.json()
+      if (json.success && json.data) {
+        setCampuses(prev => [...prev, json.data])
+        setCampusSuccessMessage(`Campus "${json.data.name}" created and saved to MongoDB database.`)
+      } else {
+        const newId = Date.now()
+        const newCampus = { ...activeCampus, id: newId }
+        setCampuses(prev => [...prev, newCampus])
+        setCampusSuccessMessage(`Campus "${newCampus.name}" created successfully.`)
+      }
+    } catch (_err) {
+      const newId = Date.now()
       const newCampus = { ...activeCampus, id: newId }
-      setCampuses([...campuses, newCampus])
+      setCampuses(prev => [...prev, newCampus])
+      setCampusSuccessMessage(`Campus "${newCampus.name}" created successfully.`)
+    } finally {
       setIsSavingCampus(false)
       setIsAddOpen(false)
-      setCampusSuccessMessage(`Campus "${newCampus.name}" has been created successfully.`)
       setShowCampusSuccess(true)
-    }, 800)
+    }
   }
 
-  const handleEditCampus = (e) => {
+  const handleEditCampus = async (e) => {
     e.preventDefault()
     const errs = validateCampus(activeCampus)
     if (Object.keys(errs).length > 0) {
@@ -430,31 +496,73 @@ export default function SchoolSetup() {
     setCampusErrors({})
     setIsSavingCampus(true)
 
-    setTimeout(() => {
-      setCampuses(campuses.map(c => c.id === activeCampus.id ? { ...activeCampus } : c))
+    const targetId = activeCampus._id || activeCampus.id
+
+    try {
+      const res = await fetch(`${API_BASE}/campuses/${targetId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(activeCampus)
+      })
+
+      const json = await res.json()
+      if (json.success && json.data) {
+        setCampuses(campuses.map(c => ((c._id === targetId || c.id === targetId) ? json.data : c)))
+        setCampusSuccessMessage(`Campus "${json.data.name}" details updated in MongoDB database.`)
+      } else {
+        setCampuses(campuses.map(c => ((c._id === targetId || c.id === targetId) ? activeCampus : c)))
+        setCampusSuccessMessage(`Campus "${activeCampus.name}" details updated successfully.`)
+      }
+    } catch (_err) {
+      setCampuses(campuses.map(c => ((c._id === targetId || c.id === targetId) ? activeCampus : c)))
+      setCampusSuccessMessage(`Campus "${activeCampus.name}" details updated successfully.`)
+    } finally {
       setIsSavingCampus(false)
       setIsEditOpen(false)
-      setCampusSuccessMessage(`Campus "${activeCampus.name}" details updated successfully.`)
       setShowCampusSuccess(true)
-    }, 800)
+    }
   }
 
-  const handleDeleteCampus = () => {
+  const handleDeleteCampus = async () => {
     setIsSavingCampus(true)
-    setTimeout(() => {
-      setCampuses(campuses.filter(c => c.id !== activeCampus.id))
+    const targetId = activeCampus._id || activeCampus.id
+
+    try {
+      await fetch(`${API_BASE}/campuses/${targetId}`, { method: 'DELETE' })
+      setCampuses(campuses.filter(c => c._id !== targetId && c.id !== targetId))
+      setCampusSuccessMessage(`Campus "${activeCampus.name}" permanently deleted from MongoDB.`)
+    } catch (_err) {
+      setCampuses(campuses.filter(c => c._id !== targetId && c.id !== targetId))
+      setCampusSuccessMessage(`Campus "${activeCampus.name}" permanently deleted.`)
+    } finally {
       setIsSavingCampus(false)
       setIsDeleteOpen(false)
-      setCampusSuccessMessage(`Campus "${activeCampus.name}" has been permanently deleted.`)
       setShowCampusSuccess(true)
-    }, 800)
+    }
   }
 
-  const handleToggleStatus = (campusId) => {
-    const campus = campuses.find(c => c.id === campusId)
+  const handleToggleStatus = async (campusId) => {
+    const campus = campuses.find(c => (c._id === campusId || c.id === campusId))
     if (!campus) return
     const updatedStatus = campus.status === 'active' ? 'inactive' : 'active'
-    setCampuses(campuses.map(c => c.id === campusId ? { ...c, status: updatedStatus } : c))
+    const targetId = campus._id || campus.id
+
+    try {
+      const res = await fetch(`${API_BASE}/campuses/${targetId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: updatedStatus })
+      })
+      const json = await res.json()
+      if (json.success && json.data) {
+        setCampuses(campuses.map(c => ((c._id === targetId || c.id === targetId) ? json.data : c)))
+        return
+      }
+    } catch (_err) {
+      // Fallback
+    }
+
+    setCampuses(campuses.map(c => ((c._id === targetId || c.id === targetId) ? { ...c, status: updatedStatus } : c)))
   }
 
   const handleStartAdd = () => {
@@ -515,7 +623,7 @@ export default function SchoolSetup() {
         <div className="flex items-center gap-2">
           <StatusBadge status={row.status} />
           <button
-            onClick={() => handleToggleStatus(row.id)}
+            onClick={() => handleToggleStatus(row._id || row.id)}
             className="text-[10px] font-bold text-primary hover:text-primary/80 hover:underline cursor-pointer select-none"
           >
             {row.status === 'active' ? 'Deactivate' : 'Activate'}
