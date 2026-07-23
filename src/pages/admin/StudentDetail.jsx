@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+import React from 'react'
+=======
+>>>>>>> b360449 (feat(academic): Implement Class Register and Subject Setup backend and frontend integration)
 import React, { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
@@ -17,7 +23,12 @@ import {
   FileCard,
   FileUpload,
   SuccessDialog,
+<<<<<<< HEAD
   DeleteDialog
+=======
+  DeleteDialog,
+  Avatar
+>>>>>>> b360449 (feat(academic): Implement Class Register and Subject Setup backend and frontend integration)
 } from '@/components/shared'
 import { 
   ArrowLeft, 
@@ -36,77 +47,8 @@ import {
   Plus
 } from 'lucide-react'
 
-// Mock Data
-const STUDENT_PROFILES = {
-  '1': {
-    id: '1',
-    name: 'Alex Rivera',
-    admissionNo: 'ADM001',
-    rollNo: '101',
-    class: 'Grade 10',
-    section: 'A',
-    status: 'active',
-    dob: '2011-04-12',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    religion: 'Christian',
-    nationality: 'American',
-    campus: 'Main Campus',
-    academicYear: '2026-2027',
-    house: 'Red House',
-    board: 'CBSE',
-    medium: 'English',
-    phone: '(555) 019-2834',
-    email: 'alex@rivera.com',
-    address: '456 Oak Ave, San Francisco, CA, 94102',
-    parentName: 'Carlos Rivera',
-    parentOccupation: 'Software Architect',
-    motherName: 'Lina Rivera',
-    parentPhone: '(555) 012-3847',
-    parentEmail: 'carlos@rivera.com',
-    emergencyName: 'Uncle Bill',
-    emergencyPhone: '(555) 999-1234',
-    emergencyRelation: 'Uncle',
-    attendancePercent: 94,
-    totalFees: 3500,
-    paidFees: 2500,
-    pendingFees: 1000,
-  },
-  '2': {
-    id: '2',
-    name: 'Chloe Chen',
-    admissionNo: 'ADM002',
-    rollNo: '102',
-    class: 'Grade 10',
-    section: 'A',
-    status: 'active',
-    dob: '2011-08-22',
-    gender: 'Female',
-    bloodGroup: 'A+',
-    religion: 'None',
-    nationality: 'American',
-    campus: 'Main Campus',
-    academicYear: '2026-2027',
-    house: 'Blue House',
-    board: 'CBSE',
-    medium: 'English',
-    phone: '(555) 012-8374',
-    email: 'chloe@chen.com',
-    address: '789 Pine St, San Francisco, CA, 94109',
-    parentName: 'David Chen',
-    parentOccupation: 'Data Scientist',
-    motherName: 'Amy Chen',
-    parentPhone: '(555) 015-8273',
-    parentEmail: 'david@chen.com',
-    emergencyName: 'Aunt May',
-    emergencyPhone: '(555) 888-2938',
-    emergencyRelation: 'Aunt',
-    attendancePercent: 98,
-    totalFees: 3500,
-    paidFees: 3500,
-    pendingFees: 0,
-  }
-}
+// Mock Data (Cleared)
+const STUDENT_PROFILES = {}
 
 export default function StudentDetail() {
   const { id } = useParams()

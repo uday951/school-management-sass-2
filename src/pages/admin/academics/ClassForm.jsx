@@ -48,8 +48,6 @@ export default function ClassForm({
     
     if (!code.trim()) {
       tempErrors.code = 'Class Code is required.'
-    } else if (code.trim().length < 3) {
-      tempErrors.code = 'Class Code must be at least 3 characters.'
     }
 
     const capacityNum = Number(capacity)

@@ -1,40 +1,8 @@
-// Mock Academic Service Layer with LocalStorage persistence and simulated network delay.
+import axios from 'axios';
 
-const DELAY = 400; // Simulated latency in ms to show loading/skeleton states
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
-// Initial teachers dataset
-const INITIAL_TEACHERS = [
-  { id: "T101", name: "Sarah Jenkins", email: "s.jenkins@school.edu", department: "Mathematics" },
-  { id: "T102", name: "Michael Chang", email: "m.chang@school.edu", department: "Science" },
-  { id: "T103", name: "Emily Rodriguez", email: "e.rodriguez@school.edu", department: "English" },
-  { id: "T104", name: "David Alabo", email: "d.alabo@school.edu", department: "Social Studies" },
-  { id: "T105", name: "Linda Chen", email: "l.chen@school.edu", department: "Computer Science" },
-  { id: "T106", name: "James Wilson", email: "j.wilson@school.edu", department: "Science" },
-  { id: "T107", name: "Sophia Martinez", email: "s.martinez@school.edu", department: "Mathematics" },
-  { id: "T108", name: "Robert Taylor", email: "r.taylor@school.edu", department: "Art" },
-  { id: "T109", name: "Olivia Anderson", email: "o.anderson@school.edu", department: "History" },
-  { id: "T110", name: "Daniel Kim", email: "d.kim@school.edu", department: "Languages" }
-];
-
-// Initial classes dataset
-const INITIAL_CLASSES = [
-  { id: "C001", name: "Grade 10-A", code: "G10A", capacity: 35, roomNumber: "Room 101", teacherId: "T101", status: "active" },
-  { id: "C002", name: "Grade 10-B", code: "G10B", capacity: 30, roomNumber: "Room 102", teacherId: "T102", status: "active" },
-  { id: "C003", name: "Grade 11-A", code: "G11A", capacity: 40, roomNumber: "Room 201", teacherId: "T103", status: "active" },
-  { id: "C004", name: "Grade 11-B", code: "G11B", capacity: 35, roomNumber: "Room 202", teacherId: "T104", status: "inactive" },
-  { id: "C005", name: "Grade 12-A", code: "G12A", capacity: 30, roomNumber: "Lab 1", teacherId: "T105", status: "active" }
-];
-
-// Initial subjects dataset
-const INITIAL_SUBJECTS = [
-  { id: "S001", name: "Advanced Algebra", code: "MTH-401", department: "Mathematics", credits: 4, description: "Trigonometry and algebraic equations.", status: "active", assignedClasses: ["C001", "C002"], teacherId: "T101" },
-  { id: "S002", name: "General Chemistry", code: "CHM-302", department: "Science", credits: 3, description: "Introduction to chemical structures and reactions.", status: "active", assignedClasses: ["C001", "C002", "C003"], teacherId: "T102" },
-  { id: "S003", name: "English Literature", code: "ENG-101", department: "Languages", credits: 3, description: "Survey of classic and contemporary literature.", status: "active", assignedClasses: ["C001", "C002", "C003", "C004"], teacherId: "T103" },
-  { id: "S004", name: "World History", code: "HIS-202", department: "Humanities", credits: 3, description: "Major events in human history from medieval to modern era.", status: "active", assignedClasses: ["C003", "C004"], teacherId: "T109" },
-  { id: "S005", name: "Intro to Python", code: "CS-101", department: "Computer Science", credits: 4, description: "Basics of coding logic and algorithms in Python.", status: "inactive", assignedClasses: ["C005"], teacherId: "T105" }
-];
-
-// LocalStorage helpers
+// LocalStorage fallback helpers
 const getStoredData = (key, initial) => {
   try {
     const data = localStorage.getItem(key);
@@ -53,101 +21,196 @@ const setStoredData = (key, val) => {
   }
 };
 
-// Initialize datasets in local storage if not present
 const loadDb = () => {
-  const teachers = getStoredData("academic_teachers", INITIAL_TEACHERS);
-  const classes = getStoredData("academic_classes", INITIAL_CLASSES);
-  const subjects = getStoredData("academic_subjects", INITIAL_SUBJECTS);
-  
-  // Make sure they exist in store
-  setStoredData("academic_teachers", teachers);
-  setStoredData("academic_classes", classes);
-  setStoredData("academic_subjects", subjects);
-  
-  return { teachers, classes, subjects };
-};
+  let teachers = getStoredData('academic_teachers', []);
+  let classes = getStoredData('academic_classes', []);
+  let subjects = getStoredData('academic_subjects', []);
 
-const delayResponse = (result) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(result);
-    }, DELAY);
-  });
+  // Filter legacy mock data
+  teachers = teachers.filter((t) => !t.id?.startsWith('T10'));
+  classes = classes.filter((c) => !c.id?.startsWith('C00'));
+  subjects = subjects.filter((s) => !s.id?.startsWith('S00'));
+
+  setStoredData('academic_teachers', teachers);
+  setStoredData('academic_classes', classes);
+  setStoredData('academic_subjects', subjects);
+
+  return { teachers, classes, subjects };
 };
 
 export const academicService = {
   // --- Teachers ---
   async getTeachers() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/users?role=teacher`);
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        return response.data.data.map((t) => ({
+          id: t._id || t.id,
+          name: t.name,
+          email: t.email,
+          department: t.department || ''
+        }));
+      }
+    } catch (_err) {
+      // Fallback to local storage if user endpoints are not present yet
+    }
     const { teachers } = loadDb();
-    return delayResponse(teachers);
+    return teachers;
   },
 
   // --- Classes ---
   async getClasses() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/classes?limit=100`);
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        const classes = response.data.data.map((item) => ({
+          id: item._id || item.id,
+          name: item.className || item.name,
+          code: item.classCode || item.code,
+          capacity: item.capacity,
+          roomNumber: item.roomNumber,
+          teacherId: item.teacherId?._id || item.teacherId || '',
+          status: (item.status || 'ACTIVE').toLowerCase()
+        }));
+        setStoredData('academic_classes', classes);
+        return classes;
+      }
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch classes from backend server, using local database:', err.message);
+    }
     const { classes } = loadDb();
-    return delayResponse(classes);
+    return classes;
   },
 
   async getClassById(id) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/classes/${id}`);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        return {
+          id: item._id || item.id,
+          name: item.className || item.name,
+          code: item.classCode || item.code,
+          capacity: item.capacity,
+          roomNumber: item.roomNumber,
+          teacherId: item.teacherId?._id || item.teacherId || '',
+          status: (item.status || 'ACTIVE').toLowerCase()
+        };
+      }
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch class by ID from server:', err.message);
+    }
     const { classes } = loadDb();
-    const item = classes.find(c => c.id === id);
-    if (!item) throw new Error("Class not found.");
-    return delayResponse(item);
+    const item = classes.find((c) => c.id === id);
+    if (!item) throw new Error('Class not found.');
+    return item;
   },
 
   async addClass(classData) {
+    try {
+      const payload = {
+        className: classData.name,
+        classCode: classData.code,
+        capacity: Number(classData.capacity),
+        roomNumber: classData.roomNumber,
+        teacherId: classData.teacherId || null,
+        status: (classData.status || 'ACTIVE').toUpperCase()
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/classes`, payload);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const newClass = {
+          id: item._id || item.id,
+          name: item.className || item.name,
+          code: item.classCode || item.code,
+          capacity: item.capacity,
+          roomNumber: item.roomNumber,
+          teacherId: item.teacherId?._id || item.teacherId || '',
+          status: (item.status || 'ACTIVE').toLowerCase()
+        };
+
+        const { classes } = loadDb();
+        setStoredData('academic_classes', [newClass, ...classes]);
+        return newClass;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
+    // Fallback if backend server down
     const { classes } = loadDb();
-    
-    // Validations
-    if (!classData.name?.trim()) throw new Error("Class Name is required.");
-    if (!classData.code?.trim()) throw new Error("Class Code is required.");
-    if (!classData.roomNumber?.trim()) throw new Error("Room Number is required.");
-    
+    if (!classData.name?.trim()) throw new Error('Class Name is required.');
+    if (!classData.code?.trim()) throw new Error('Class Code is required.');
+    if (!classData.roomNumber?.trim()) throw new Error('Room Number is required.');
+
     const codeUpper = classData.code.trim().toUpperCase();
-    if (classes.some(c => c.code.toUpperCase() === codeUpper)) {
+    if (classes.some((c) => c.code.toUpperCase() === codeUpper)) {
       throw new Error(`Class Code "${codeUpper}" already exists.`);
     }
-    
+
     const capacityNum = Number(classData.capacity);
     if (isNaN(capacityNum) || capacityNum <= 0) {
-      throw new Error("Capacity must be a valid positive number.");
+      throw new Error('Capacity must be a valid positive number.');
     }
 
     const newClass = {
-      id: "C" + Math.floor(Math.random() * 9000 + 1000),
+      id: 'C' + Math.floor(Math.random() * 9000 + 1000),
       name: classData.name.trim(),
       code: codeUpper,
       capacity: capacityNum,
       roomNumber: classData.roomNumber.trim(),
-      teacherId: classData.teacherId || "",
-      status: classData.status || "active"
+      teacherId: classData.teacherId || '',
+      status: classData.status || 'active'
     };
 
-    classes.push(newClass);
-    setStoredData("academic_classes", classes);
-    return delayResponse(newClass);
+    classes.unshift(newClass);
+    setStoredData('academic_classes', classes);
+    return newClass;
   },
 
   async updateClass(id, classData) {
-    const { classes } = loadDb();
-    const index = classes.findIndex(c => c.id === id);
-    if (index === -1) throw new Error("Class not found.");
+    try {
+      const payload = {
+        className: classData.name,
+        classCode: classData.code,
+        capacity: Number(classData.capacity),
+        roomNumber: classData.roomNumber,
+        teacherId: classData.teacherId || null,
+        status: (classData.status || 'ACTIVE').toUpperCase()
+      };
 
-    // Validations
-    if (!classData.name?.trim()) throw new Error("Class Name is required.");
-    if (!classData.code?.trim()) throw new Error("Class Code is required.");
-    if (!classData.roomNumber?.trim()) throw new Error("Room Number is required.");
+      const response = await axios.put(`${API_BASE_URL}/classes/${id}`, payload);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const updated = {
+          id: item._id || item.id,
+          name: item.className || item.name,
+          code: item.classCode || item.code,
+          capacity: item.capacity,
+          roomNumber: item.roomNumber,
+          teacherId: item.teacherId?._id || item.teacherId || '',
+          status: (item.status || 'ACTIVE').toLowerCase()
+        };
+
+        const { classes } = loadDb();
+        const updatedList = classes.map((c) => (c.id === id ? updated : c));
+        setStoredData('academic_classes', updatedList);
+        return updated;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
+    // Fallback
+    const { classes } = loadDb();
+    const index = classes.findIndex((c) => c.id === id);
+    if (index === -1) throw new Error('Class not found.');
 
     const codeUpper = classData.code.trim().toUpperCase();
-    const duplicate = classes.find(c => c.code.toUpperCase() === codeUpper && c.id !== id);
-    if (duplicate) {
-      throw new Error(`Class Code "${codeUpper}" already exists on another class.`);
-    }
-
     const capacityNum = Number(classData.capacity);
-    if (isNaN(capacityNum) || capacityNum <= 0) {
-      throw new Error("Capacity must be a valid positive number.");
-    }
 
     classes[index] = {
       ...classes[index],
@@ -155,158 +218,303 @@ export const academicService = {
       code: codeUpper,
       capacity: capacityNum,
       roomNumber: classData.roomNumber.trim(),
-      teacherId: classData.teacherId || "",
-      status: classData.status || "active"
+      teacherId: classData.teacherId || '',
+      status: classData.status || 'active'
     };
 
-    setStoredData("academic_classes", classes);
-    return delayResponse(classes[index]);
+    setStoredData('academic_classes', classes);
+    return classes[index];
   },
 
   async deleteClass(id) {
-    const { classes, subjects } = loadDb();
-    const updatedClasses = classes.filter(c => c.id !== id);
-    
-    if (updatedClasses.length === classes.length) {
-      throw new Error("Class not found.");
+    try {
+      await axios.delete(`${API_BASE_URL}/classes/${id}`);
+      const { classes, subjects } = loadDb();
+      const updatedClasses = classes.filter((c) => c.id !== id);
+      setStoredData('academic_classes', updatedClasses);
+      return true;
+    } catch (err) {
+      if (err.response?.status === 404) {
+        // Fallback delete
+      } else if (err.response?.data?.error?.message) {
+        throw new Error(err.response.data.error.message);
+      }
     }
 
-    // Cascade: Remove this class ID from all assigned subjects
-    const updatedSubjects = subjects.map(subj => {
-      if (subj.assignedClasses && subj.assignedClasses.includes(id)) {
-        return {
-          ...subj,
-          assignedClasses: subj.assignedClasses.filter(cId => cId !== id)
-        };
-      }
-      return subj;
-    });
-
-    setStoredData("academic_classes", updatedClasses);
-    setStoredData("academic_subjects", updatedSubjects);
-    return delayResponse(true);
+    const { classes, subjects } = loadDb();
+    const updatedClasses = classes.filter((c) => c.id !== id);
+    setStoredData('academic_classes', updatedClasses);
+    return true;
   },
 
   // --- Subjects ---
   async getSubjects() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/subjects?limit=100`);
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        const subjects = response.data.data.map((item) => ({
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        }));
+        setStoredData('academic_subjects', subjects);
+        return subjects;
+      }
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch subjects from server:', err.message);
+    }
     const { subjects } = loadDb();
-    return delayResponse(subjects);
+    return subjects;
   },
 
   async getSubjectById(id) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/subjects/${id}`);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        return {
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        };
+      }
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch subject by ID from server:', err.message);
+    }
     const { subjects } = loadDb();
-    const item = subjects.find(s => s.id === id);
-    if (!item) throw new Error("Subject not found.");
-    return delayResponse(item);
+    const item = subjects.find((s) => s.id === id);
+    if (!item) throw new Error('Subject not found.');
+    return item;
   },
 
   async addSubject(subjectData) {
+    try {
+      const payload = {
+        subjectName: subjectData.name,
+        subjectCode: subjectData.code,
+        department: subjectData.department,
+        credits: Number(subjectData.credits),
+        description: subjectData.description || '',
+        status: (subjectData.status || 'ACTIVE').toUpperCase(),
+        teacher: subjectData.teacherId || null,
+        classes: subjectData.assignedClasses || []
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/subjects`, payload);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const newSubject = {
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        };
+
+        const { subjects } = loadDb();
+        setStoredData('academic_subjects', [newSubject, ...subjects]);
+        return newSubject;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
+    // Fallback
     const { subjects } = loadDb();
-
-    // Validations
-    if (!subjectData.name?.trim()) throw new Error("Subject Name is required.");
-    if (!subjectData.code?.trim()) throw new Error("Subject Code is required.");
-    if (!subjectData.department?.trim()) throw new Error("Department is required.");
-
     const codeUpper = subjectData.code.trim().toUpperCase();
-    if (subjects.some(s => s.code.toUpperCase() === codeUpper)) {
-      throw new Error(`Subject Code "${codeUpper}" already exists.`);
-    }
-
     const creditsNum = Number(subjectData.credits);
-    if (isNaN(creditsNum) || creditsNum < 0) {
-      throw new Error("Credits must be a valid non-negative number.");
-    }
 
     const newSubject = {
-      id: "S" + Math.floor(Math.random() * 9000 + 1000),
+      id: 'S' + Math.floor(Math.random() * 9000 + 1000),
       name: subjectData.name.trim(),
       code: codeUpper,
       department: subjectData.department.trim(),
       credits: creditsNum,
-      description: subjectData.description?.trim() || "",
-      status: subjectData.status || "active",
+      description: subjectData.description?.trim() || '',
+      status: subjectData.status || 'active',
       assignedClasses: subjectData.assignedClasses || [],
-      teacherId: subjectData.teacherId || ""
+      teacherId: subjectData.teacherId || ''
     };
 
-    subjects.push(newSubject);
-    setStoredData("academic_subjects", subjects);
-    return delayResponse(newSubject);
+    subjects.unshift(newSubject);
+    setStoredData('academic_subjects', subjects);
+    return newSubject;
   },
 
   async updateSubject(id, subjectData) {
+    try {
+      const payload = {
+        subjectName: subjectData.name,
+        subjectCode: subjectData.code,
+        department: subjectData.department,
+        credits: Number(subjectData.credits),
+        description: subjectData.description || '',
+        status: (subjectData.status || 'ACTIVE').toUpperCase()
+      };
+
+      const response = await axios.put(`${API_BASE_URL}/subjects/${id}`, payload);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const updated = {
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        };
+
+        const { subjects } = loadDb();
+        const updatedList = subjects.map((s) => (s.id === id ? updated : s));
+        setStoredData('academic_subjects', updatedList);
+        return updated;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
     const { subjects } = loadDb();
-    const index = subjects.findIndex(s => s.id === id);
-    if (index === -1) throw new Error("Subject not found.");
-
-    // Validations
-    if (!subjectData.name?.trim()) throw new Error("Subject Name is required.");
-    if (!subjectData.code?.trim()) throw new Error("Subject Code is required.");
-    if (!subjectData.department?.trim()) throw new Error("Department is required.");
-
-    const codeUpper = subjectData.code.trim().toUpperCase();
-    const duplicate = subjects.find(s => s.code.toUpperCase() === codeUpper && s.id !== id);
-    if (duplicate) {
-      throw new Error(`Subject Code "${codeUpper}" already exists on another subject.`);
-    }
-
-    const creditsNum = Number(subjectData.credits);
-    if (isNaN(creditsNum) || creditsNum < 0) {
-      throw new Error("Credits must be a valid non-negative number.");
-    }
+    const index = subjects.findIndex((s) => s.id === id);
+    if (index === -1) throw new Error('Subject not found.');
 
     subjects[index] = {
       ...subjects[index],
       name: subjectData.name.trim(),
-      code: codeUpper,
+      code: subjectData.code.trim().toUpperCase(),
       department: subjectData.department.trim(),
-      credits: creditsNum,
-      description: subjectData.description?.trim() || "",
-      status: subjectData.status || "active"
+      credits: Number(subjectData.credits),
+      description: subjectData.description?.trim() || '',
+      status: subjectData.status || 'active'
     };
 
-    setStoredData("academic_subjects", subjects);
-    return delayResponse(subjects[index]);
+    setStoredData('academic_subjects', subjects);
+    return subjects[index];
   },
 
   async deleteSubject(id) {
-    const { subjects } = loadDb();
-    const updatedSubjects = subjects.filter(s => s.id !== id);
-    if (updatedSubjects.length === subjects.length) {
-      throw new Error("Subject not found.");
+    try {
+      await axios.delete(`${API_BASE_URL}/subjects/${id}`);
+      const { subjects } = loadDb();
+      const updatedSubjects = subjects.filter((s) => s.id !== id);
+      setStoredData('academic_subjects', updatedSubjects);
+      return true;
+    } catch (err) {
+      if (err.response?.data?.error?.message) {
+        throw new Error(err.response.data.error.message);
+      }
     }
-    setStoredData("academic_subjects", updatedSubjects);
-    return delayResponse(true);
+
+    const { subjects } = loadDb();
+    const updatedSubjects = subjects.filter((s) => s.id !== id);
+    setStoredData('academic_subjects', updatedSubjects);
+    return true;
   },
 
   async toggleSubjectStatus(id) {
-    const { subjects } = loadDb();
-    const index = subjects.findIndex(s => s.id === id);
-    if (index === -1) throw new Error("Subject not found.");
+    try {
+      const response = await axios.patch(`${API_BASE_URL}/subjects/${id}/status`);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const updated = {
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        };
 
-    const newStatus = subjects[index].status === "active" ? "inactive" : "active";
+        const { subjects } = loadDb();
+        const updatedList = subjects.map((s) => (s.id === id ? updated : s));
+        setStoredData('academic_subjects', updatedList);
+        return updated;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
+    const { subjects } = loadDb();
+    const index = subjects.findIndex((s) => s.id === id);
+    if (index === -1) throw new Error('Subject not found.');
+
+    const newStatus = subjects[index].status === 'active' ? 'inactive' : 'active';
     subjects[index] = {
       ...subjects[index],
       status: newStatus
     };
 
-    setStoredData("academic_subjects", subjects);
-    return delayResponse(subjects[index]);
+    setStoredData('academic_subjects', subjects);
+    return subjects[index];
   },
 
   async assignSubjectDetails(id, { teacherId, assignedClasses }) {
+    try {
+      const payload = {
+        teacher: teacherId || null,
+        classes: assignedClasses || []
+      };
+
+      const response = await axios.put(`${API_BASE_URL}/subjects/${id}/assign`, payload);
+      if (response.data?.success && response.data.data) {
+        const item = response.data.data;
+        const updated = {
+          id: item._id || item.id,
+          name: item.subjectName || item.name,
+          code: item.subjectCode || item.code,
+          department: item.department,
+          credits: item.credits,
+          description: item.description || '',
+          status: (item.status || 'ACTIVE').toLowerCase(),
+          teacherId: item.teacher?._id || item.teacher || item.teacherId || '',
+          assignedClasses: (item.classes || item.assignedClasses || []).map((c) => c._id || c)
+        };
+
+        const { subjects } = loadDb();
+        const updatedList = subjects.map((s) => (s.id === id ? updated : s));
+        setStoredData('academic_subjects', updatedList);
+        return updated;
+      }
+    } catch (err) {
+      const serverMsg = err.response?.data?.error?.message || err.message;
+      throw new Error(serverMsg);
+    }
+
     const { subjects } = loadDb();
-    const index = subjects.findIndex(s => s.id === id);
-    if (index === -1) throw new Error("Subject not found.");
+    const index = subjects.findIndex((s) => s.id === id);
+    if (index === -1) throw new Error('Subject not found.');
 
     subjects[index] = {
       ...subjects[index],
-      teacherId: teacherId || "",
+      teacherId: teacherId || '',
       assignedClasses: assignedClasses || []
     };
 
-    setStoredData("academic_subjects", subjects);
-    return delayResponse(subjects[index]);
+    setStoredData('academic_subjects', subjects);
+    return subjects[index];
   }
 };
