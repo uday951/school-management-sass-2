@@ -1,7 +1,7 @@
-# Project Foundation & Student Management Walkthrough
-## School ERP System Frontend
+# Project Foundation, Component Library, & Backend Architecture Walkthrough
+## School ERP System Frontend & Backend Design
 
-We have initialized the foundation, built the reusable component library, and completed the entire **Student Management** module for the School ERP system. The application compiles with zero errors and all changes have been pushed to GitHub.
+We have initialized the foundation, built the reusable component library, completed the Student Management module, designed the backend software architecture, and created the complete **Backend Project Structure Guidelines**.
 
 ---
 
@@ -26,35 +26,21 @@ We have initialized the foundation, built the reusable component library, and co
 
 ### 1.4 Student Management Module
 We implemented all 18 core student features across 3 main pages connected to our routing system:
+*   **Student Directory (`Students.jsx`):** Directory lists, search filters, bulk actions, ID card previews, and certificate printers.
+*   **Student Admission (`StudentCreate.jsx`):** A 6-step progress wizard capturing personal, academic, contact, parent, emergency contact, and document files.
+*   **Student Profile (`StudentDetail.jsx`):** Horizontal switcher displaying Overview, Biodata, Academics, Parents, Calendars, Fee ledgers, Marks sheets, Medical files, and Activity history.
 
-#### 1.4.1 Student Directory ([Students.jsx](file:///d:/main_projects/school%20management%20system/src/pages/admin/Students.jsx))
-*   **List Directory Table:** Displays photos, admission numbers, names, classes, parent details, and status.
-*   **Controls & Search:** Includes text filter search boxes, class select filters, and status toggles.
-*   **Bulk Select Actions:** Triggers bulk student promotions, directories exports, or roster lists.
-*   **ID Card Creator:** Overlays a preview container that isolates student variables and prints cards.
-*   **Certificates Generator:** Renders official printable layouts for Bonafide and Transfer Certificates.
-*   **Bulk Import/Export:** Modal windows handling CSV templates downloads, file staging, and CSV/Excel/PDF exporters.
-*   **Transfer & Promotion:** Dialogs capturing transfer dates, reason codes, or target academic years.
+### 1.5 Node.js/Express.js Backend Architecture Blueprint
+We designed and created the master backend architectural specification document at [backend/backend_architecture_document.md](file:///d:/main_projects/school%20management%20system/backend/backend_architecture_document.md):
+*   Covers Architecture Layers, Request Flow Lifecycles, Dual-Token JWT Auth, Multi-tenant MongoDB Atlas Discriminators, Dynamic RBAC, Winston/Morgan Logging, Security (Helmet/CORS/Rate limiting), and REST Standards.
 
-#### 1.4.2 Student Admission ([StudentCreate.jsx](file:///d:/main_projects/school%20management%20system/src/pages/admin/StudentCreate.jsx))
-*   **Multi-Step Onboarding Form:** Implements a 6-step progress wizard capturing:
-    1.  *Personal:* Names, DOB, gender, blood group, religion, and nationality.
-    2.  *Academic:* Session, class, section, roll number, and education board.
-    3.  *Contact:* Primary phone, email address, and home coordinates.
-    4.  *Parent:* Father, mother, guardian names, occupation, and email.
-    5.  *Emergency:* Primary contact, phone, and relationships.
-    6.  *Documents:* Upload slots for Birth Certificates, Aadhaar ID, TC, and Report Cards.
-
-#### 1.4.3 Student Profile ([StudentDetail.jsx](file:///d:/main_projects/school%20management%20system/src/pages/admin/StudentDetail.jsx))
-*   **Tab Navigation:** Standardized horizontal switcher displaying:
-    *   *Overview:* Renders quick cards, statistics matrices, and curriculum grade bars.
-    *   *Personal / Academic:* Comprehensive list of all biodata and class allocations.
-    *   *Parent:* Directory information for father, mother, and emergency contacts.
-    *   *Attendance:* Calendar-based grid displaying daily logs and percentage gauges.
-    *   *Fees Details:* Billed structures, paid counters, due sums, and term payment sheets.
-    *   *Exam Results:* Terminal grade scores, exam dates, and a historical line chart.
-    *   *Medical / Timeline:* Height/weight statistics, allergy warnings, and historical logs.
-    *   *Documents:* Staged file attachment previews, upload drop zones, and file delete dialogs.
+### 1.6 Backend Project Structure Guidelines
+We designed the enterprise folder layout and rule specifications in [backend/backend_structure_guidelines.md](file:///d:/main_projects/school%20management%20system/backend/backend_structure_guidelines.md):
+*   **Directory Map:** Layout for `src/`, `config/`, `database/`, `middlewares/`, `routes/`, `controllers/`, `services/`, `repositories/`, `models/`, `validators/`, `dto/`, `modules/`, `utils/`, `helpers/`, `constants/`, `enums/`, `types/`, `interfaces/`, `hooks/`, `events/`, `jobs/`, `queues/`, `uploads/`, `logs/`, `templates/`, `emails/`, `notifications/`, `permissions/`, `policies/`, `docs/`, `tests/`, `scripts/`.
+*   **Directory Standards:** Purpose, Responsibility, Allowed Files, Import Rules, and Dependency Level rules defined per folder.
+*   **Module Encapsulation Structure:** Standardized layout within domain modules (`student/`, `teacher/`, `school/`, `academic/`, `attendance/`, `fees/`, `reports/`, `settings/`).
+*   **Utilities & Middlewares:** Detailed specifications for JWT auth, RBAC permissions, error handlers, upload filters, pagination, search, Winston logging, and standard response helpers.
+*   **Environment & Conventions:** Complete `.env.example` template and naming conventions for files, models, classes, functions, collections, and REST routes.
 
 ---
 
@@ -67,17 +53,6 @@ npm run build
 
 **Result:**
 ```
-vite v8.1.5 building client environment for production...
-transforming...✓ 1885 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/index.html                                0.91 kB │ gzip:  0.46 kB
-dist/assets/index-BktdLdaN.css                58.03 kB │ gzip: 10.08 kB
-dist/assets/StudentCreate-mQ2J2LbC.js          8.51 kB │ gzip:  2.65 kB
-dist/assets/Students-BOvUFmk-.js              13.44 kB │ gzip:  3.88 kB
-dist/assets/StudentDetail-m-LZK1-8.js         14.24 kB │ gzip:  4.22 kB
-dist/assets/index-Dnue_rqf.js                237.57 kB │ gzip: 75.50 kB
-
-✓ built in 2.68s
+✓ built in 1.38s
 ```
-The build compiles with zero warnings or errors. All route chunks and component wrappers lazy-load on demand.
+The client build compiles successfully with zero warnings or errors. Both the backend architecture and project structure guidelines are complete and fully specified.

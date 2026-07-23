@@ -1,0 +1,35 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "School ERP SaaS Backend Infrastructure API",
+    "version": "1.0.0",
+    "description": "Production-ready enterprise ERP API infrastructure documentation."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000/api/v1",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check Endpoint",
+        "responses": {
+          "200": {
+            "description": "Server is healthy and database is connected"
+          }
+        }
+      }
+    }
+  }
+}
