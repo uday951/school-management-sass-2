@@ -1,7 +1,7 @@
 # Project Foundation, Component Library, & Backend Architecture Walkthrough
 ## School ERP System Frontend & Backend Design
 
-We have initialized the foundation, built the reusable component library, completed the Student Management module, and created the complete enterprise backend software architecture blueprint for the School ERP system.
+We have initialized the foundation, built the reusable component library, completed the Student Management module, designed the backend software architecture, and created the complete **Backend Project Structure Guidelines**.
 
 ---
 
@@ -32,13 +32,15 @@ We implemented all 18 core student features across 3 main pages connected to our
 
 ### 1.5 Node.js/Express.js Backend Architecture Blueprint
 We designed and created the master backend architectural specification document at [backend/backend_architecture_document.md](file:///d:/main_projects/school%20management%20system/backend/backend_architecture_document.md):
-1.  **Architecture Layers:** Standardized layers: Presentation, Routing, Controller, Service, Repository, Database, Storage, Auth, Validation, and Logging.
-2.  **Request Lifecycle:** Defined a clear data flow pipeline from client HTTP request to database lookup and standardized JSON response.
-3.  **Module Components:** Established standard layouts for encapsulation folders (Routes, Controller, Service, Validator, Model, Repository, DTOs).
-4.  **Authentication Engine:** Outlined short-lived JWT Access tokens, secure httpOnly Refresh cookies, bcrypt password encryption, and recovery key dispatches.
-5.  **RBAC Matrix:** Structured permission hierarchies for Super Admin, School Admin, Teacher, and Parent roles.
-6.  **Database & File Storage Schema:** Configured MongoDB Atlas multi-tenant discriminators, compound keys, soft-delete indexes, and Cloudinary media uploading rules.
-7.  **RESTful Standards:** Outlined v1 routing, status codes, sanitization filters, rate limits, and custom Winston info/error audit logs.
+*   Covers Architecture Layers, Request Flow Lifecycles, Dual-Token JWT Auth, Multi-tenant MongoDB Atlas Discriminators, Dynamic RBAC, Winston/Morgan Logging, Security (Helmet/CORS/Rate limiting), and REST Standards.
+
+### 1.6 Backend Project Structure Guidelines
+We designed the enterprise folder layout and rule specifications in [backend/backend_structure_guidelines.md](file:///d:/main_projects/school%20management%20system/backend/backend_structure_guidelines.md):
+*   **Directory Map:** Layout for `src/`, `config/`, `database/`, `middlewares/`, `routes/`, `controllers/`, `services/`, `repositories/`, `models/`, `validators/`, `dto/`, `modules/`, `utils/`, `helpers/`, `constants/`, `enums/`, `types/`, `interfaces/`, `hooks/`, `events/`, `jobs/`, `queues/`, `uploads/`, `logs/`, `templates/`, `emails/`, `notifications/`, `permissions/`, `policies/`, `docs/`, `tests/`, `scripts/`.
+*   **Directory Standards:** Purpose, Responsibility, Allowed Files, Import Rules, and Dependency Level rules defined per folder.
+*   **Module Encapsulation Structure:** Standardized layout within domain modules (`student/`, `teacher/`, `school/`, `academic/`, `attendance/`, `fees/`, `reports/`, `settings/`).
+*   **Utilities & Middlewares:** Detailed specifications for JWT auth, RBAC permissions, error handlers, upload filters, pagination, search, Winston logging, and standard response helpers.
+*   **Environment & Conventions:** Complete `.env.example` template and naming conventions for files, models, classes, functions, collections, and REST routes.
 
 ---
 
@@ -53,4 +55,4 @@ npm run build
 ```
 ✓ built in 1.38s
 ```
-The client build compiles successfully with zero warnings or errors. The backend architecture specifications are complete, detailed, and ready for development.
+The client build compiles successfully with zero warnings or errors. Both the backend architecture and project structure guidelines are complete and fully specified.
