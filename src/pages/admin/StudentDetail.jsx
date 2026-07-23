@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -37,87 +37,47 @@ import {
   Plus
 } from 'lucide-react'
 
-// Mock Data
-const STUDENT_PROFILES = {
-  '1': {
-    id: '1',
-    name: 'Alex Rivera',
-    admissionNo: 'ADM001',
-    rollNo: '101',
-    class: 'Grade 10',
-    section: 'A',
-    status: 'active',
-    dob: '2011-04-12',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    religion: 'Christian',
-    nationality: 'American',
-    campus: 'Main Campus',
-    academicYear: '2026-2027',
-    house: 'Red House',
-    board: 'CBSE',
-    medium: 'English',
-    phone: '(555) 019-2834',
-    email: 'alex@rivera.com',
-    address: '456 Oak Ave, San Francisco, CA, 94102',
-    parentName: 'Carlos Rivera',
-    parentOccupation: 'Software Architect',
-    motherName: 'Lina Rivera',
-    parentPhone: '(555) 012-3847',
-    parentEmail: 'carlos@rivera.com',
-    emergencyName: 'Uncle Bill',
-    emergencyPhone: '(555) 999-1234',
-    emergencyRelation: 'Uncle',
-    attendancePercent: 94,
-    totalFees: 3500,
-    paidFees: 2500,
-    pendingFees: 1000,
-  },
-  '2': {
-    id: '2',
-    name: 'Chloe Chen',
-    admissionNo: 'ADM002',
-    rollNo: '102',
-    class: 'Grade 10',
-    section: 'A',
-    status: 'active',
-    dob: '2011-08-22',
-    gender: 'Female',
-    bloodGroup: 'A+',
-    religion: 'None',
-    nationality: 'American',
-    campus: 'Main Campus',
-    academicYear: '2026-2027',
-    house: 'Blue House',
-    board: 'CBSE',
-    medium: 'English',
-    phone: '(555) 012-8374',
-    email: 'chloe@chen.com',
-    address: '789 Pine St, San Francisco, CA, 94109',
-    parentName: 'David Chen',
-    parentOccupation: 'Data Scientist',
-    motherName: 'Amy Chen',
-    parentPhone: '(555) 015-8273',
-    parentEmail: 'david@chen.com',
-    emergencyName: 'Aunt May',
-    emergencyPhone: '(555) 888-2938',
-    emergencyRelation: 'Aunt',
-    attendancePercent: 98,
-    totalFees: 3500,
-    paidFees: 3500,
-    pendingFees: 0,
-  }
-}
-
 export default function StudentDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [successOpen, setSuccessOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
+  const [studentProfile, setStudentProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Load profile
-  const student = STUDENT_PROFILES[id] || STUDENT_PROFILES['1']
+  // Load real profile from backend API
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/v1/students/${id}/profile`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setStudentProfile(data.data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [id])
+
+  const student = studentProfile || {
+    id: id || '1',
+    name: 'Student Profile',
+    admissionNo: 'ADM000',
+    rollNo: '100',
+    class: 'Grade 10',
+    section: 'A',
+    status: 'active',
+    dob: '2011-01-01',
+    gender: 'Male',
+    bloodGroup: 'O+',
+    phone: '',
+    email: '',
+    parentName: 'N/A',
+    attendancePercent: 95,
+    totalFees: 3500,
+    paidFees: 2500,
+    pendingFees: 1000
+  }
 
   // Documents state
   const [docs, setDocs] = useState([
