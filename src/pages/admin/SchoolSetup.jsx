@@ -40,94 +40,33 @@ import {
   SuccessDialog
 } from '@/components/shared'
 
-// --- DUMMY DATA CONSTANTS ---
+// --- INITIAL EMPTY DATA CONSTANTS ---
 
 const initialInstitutionData = {
-  name: "Springdale International School",
-  code: "SIS-1024",
-  affiliationNumber: "CBSE-193021",
-  registrationNumber: "REG-2005-9981",
-  establishedYear: "2005",
+  name: "",
+  code: "",
+  affiliationNumber: "",
+  registrationNumber: "",
+  establishedYear: "",
   type: "co-educational",
-  phone: "+1 (555) 123-4567",
-  mobile: "+1 (555) 987-6543",
-  email: "info@springdale.edu",
-  website: "https://www.springdale.edu",
-  country: "United States",
-  state: "California",
-  city: "San Francisco",
-  pinCode: "94107",
-  address: "456 Learning Way, Suite 100, San Francisco, CA 94107",
-  principalName: "Dr. Evelyn Harper",
-  principalContact: "+1 (555) 234-5678",
-  principalEmail: "principal@springdale.edu",
-  logo: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=120&fit=crop&q=80",
-  favicon: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=32&fit=crop&q=80",
-  banner: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&auto=format&fit=crop&q=80"
+  phone: "",
+  mobile: "",
+  email: "",
+  website: "",
+  country: "",
+  state: "",
+  city: "",
+  pinCode: "",
+  address: "",
+  principalName: "",
+  principalContact: "",
+  principalEmail: "",
+  logo: null,
+  favicon: null,
+  banner: null
 }
 
-const initialCampusesData = [
-  {
-    id: 1,
-    name: "Springdale North Campus",
-    code: "SIS-N01",
-    address: "101 Northern Blvd, San Francisco, CA 94123",
-    principal: "Mr. Marcus Aurelius",
-    contactNumber: "+1 (555) 765-4321",
-    email: "north@springdale.edu",
-    status: "active"
-  },
-  {
-    id: 2,
-    name: "Springdale South Campus",
-    code: "SIS-S02",
-    address: "808 Southern Ave, San Jose, CA 95112",
-    principal: "Mrs. Clara Oswald",
-    contactNumber: "+1 (555) 876-5432",
-    email: "south@springdale.edu",
-    status: "active"
-  },
-  {
-    id: 3,
-    name: "Springdale East Campus",
-    code: "SIS-E03",
-    address: "321 Eastern Hwy, Oakland, CA 94601",
-    principal: "Dr. Alistair Gordon",
-    contactNumber: "+1 (555) 345-6789",
-    email: "east@springdale.edu",
-    status: "inactive"
-  },
-  {
-    id: 4,
-    name: "Springdale West Campus",
-    code: "SIS-W04",
-    address: "555 Western Dr, Berkeley, CA 94720",
-    principal: "Ms. Sarah Jane Smith",
-    contactNumber: "+1 (555) 456-7890",
-    email: "west@springdale.edu",
-    status: "active"
-  },
-  {
-    id: 5,
-    name: "Springdale Downtown Extension",
-    code: "SIS-DT05",
-    address: "12 Pine St, San Francisco, CA 94111",
-    principal: "Mr. Jack Harkness",
-    contactNumber: "+1 (555) 901-2345",
-    email: "downtown@springdale.edu",
-    status: "active"
-  },
-  {
-    id: 6,
-    name: "Springdale Valley Academy",
-    code: "SIS-V06",
-    address: "99 Valley View Road, Walnut Creek, CA 94596",
-    principal: "Mrs. Rose Tyler",
-    contactNumber: "+1 (555) 999-8888",
-    email: "valley@springdale.edu",
-    status: "inactive"
-  }
-]
+const initialCampusesData = []
 
 // --- LOCAL CUSTOM INTERACTION COMPONENTS ---
 
@@ -246,19 +185,17 @@ export default function SchoolSetup() {
   const isCampuses = location.pathname.includes('/campuses')
 
   // --- STATE FOR INSTITUTION INFO ---
-  // Safely restore and merge properties to avoid missing properties (e.g. banner) in localStorage
   const [institution, setInstitution] = useState(() => {
     const saved = localStorage.getItem('school_setup_institution')
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        const merged = { ...initialInstitutionData }
-        Object.keys(initialInstitutionData).forEach(key => {
-          if (parsed[key] !== undefined && parsed[key] !== null && parsed[key] !== '') {
-            merged[key] = parsed[key]
-          }
-        })
-        return merged
+        // Clear cached mock data if present
+        if (parsed.name === "Springdale International School") {
+          localStorage.removeItem('school_setup_institution')
+          return initialInstitutionData
+        }
+        return parsed
       } catch (e) {
         return initialInstitutionData
       }
@@ -266,7 +203,7 @@ export default function SchoolSetup() {
     return initialInstitutionData
   })
   const [instForm, setInstForm] = useState({ ...institution })
-  const [isEditingInst, setIsEditingInst] = useState(false)
+  const [isEditingInst, setIsEditingInst] = useState(() => !institution.name)
   const [instErrors, setInstErrors] = useState({})
   const [isSavingInst, setIsSavingInst] = useState(false)
   const [showInstSuccess, setShowInstSuccess] = useState(false)
@@ -278,7 +215,20 @@ export default function SchoolSetup() {
   // --- STATE FOR CAMPUS MANAGEMENT ---
   const [campuses, setCampuses] = useState(() => {
     const saved = localStorage.getItem('school_setup_campuses')
-    return saved ? JSON.parse(saved) : initialCampusesData
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        // Clear cached mock campuses if present
+        if (Array.isArray(parsed) && parsed.some(c => c.name?.includes("Springdale"))) {
+          localStorage.removeItem('school_setup_campuses')
+          return initialCampusesData
+        }
+        return parsed
+      } catch (e) {
+        return initialCampusesData
+      }
+    }
+    return initialCampusesData
   })
 
   // Persistence to localstorage

@@ -1,5 +1,6 @@
 const express = require('express');
 const healthRoute = require('./health.route');
+const schoolRoutes = require('../modules/school/school.routes');
 const studentRoutes = require('../modules/student/student.routes');
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.get('/', (_req, res) => {
 
 // ─── Mount Sub-routes ──────────────────────────────────────────────────────
 router.use('/', healthRoute);
+router.use('/', schoolRoutes);
 router.use('/students', studentRoutes);
 
 module.exports = router;
