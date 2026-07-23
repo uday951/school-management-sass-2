@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -34,20 +34,25 @@ import {
   Share2 
 } from 'lucide-react'
 
-// Dummy Initial Data
-const INITIAL_STUDENTS = [
-  { id: '1', admissionNo: 'ADM001', rollNo: '101', name: 'Alex Rivera', class: 'Grade 10', section: 'A', parentName: 'Carlos Rivera', phone: '(555) 019-2834', status: 'active', email: 'alex@rivera.com', passoutYear: null },
-  { id: '2', admissionNo: 'ADM002', rollNo: '102', name: 'Chloe Chen', class: 'Grade 10', section: 'A', parentName: 'David Chen', phone: '(555) 012-8374', status: 'active', email: 'chloe@chen.com', passoutYear: null },
-  { id: '3', admissionNo: 'ADM003', rollNo: '103', name: 'Marcus Brody', class: 'Grade 9', section: 'B', parentName: 'Elena Brody', phone: '(555) 014-9281', status: 'active', email: 'marcus@brody.com', passoutYear: null },
-  { id: '4', admissionNo: 'ADM004', rollNo: '104', name: 'Sophia Martinez', class: 'Grade 9', section: 'B', parentName: 'Luiz Martinez', phone: '(555) 017-3829', status: 'active', email: 'sophia@martinez.com', passoutYear: null },
-  { id: '5', admissionNo: 'ADM005', rollNo: '105', name: 'Ethan Hunt', class: 'Grade 12', section: 'A', parentName: 'Sarah Hunt', phone: '(555) 011-2834', status: 'inactive', email: 'ethan@hunt.com', passoutYear: '2025' },
-]
-
 export default function Students() {
   const navigate = useNavigate()
   
-  // State
-  const [students, setStudents] = useState(INITIAL_STUDENTS)
+  // Real State initialized to empty array (No hardcoded mock data)
+  const [students, setStudents] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch real students from Backend API
+  useEffect(() => {
+    fetch('http://localhost:5000/api/v1/students')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          setStudents(data.data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [classFilter, setClassFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('active') // Default to active students

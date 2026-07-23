@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -21,8 +21,8 @@ export default function StudentCreate() {
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Personal
-    admissionNumber: 'ADM' + Math.floor(1000 + Math.random() * 9000),
-    admissionDate: '',
+    admissionNumber: '',
+    admissionDate: new Date().toISOString().split('T')[0],
     firstName: '',
     middleName: '',
     lastName: '',
@@ -65,18 +65,70 @@ export default function StudentCreate() {
     emergencyRelation: '',
   })
 
+  // Auto-fetch unique admission number from backend API
+  useEffect(() => {
+    fetch('http://localhost:5000/api/v1/students/admissions/next-number')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.admissionNo) {
+          setFormData(prev => ({ ...prev, admissionNumber: data.data.admissionNo }))
+        }
+      })
+      .catch(() => {
+        setFormData(prev => ({ ...prev, admissionNumber: 'ADM' + Math.floor(1000 + Math.random() * 9000) }))
+      })
+  }, [])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const [stepError, setStepError] = useState('')
+
+  const validateCurrentStep = () => {
+    setStepError('')
+    if (step === 1) {
+      if (!formData.firstName.trim()) return 'First Name is required.'
+      if (!formData.lastName.trim()) return 'Last Name is required.'
+      if (!formData.gender) return 'Gender is required.'
+      if (!formData.dob) return 'Date of Birth is required.'
+    }
+    if (step === 2) {
+      if (!formData.studentClass) return 'Class is required.'
+      if (!formData.section) return 'Section is required.'
+    }
+    return null
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
+    const err = validateCurrentStep()
+    if (err) {
+      setStepError(err)
+      return
+    }
+
     if (step < 6) {
       setStep(prev => prev + 1)
     } else {
-      // Completed last step, trigger success dialog
-      setSuccessOpen(true)
+      // Completed last step: Submit to backend API
+      fetch('http://localhost:5000/api/v1/students/admissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setSuccessOpen(true)
+          } else {
+            setStepError(data.error?.message || 'Failed to submit admission record.')
+          }
+        })
+        .catch(() => {
+          setStepError('Server connection error. Please try again.')
+        })
     }
   }
 
@@ -118,6 +170,12 @@ export default function StudentCreate() {
           </div>
         ))}
       </div>
+
+      {stepError && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-md text-sm font-semibold">
+          ⚠️ {stepError}
+        </div>
+      )}
 
       <SimpleCard title={`Step ${step} of 6: Details Input`}>
         <form onSubmit={handleSubmit} className="space-y-6">
