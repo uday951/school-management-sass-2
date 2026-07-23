@@ -1,5 +1,6 @@
 const express = require('express');
 const healthRoute = require('./health.route');
+const schoolRoutes = require('../modules/school/school.routes');
 
 const router = express.Router();
 
@@ -14,10 +15,7 @@ router.get('/', (_req, res) => {
 
 // ─── Mount Sub-routes ──────────────────────────────────────────────────────
 router.use('/', healthRoute);
-
-// Business module routes will be mounted here as each module is built:
-// router.use('/auth',     require('../modules/auth/auth.routes'));
-// router.use('/students', require('../modules/student/student.routes'));
-// router.use('/teachers', require('../modules/teacher/teacher.routes'));
+router.use('/', schoolRoutes);
 
 module.exports = router;
+
