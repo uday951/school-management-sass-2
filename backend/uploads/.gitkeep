@@ -1,0 +1,3 @@
+This directory holds temporary file buffers uploaded via Multer.
+Files here are streamed to Cloudinary and deleted immediately after upload.
+Do NOT store permanent files here.

@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-import React from 'react'
-=======
->>>>>>> b360449 (feat(academic): Implement Class Register and Subject Setup backend and frontend integration)
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -42,12 +36,25 @@ import {
 
 // Dummy Initial Data (Cleared)
 const INITIAL_STUDENTS = []
-
 export default function Students() {
   const navigate = useNavigate()
   
-  // State
-  const [students, setStudents] = useState(INITIAL_STUDENTS)
+  // Real State initialized to empty array (No hardcoded mock data)
+  const [students, setStudents] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch real students from Backend API
+  useEffect(() => {
+    fetch('http://localhost:5000/api/v1/students')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          setStudents(data.data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [classFilter, setClassFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('active') // Default to active students

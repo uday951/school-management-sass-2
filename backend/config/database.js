@@ -16,7 +16,6 @@ const connectDB = async () => {
 
     isConnected = true;
     console.log(`[DB] MongoDB Connected: ${conn.connection.host}`);
-
     // Ensure collections are created in MongoDB immediately on connect
     const Class = require('../src/modules/academic/class.model');
     const Subject = require('../src/modules/academic/subject.model');
@@ -27,7 +26,6 @@ const connectDB = async () => {
       Subject.createCollection().catch(() => {}),
       User.createCollection().catch(() => {})
     ]);
-
     return conn.connection;
   } catch (error) {
     console.error(`[DB Error] MongoDB Connection Failed: ${error.message}`);

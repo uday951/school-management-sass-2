@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-import React from 'react'
-=======
->>>>>>> b360449 (feat(academic): Implement Class Register and Subject Setup backend and frontend integration)
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -23,12 +17,8 @@ import {
   FileCard,
   FileUpload,
   SuccessDialog,
-<<<<<<< HEAD
-  DeleteDialog
-=======
   DeleteDialog,
   Avatar
->>>>>>> b360449 (feat(academic): Implement Class Register and Subject Setup backend and frontend integration)
 } from '@/components/shared'
 import { 
   ArrowLeft, 
@@ -49,16 +39,47 @@ import {
 
 // Mock Data (Cleared)
 const STUDENT_PROFILES = {}
-
 export default function StudentDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('overview')
   const [successOpen, setSuccessOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
+  const [studentProfile, setStudentProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Load profile
-  const student = STUDENT_PROFILES[id] || STUDENT_PROFILES['1']
+  // Load real profile from backend API
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/v1/students/${id}/profile`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setStudentProfile(data.data)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [id])
+
+  const student = studentProfile || {
+    id: id || '1',
+    name: 'Student Profile',
+    admissionNo: 'ADM000',
+    rollNo: '100',
+    class: 'Grade 10',
+    section: 'A',
+    status: 'active',
+    dob: '2011-01-01',
+    gender: 'Male',
+    bloodGroup: 'O+',
+    phone: '',
+    email: '',
+    parentName: 'N/A',
+    attendancePercent: 95,
+    totalFees: 3500,
+    paidFees: 2500,
+    pendingFees: 1000
+  }
 
   // Documents state
   const [docs, setDocs] = useState([
