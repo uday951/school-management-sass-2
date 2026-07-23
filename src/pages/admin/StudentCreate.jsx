@@ -84,8 +84,31 @@ export default function StudentCreate() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const [stepError, setStepError] = useState('')
+
+  const validateCurrentStep = () => {
+    setStepError('')
+    if (step === 1) {
+      if (!formData.firstName.trim()) return 'First Name is required.'
+      if (!formData.lastName.trim()) return 'Last Name is required.'
+      if (!formData.gender) return 'Gender is required.'
+      if (!formData.dob) return 'Date of Birth is required.'
+    }
+    if (step === 2) {
+      if (!formData.studentClass) return 'Class is required.'
+      if (!formData.section) return 'Section is required.'
+    }
+    return null
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
+    const err = validateCurrentStep()
+    if (err) {
+      setStepError(err)
+      return
+    }
+
     if (step < 6) {
       setStep(prev => prev + 1)
     } else {
@@ -96,8 +119,16 @@ export default function StudentCreate() {
         body: JSON.stringify(formData)
       })
         .then(res => res.json())
-        .then(() => setSuccessOpen(true))
-        .catch(() => setSuccessOpen(true))
+        .then(data => {
+          if (data.success) {
+            setSuccessOpen(true)
+          } else {
+            setStepError(data.error?.message || 'Failed to submit admission record.')
+          }
+        })
+        .catch(() => {
+          setStepError('Server connection error. Please try again.')
+        })
     }
   }
 
@@ -139,6 +170,12 @@ export default function StudentCreate() {
           </div>
         ))}
       </div>
+
+      {stepError && (
+        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-md text-sm font-semibold">
+          ⚠️ {stepError}
+        </div>
+      )}
 
       <SimpleCard title={`Step ${step} of 6: Details Input`}>
         <form onSubmit={handleSubmit} className="space-y-6">
