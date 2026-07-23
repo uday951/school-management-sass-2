@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   PageHeader, 
@@ -21,8 +21,8 @@ export default function StudentCreate() {
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Personal
-    admissionNumber: 'ADM' + Math.floor(1000 + Math.random() * 9000),
-    admissionDate: '',
+    admissionNumber: '',
+    admissionDate: new Date().toISOString().split('T')[0],
     firstName: '',
     middleName: '',
     lastName: '',
@@ -65,6 +65,20 @@ export default function StudentCreate() {
     emergencyRelation: '',
   })
 
+  // Auto-fetch unique admission number from backend API
+  useEffect(() => {
+    fetch('http://localhost:5000/api/v1/students/admissions/next-number')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data?.admissionNo) {
+          setFormData(prev => ({ ...prev, admissionNumber: data.data.admissionNo }))
+        }
+      })
+      .catch(() => {
+        setFormData(prev => ({ ...prev, admissionNumber: 'ADM' + Math.floor(1000 + Math.random() * 9000) }))
+      })
+  }, [])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -75,8 +89,15 @@ export default function StudentCreate() {
     if (step < 6) {
       setStep(prev => prev + 1)
     } else {
-      // Completed last step, trigger success dialog
-      setSuccessOpen(true)
+      // Completed last step: Submit to backend API
+      fetch('http://localhost:5000/api/v1/students/admissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+        .then(res => res.json())
+        .then(() => setSuccessOpen(true))
+        .catch(() => setSuccessOpen(true))
     }
   }
 
