@@ -37,6 +37,8 @@ import {
   Plus
 } from 'lucide-react'
 
+// Mock Data (Cleared)
+const STUDENT_PROFILES = {}
 export default function StudentDetail() {
   const { id } = useParams()
   const navigate = useNavigate()

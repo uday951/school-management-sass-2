@@ -2,6 +2,8 @@ const express = require('express');
 const healthRoute = require('./health.route');
 const schoolRoutes = require('../modules/school/school.routes');
 const studentRoutes = require('../modules/student/student.routes');
+const classRoutes = require('../modules/academic/class.routes');
+const subjectRoutes = require('../modules/academic/subject.routes');
 
 const router = express.Router();
 
@@ -18,5 +20,7 @@ router.get('/', (_req, res) => {
 router.use('/', healthRoute);
 router.use('/', schoolRoutes);
 router.use('/students', studentRoutes);
+router.use('/classes', classRoutes);
+router.use('/subjects', subjectRoutes);
 
 module.exports = router;

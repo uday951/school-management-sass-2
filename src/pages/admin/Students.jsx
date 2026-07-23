@@ -34,6 +34,8 @@ import {
   Share2 
 } from 'lucide-react'
 
+// Dummy Initial Data (Cleared)
+const INITIAL_STUDENTS = []
 export default function Students() {
   const navigate = useNavigate()
   

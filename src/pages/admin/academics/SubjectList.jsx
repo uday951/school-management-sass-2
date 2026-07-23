@@ -155,14 +155,13 @@ export default function SubjectList() {
       if (selectedSubject) {
         // Edit Mode
         const updated = await academicService.updateSubject(selectedSubject.id, formData)
-        setSubjects(prev => prev.map(s => s.id === selectedSubject.id ? updated : s))
         setNotification({ variant: 'success', title: 'Subject Updated', message: `Subject "${updated.name}" updated successfully.` })
       } else {
         // Create Mode
         const created = await academicService.addSubject(formData)
-        setSubjects(prev => [created, ...prev])
         setNotification({ variant: 'success', title: 'Subject Created', message: `Subject "${created.name}" created successfully.` })
       }
+      await fetchData()
       setFormOpen(false)
     } catch (err) {
       setNotification({ variant: 'danger', title: 'Operation Failed', message: err.message })
@@ -175,12 +174,12 @@ export default function SubjectList() {
     setActionLoading(true)
     try {
       const updated = await academicService.assignSubjectDetails(selectedSubject.id, assignmentData)
-      setSubjects(prev => prev.map(s => s.id === selectedSubject.id ? updated : s))
       setNotification({
         variant: 'success',
         title: 'Assignments Updated',
         message: `Teacher and Class assignments updated for subject "${updated.name}".`
       })
+      await fetchData()
       setAssignOpen(false)
     } catch (err) {
       setNotification({ variant: 'danger', title: 'Assignment Failed', message: err.message })
@@ -194,12 +193,12 @@ export default function SubjectList() {
     setActionLoading(true)
     try {
       await academicService.deleteSubject(selectedSubject.id)
-      setSubjects(prev => prev.filter(s => s.id !== selectedSubject.id))
       setNotification({ 
         variant: 'success', 
         title: 'Subject Deleted', 
-        message: `Subject "${selectedSubject.name}" was permanently deleted.` 
+        message: `Subject "${selectedSubject.name}" was removed from the system.` 
       })
+      await fetchData()
       setDeleteOpen(false)
       if (paginatedSubjects.length === 1 && page > 1) {
         setPage(page - 1)

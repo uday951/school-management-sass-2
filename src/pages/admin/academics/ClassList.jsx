@@ -121,14 +121,13 @@ export default function ClassList() {
       if (selectedClass) {
         // Edit Mode
         const updated = await academicService.updateClass(selectedClass.id, formData)
-        setClasses(prev => prev.map(c => c.id === selectedClass.id ? updated : c))
         setNotification({ variant: 'success', title: 'Class Updated', message: `Class "${updated.name}" updated successfully.` })
       } else {
         // Create Mode
         const created = await academicService.addClass(formData)
-        setClasses(prev => [created, ...prev])
         setNotification({ variant: 'success', title: 'Class Created', message: `Class "${created.name}" created successfully.` })
       }
+      await fetchData()
       setFormOpen(false)
     } catch (err) {
       setNotification({ variant: 'danger', title: 'Operation Failed', message: err.message })
@@ -142,14 +141,13 @@ export default function ClassList() {
     setActionLoading(true)
     try {
       await academicService.deleteClass(selectedClass.id)
-      setClasses(prev => prev.filter(c => c.id !== selectedClass.id))
       setNotification({ 
         variant: 'success', 
         title: 'Class Deleted', 
-        message: `Class "${selectedClass.name}" was permanently removed from the system.` 
+        message: `Class "${selectedClass.name}" was removed from the system.` 
       })
+      await fetchData()
       setDeleteOpen(false)
-      // If current page is empty after delete, move back a page
       if (paginatedClasses.length === 1 && page > 1) {
         setPage(page - 1)
       }
