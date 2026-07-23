@@ -3,11 +3,11 @@ const { body, param, query } = require('express-validator');
 const createAdmissionSchema = [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('studentClass').optional({ checkFalsy: true }).trim(),
-  body('section').optional({ checkFalsy: true }).trim(),
-  body('gender').optional({ checkFalsy: true }).isIn(['male', 'female', 'other']).withMessage('Invalid gender value'),
-  body('phone').optional({ checkFalsy: true }).trim(),
-  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Invalid email address')
+  body('studentClass').optional({ values: 'falsy' }).trim(),
+  body('section').optional({ values: 'falsy' }).trim(),
+  body('gender').optional({ values: 'falsy' }).isIn(['male', 'female', 'other']).withMessage('Invalid gender value'),
+  body('phone').optional({ values: 'falsy' }).trim(),
+  body('email').optional({ values: 'falsy' }).isEmail().withMessage('Invalid email address')
 ];
 
 const bulkDeleteSchema = [
