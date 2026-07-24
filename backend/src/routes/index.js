@@ -36,5 +36,6 @@ router.use('/parents', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
 router.use('/exams', examRoutes);
+router.use('/fees', require('../modules/fees/fees.routes'));
 
 module.exports = router;

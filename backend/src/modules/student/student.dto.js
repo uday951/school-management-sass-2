@@ -46,9 +46,77 @@ const toStudentDTO = (student, parent = null) => {
 /**
  * Transform aggregated 10-tab profile data into standard API payload structure.
  */
-const toStudentProfileDTO = (student, parent, medical, documents, attendanceSummary) => {
+const toStudentProfileDTO = (
+  student, 
+  parent, 
+  medical, 
+  documents, 
+  attendanceRecords = [], 
+  studentFees = [], 
+  subjectsList = [], 
+  timetableList = []
+) => {
+  // Dynamic Attendance calculations
+  const totalDays = attendanceRecords.length;
+  const presentDays = attendanceRecords.filter(r => r.status === 'present' || r.status === 'late').length;
+  const absentDays = attendanceRecords.filter(r => r.status === 'absent').length;
+  const lateDays = attendanceRecords.filter(r => r.status === 'late').length;
+  const attendancePercent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 95;
+
+  const attendanceList = attendanceRecords.map(r => ({
+    date: r.date,
+    day: new Date(r.date).getDate(),
+    title: r.status.charAt(0).toUpperCase() + r.status.slice(1),
+    status: r.status
+  }));
+
+  // Dynamic Fees calculations
+  const totalFees = studentFees.reduce((acc, f) => acc + (f.totalAmount || f.amount || 0), 0);
+  const paidFees = studentFees.reduce((acc, f) => acc + (f.paidAmount || 0), 0);
+  const pendingFees = studentFees.reduce((acc, f) => acc + (f.pendingAmount || 0), 0);
+  
+  let feeStatus = 'unpaid';
+  if (totalFees > 0) {
+    if (pendingFees === 0) feeStatus = 'paid';
+    else if (paidFees > 0) feeStatus = 'partial';
+  }
+
+  const feesList = studentFees.map(f => ({
+    id: f._id ? f._id.toString() : '',
+    invoiceCode: f._id ? `INV-${new Date(f.createdAt || Date.now()).getFullYear()}-${f._id.toString().substring(18)}`.toUpperCase() : 'INV-2026',
+    categoryName: f.feeStructureId?.category?.name || 'Term Fees',
+    totalAmount: f.totalAmount || f.amount || 0,
+    paidAmount: f.paidAmount || 0,
+    pendingAmount: f.pendingAmount || 0,
+    dueDate: f.feeStructureId?.dueDate || new Date(),
+    status: f.status
+  }));
+
+  // Dynamic Subjects mapping
+  const mappedSubjects = subjectsList.map(s => ({
+    id: s._id ? s._id.toString() : '',
+    subjectName: s.subjectName || s.name || '',
+    subjectCode: s.subjectCode || s.code || '',
+    credits: s.credits || 0,
+    teacherName: s.teacher ? `${s.teacher.firstName || ''} ${s.teacher.lastName || ''}`.trim() : 'N/A'
+  }));
+
+  // Dynamic Timetable mapping
+  const mappedTimetable = timetableList.map(t => ({
+    day: t.day,
+    period: t.period,
+    subject: t.subject,
+    teacher: t.teacher,
+    room: t.room
+  }));
+
   return {
     ...toStudentDTO(student, parent),
+    // Pass calculated metrics to override fallback totals
+    attendancePercent,
+    totalFees,
+    paidFees,
+    pendingFees,
     parentDetails: parent ? {
       fatherName: parent.fatherName,
       motherName: parent.motherName,
@@ -70,12 +138,12 @@ const toStudentProfileDTO = (student, parent, medical, documents, attendanceSumm
       doctorNotes: medical.doctorNotes
     } : {
       bloodGroup: student.bloodGroup || 'O+',
-      heightCm: 165,
-      weightKg: 55,
-      allergies: ['Peanuts'],
-      medicalConditions: ['Mild Asthma'],
-      vaccinations: [{ name: 'Hepatitis B', dateGiven: '2015-05-10', status: 'completed' }],
-      doctorNotes: 'No major risk factors recorded.'
+      heightCm: 0,
+      weightKg: 0,
+      allergies: [],
+      medicalConditions: [],
+      vaccinations: [],
+      doctorNotes: 'No medical history recorded.'
     },
     documents: documents.map(d => ({
       id: d._id.toString(),
@@ -85,27 +153,26 @@ const toStudentProfileDTO = (student, parent, medical, documents, attendanceSumm
       size: d.size,
       fileType: d.fileType
     })),
-    attendanceSummary: attendanceSummary || {
-      attendancePercent: 96,
-      presentDays: 142,
-      absentDays: 6,
-      lateDays: 2
+    attendanceSummary: {
+      attendancePercent,
+      presentDays: presentDays,
+      absentDays: absentDays,
+      lateDays: lateDays
     },
+    attendanceList: attendanceList,
     feesSummary: {
-      totalFees: 3500,
-      paidFees: 2500,
-      pendingFees: 1000,
-      status: 'partial'
+      totalFees,
+      paidFees,
+      pendingFees,
+      status: feeStatus
     },
+    feesList: feesList,
+    subjects: mappedSubjects,
+    timetable: mappedTimetable,
     examSummary: {
-      gpa: '3.85',
-      rank: '2nd in Class',
-      recentMarks: [
-        { subject: 'Mathematics', marks: 95 },
-        { subject: 'Physics', marks: 88 },
-        { subject: 'Chemistry', marks: 92 },
-        { subject: 'English', marks: 90 }
-      ]
+      gpa: '0.00',
+      rank: 'N/A',
+      recentMarks: []
     }
   };
 };
