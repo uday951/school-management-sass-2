@@ -101,8 +101,20 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Finance & Ledger',
-    path: '/admin/finance/ledger',
-    icon: Wallet
+    icon: Wallet,
+    children: [
+      { title: 'Dashboard', path: '/admin/finance/dashboard' },
+      { title: 'Income', path: '/admin/finance/income' },
+      { title: 'Expenses', path: '/admin/finance/expenses' },
+      { title: 'Ledger Accounts', path: '/admin/finance/ledger' },
+      { title: 'Transactions', path: '/admin/finance/transactions' },
+      { title: 'Bank Accounts', path: '/admin/finance/bank-accounts' },
+      { title: 'Cash Book', path: '/admin/finance/cash-book' },
+      { title: 'Payment Vouchers', path: '/admin/finance/payment-vouchers' },
+      { title: 'Receipt Vouchers', path: '/admin/finance/receipt-vouchers' },
+      { title: 'Journal Entries', path: '/admin/finance/journal-entries' },
+      { title: 'Financial Reports', path: '/admin/finance/reports' }
+    ]
   },
   {
     title: 'Payroll System',
