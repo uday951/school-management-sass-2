@@ -138,12 +138,12 @@ const toStudentProfileDTO = (
       doctorNotes: medical.doctorNotes
     } : {
       bloodGroup: student.bloodGroup || 'O+',
-      heightCm: 165,
-      weightKg: 55,
-      allergies: ['Peanuts'],
-      medicalConditions: ['Mild Asthma'],
-      vaccinations: [{ name: 'Hepatitis B', dateGiven: '2015-05-10', status: 'completed' }],
-      doctorNotes: 'No major risk factors recorded.'
+      heightCm: 0,
+      weightKg: 0,
+      allergies: [],
+      medicalConditions: [],
+      vaccinations: [],
+      doctorNotes: 'No medical history recorded.'
     },
     documents: documents.map(d => ({
       id: d._id.toString(),
@@ -155,36 +155,24 @@ const toStudentProfileDTO = (
     })),
     attendanceSummary: {
       attendancePercent,
-      presentDays: presentDays || 23,
-      absentDays: absentDays || 1,
-      lateDays: lateDays || 0
+      presentDays: presentDays,
+      absentDays: absentDays,
+      lateDays: lateDays
     },
-    attendanceList: attendanceList.length > 0 ? attendanceList : [
-      { day: 12, title: 'Present' },
-      { day: 13, title: 'Present' },
-      { day: 14, title: 'Absent' },
-      { day: 15, title: 'Present' }
-    ],
+    attendanceList: attendanceList,
     feesSummary: {
       totalFees,
       paidFees,
       pendingFees,
       status: feeStatus
     },
-    feesList: feesList.length > 0 ? feesList : [
-      { invoiceCode: 'INV-2026-001', categoryName: 'Term 1 Fees', totalAmount: totalFees || 1500, paidAmount: paidFees || 1500, pendingAmount: pendingFees || 0, dueDate: '2026-06-30', status: 'paid' }
-    ],
+    feesList: feesList,
     subjects: mappedSubjects,
     timetable: mappedTimetable,
     examSummary: {
-      gpa: '3.85',
-      rank: '2nd in Class',
-      recentMarks: [
-        { subject: 'Mathematics', marks: 95 },
-        { subject: 'Physics', marks: 88 },
-        { subject: 'Chemistry', marks: 92 },
-        { subject: 'English', marks: 90 }
-      ]
+      gpa: '0.00',
+      rank: 'N/A',
+      recentMarks: []
     }
   };
 };

@@ -341,14 +341,16 @@ export default function StudentDetail() {
         {activeTab === 'attendance' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1 space-y-6">
-              <StatCard title="Total Present" value={student.attendanceSummary ? `${student.attendanceSummary.presentDays} Days` : "23 Days"} change="+1.2%" icon={Calendar} />
-              <StatCard title="Total Absent" value={student.attendanceSummary ? `${student.attendanceSummary.absentDays} Day` : "1 Day"} icon={Calendar} />
+              <StatCard title="Total Present" value={`${student.attendanceSummary?.presentDays || 0} Days`} icon={Calendar} />
+              <StatCard title="Total Absent" value={`${student.attendanceSummary?.absentDays || 0} Days`} icon={Calendar} />
               <div className="bg-card border border-border p-6 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm mb-4">Summary Statistics</h4>
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between">
                     <span>Attendance status:</span>
-                    <span className="font-bold text-emerald-600">Excellent</span>
+                    <span className="font-bold text-emerald-600">
+                      {student.attendancePercent >= 90 ? 'Excellent' : student.attendancePercent >= 75 ? 'Good' : 'Needs Improvement'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Target Rate:</span>
@@ -359,12 +361,7 @@ export default function StudentDetail() {
             </div>
             <div className="md:col-span-2">
               <CalendarLayout 
-                events={student.attendanceList || [
-                  { day: 12, title: 'Present' },
-                  { day: 13, title: 'Present' },
-                  { day: 14, title: 'Absent' },
-                  { day: 15, title: 'Present' }
-                ]}
+                events={student.attendanceList || []}
                 monthName="July 2026"
               />
             </div>
@@ -404,12 +401,10 @@ export default function StudentDetail() {
                         </tr>
                       ))
                     ) : (
-                      <tr className="border-b border-border">
-                        <td className="px-4 py-3">INV-2026-001</td>
-                        <td className="px-4 py-3">Term 1 Fees</td>
-                        <td className="px-4 py-3">$1,500</td>
-                        <td className="px-4 py-3">2026-06-30</td>
-                        <td className="px-4 py-3"><PaymentBadge status="paid" /></td>
+                      <tr>
+                        <td colSpan="5" className="px-4 py-8 text-center text-muted-foreground select-none font-semibold">
+                          No fee structures or invoices allocated to this student.
+                        </td>
                       </tr>
                     )}
                   </tbody>
