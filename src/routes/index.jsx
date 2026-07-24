@@ -135,6 +135,7 @@ export default function AppRoutes() {
                         { path: 'fees/invoices', element: <Invoices /> },
                         { path: 'fees/collect', element: <CollectFees /> },
                         { path: 'finance/ledger', element: <Finance /> },
+                        { path: 'finance/*', element: <Finance /> },
                         { path: 'payroll', element: <Payroll /> },
                         { path: 'transport', element: <Transport /> },
                         { path: 'library', element: <Library /> },

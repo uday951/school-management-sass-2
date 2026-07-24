@@ -9,6 +9,7 @@ const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
 const teacherRoutes = require('../modules/teacher/teacher.routes');
 const timetableRoutes = require('../modules/timetable/timetable.routes');
+const financeRoutes = require('../modules/finance/finance.routes');
 const examRoutes = require('../modules/exam/exam.routes');
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.get('/', (_req, res) => {
 router.use('/', healthRoute);
 router.use('/', schoolRoutes);
 router.use('/', timetableRoutes);
+router.use('/', financeRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
 router.use('/departments', teacherRoutes);
