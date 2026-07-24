@@ -9,6 +9,7 @@ const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
 const teacherRoutes = require('../modules/teacher/teacher.routes');
 const timetableRoutes = require('../modules/timetable/timetable.routes');
+const examRoutes = require('../modules/exam/exam.routes');
 
 const router = express.Router();
 
@@ -34,5 +35,6 @@ router.use('/subjects', subjectRoutes);
 router.use('/parents', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
+router.use('/exams', examRoutes);
 
-module.exports = router;
+module.exports = router;
