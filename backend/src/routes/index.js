@@ -4,6 +4,7 @@ const schoolRoutes = require('../modules/school/school.routes');
 const studentRoutes = require('../modules/student/student.routes');
 const classRoutes = require('../modules/academic/class.routes');
 const subjectRoutes = require('../modules/academic/subject.routes');
+const parentRoutes = require('../modules/parent/parent.routes');
 const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
 
@@ -24,6 +25,7 @@ router.use('/', schoolRoutes);
 router.use('/students', studentRoutes);
 router.use('/classes', classRoutes);
 router.use('/subjects', subjectRoutes);
+router.use('/parents', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
 
