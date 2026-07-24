@@ -152,6 +152,31 @@ class StudentService {
 
     const parent = await studentRepository.createParent(parentData);
 
+    // Auto-assign existing FeeStructures to the newly admitted student
+    try {
+      const mongoose = require('mongoose');
+      const FeeStructure = mongoose.models.FeeStructure || mongoose.model('FeeStructure');
+      const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+
+      const matchingStructures = await FeeStructure.find({ 
+        class: student.class, 
+        isDeleted: false 
+      }).lean();
+
+      for (const structure of matchingStructures) {
+        await StudentFee.create({
+          studentId: student._id,
+          feeStructureId: structure._id,
+          amount: structure.amount,
+          totalAmount: structure.amount,
+          pendingAmount: structure.amount,
+          status: 'unpaid'
+        });
+      }
+    } catch (err) {
+      console.error('[Auto-Assign Fees Error]:', err);
+    }
+
     return toStudentDTO(student, parent);
   }
 
@@ -200,6 +225,40 @@ class StudentService {
     const { studentIds, targetClass, targetSection, academicYear } = payload;
     if (!studentIds || !studentIds.length) throw ApiError.badRequest('Please select students to promote.');
     await studentRepository.bulkPromote(studentIds, targetClass, targetSection, academicYear || '2026-2027');
+
+    // Auto-assign new class fee structures to promoted students
+    try {
+      const mongoose = require('mongoose');
+      const FeeStructure = mongoose.models.FeeStructure || mongoose.model('FeeStructure');
+      const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+
+      const matchingStructures = await FeeStructure.find({ 
+        class: targetClass, 
+        isDeleted: false 
+      }).lean();
+
+      for (const studentId of studentIds) {
+        for (const structure of matchingStructures) {
+          const exists = await StudentFee.findOne({ 
+            studentId, 
+            feeStructureId: structure._id 
+          });
+          if (!exists) {
+            await StudentFee.create({
+              studentId,
+              feeStructureId: structure._id,
+              amount: structure.amount,
+              totalAmount: structure.amount,
+              pendingAmount: structure.amount,
+              status: 'unpaid'
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Auto-Assign Promoted Fees Error]:', err);
+    }
+
     return { message: `Successfully promoted ${studentIds.length} students to ${targetClass}-${targetSection}.` };
   }
 
