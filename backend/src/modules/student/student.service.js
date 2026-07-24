@@ -53,7 +53,47 @@ class StudentService {
     const medical = await studentRepository.findMedicalRecord(id);
     const documents = await studentRepository.findDocuments(id);
 
-    return toStudentProfileDTO(student, parent, medical, documents);
+    const mongoose = require('mongoose');
+
+    // 1. Fetch attendance records
+    const StudentAttendance = mongoose.models.StudentAttendance || mongoose.model('StudentAttendance');
+    const attendanceRecords = await StudentAttendance.find({ studentId: id }).lean();
+
+    // 2. Fetch fees records
+    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+    const studentFees = await StudentFee.find({ studentId: id })
+      .populate({
+        path: 'feeStructureId',
+        populate: { path: 'category' }
+      })
+      .lean();
+
+    // 3. Fetch academic class subjects
+    const Class = mongoose.models.Class || mongoose.model('Class');
+    const Subject = mongoose.models.Subject || mongoose.model('Subject');
+    const classObj = await Class.findOne({ className: student.class, isDeleted: false }).lean();
+    let subjects = [];
+    if (classObj) {
+      subjects = await Subject.find({ classes: classObj._id, isDeleted: false }).populate('teacher').lean();
+    }
+    if (subjects.length === 0) {
+      subjects = await Subject.find({ isDeleted: false }).populate('teacher').limit(6).lean();
+    }
+
+    // 4. Fetch class timetable
+    const Timetable = mongoose.models.Timetable || mongoose.model('Timetable');
+    const timetable = await Timetable.find({ class: student.class, section: student.section }).lean();
+
+    return toStudentProfileDTO(
+      student, 
+      parent, 
+      medical, 
+      documents, 
+      attendanceRecords, 
+      studentFees, 
+      subjects, 
+      timetable
+    );
   }
 
   async createAdmission(payload) {
@@ -97,6 +137,8 @@ class StudentService {
     // Save Parent Details
     const parentData = {
       studentId: student._id,
+      name: payload.fatherName || payload.parentName || 'Test Parent',
+      phone: payload.parentPhone || payload.phone || '(555) 000-0000',
       fatherName: payload.fatherName || payload.parentName || '',
       motherName: payload.motherName || '',
       guardianName: payload.guardianName || '',
@@ -110,12 +152,60 @@ class StudentService {
 
     const parent = await studentRepository.createParent(parentData);
 
+    // Auto-assign existing FeeStructures to the newly admitted student
+    try {
+      const mongoose = require('mongoose');
+      const FeeStructure = mongoose.models.FeeStructure || mongoose.model('FeeStructure');
+      const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+
+      const matchingStructures = await FeeStructure.find({ 
+        class: student.class, 
+        isDeleted: false 
+      }).lean();
+
+      for (const structure of matchingStructures) {
+        await StudentFee.create({
+          studentId: student._id,
+          feeStructureId: structure._id,
+          amount: structure.amount,
+          totalAmount: structure.amount,
+          pendingAmount: structure.amount,
+          status: 'unpaid'
+        });
+      }
+    } catch (err) {
+      console.error('[Auto-Assign Fees Error]:', err);
+    }
+
     return toStudentDTO(student, parent);
   }
 
   async getNextAdmissionNumber() {
-    const nextNo = `ADM${Math.floor(1000 + Math.random() * 9000)}`;
-    return { admissionNo: nextNo };
+    const Student = require('./models/student.model');
+    const latestStudent = await Student.findOne({ admissionNo: /^ADM\d+$/ })
+      .sort({ admissionNo: -1 })
+      .lean();
+
+    let nextNum = 4669; // Start after the conflicted ADM4668 to guarantee safety
+    if (latestStudent && latestStudent.admissionNo) {
+      const match = latestStudent.admissionNo.match(/\d+/);
+      if (match) {
+        const parsed = parseInt(match[0], 10);
+        if (parsed >= nextNum) {
+          nextNum = parsed + 1;
+        }
+      }
+    }
+
+    let admissionNo = `ADM${nextNum}`;
+    let exists = await Student.findOne({ admissionNo });
+    while (exists) {
+      nextNum++;
+      admissionNo = `ADM${nextNum}`;
+      exists = await Student.findOne({ admissionNo });
+    }
+
+    return { admissionNo };
   }
 
   async deleteStudent(id) {
@@ -135,6 +225,40 @@ class StudentService {
     const { studentIds, targetClass, targetSection, academicYear } = payload;
     if (!studentIds || !studentIds.length) throw ApiError.badRequest('Please select students to promote.');
     await studentRepository.bulkPromote(studentIds, targetClass, targetSection, academicYear || '2026-2027');
+
+    // Auto-assign new class fee structures to promoted students
+    try {
+      const mongoose = require('mongoose');
+      const FeeStructure = mongoose.models.FeeStructure || mongoose.model('FeeStructure');
+      const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+
+      const matchingStructures = await FeeStructure.find({ 
+        class: targetClass, 
+        isDeleted: false 
+      }).lean();
+
+      for (const studentId of studentIds) {
+        for (const structure of matchingStructures) {
+          const exists = await StudentFee.findOne({ 
+            studentId, 
+            feeStructureId: structure._id 
+          });
+          if (!exists) {
+            await StudentFee.create({
+              studentId,
+              feeStructureId: structure._id,
+              amount: structure.amount,
+              totalAmount: structure.amount,
+              pendingAmount: structure.amount,
+              status: 'unpaid'
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Auto-Assign Promoted Fees Error]:', err);
+    }
+
     return { message: `Successfully promoted ${studentIds.length} students to ${targetClass}-${targetSection}.` };
   }
 
