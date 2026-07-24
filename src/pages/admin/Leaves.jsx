@@ -1,10 +1,160 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import axiosClient from '@/config/axiosClient'
+import { 
+  PageHeader, 
+  PageContainer, 
+  SimpleCard, 
+  StatCard, 
+  Button, 
+  ReusableTable, 
+  FormSelect, 
+  SuccessDialog,
+  StatusChip,
+  Badge
+} from '@/components/shared'
+import { Check, X, Calendar, Users, Clock } from 'lucide-react'
 
 export default function Leaves() {
+  const [leaves, setLeaves] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState('pending')
+  const [typeFilter, setTypeFilter] = useState('')
+  
+  // Feedback Dialog
+  const [successOpen, setSuccessOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+
+  // Fetch leave requests
+  const fetchLeaves = async () => {
+    setLoading(true)
+    try {
+      const res = await axiosClient.get(`/attendance/leaves?status=${statusFilter}${typeFilter ? `&type=${typeFilter}` : ''}`)
+      if (res.data.success) {
+        setLeaves(res.data.data)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLeaves()
+  }, [statusFilter, typeFilter])
+
+  // Handle Approve/Reject status updates
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      const res = await axiosClient.patch(`/attendance/leaves/${id}/status`, {
+        status,
+        actionRemarks: 'Processed via admin leave approvals panel.',
+        actionBy: 'Principal / Admin'
+      })
+      if (res.data.success) {
+        setSuccessMsg(`Leave request successfully ${status}.`)
+        setSuccessOpen(true)
+        fetchLeaves()
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // Count summaries
+  const pendingCount = leaves.filter(l => l.status === 'pending').length
+  const approvedCount = leaves.filter(l => l.status === 'approved').length
+
+  const columns = [
+    { header: 'Applicant', accessor: 'applicantName' },
+    { 
+      header: 'Role', 
+      accessor: (row) => <Badge className="capitalize bg-primary/10 text-primary border-primary/20">{row.type}</Badge> 
+    },
+    { 
+      header: 'Leave Type', 
+      accessor: (row) => <Badge className="capitalize bg-secondary">{row.leaveType}</Badge> 
+    },
+    { 
+      header: 'Start Date', 
+      accessor: (row) => new Date(row.startDate).toLocaleDateString() 
+    },
+    { 
+      header: 'End Date', 
+      accessor: (row) => new Date(row.endDate).toLocaleDateString() 
+    },
+    { header: 'Reason', accessor: 'reason' },
+    {
+      header: 'Status',
+      accessor: (row) => <StatusChip status={row.status} />
+    },
+    {
+      header: 'Actions',
+      accessor: (row) => row.status === 'pending' ? (
+        <div className="flex gap-1.5 select-none">
+          <Button variant="default" size="sm" className="flex items-center gap-1" onClick={() => handleUpdateStatus(row._id || row.id, 'approved')}>
+            <Check className="h-3 w-3" /> Approve
+          </Button>
+          <Button variant="destructive" size="sm" className="flex items-center gap-1" onClick={() => handleUpdateStatus(row._id || row.id, 'rejected')}>
+            <X className="h-3 w-3" /> Reject
+          </Button>
+        </div>
+      ) : (
+        <span className="text-xs text-muted-foreground">Processed by {row.actionBy || 'Admin'}</span>
+      )
+    }
+  ]
+
   return (
-    <div className="p-6 bg-card rounded-lg border border-border shadow-sm">
-      <h1 className="text-2xl font-bold text-foreground mb-2">Student/Staff Leave Requests</h1>
-      <p className="text-sm text-muted-foreground">Foundation Page for routing validation. Fully functional placeholder.</p>
-    </div>
+    <PageContainer>
+      <PageHeader 
+        title="Leave Approvals"
+        subtitle="Manage, approve, and audit student & staff leave requests."
+      />
+
+      {/* Stats Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <StatCard title="Pending Approvals" value={pendingCount} icon={Clock} />
+        <StatCard title="Approved Leaves" value={approvedCount} icon={Check} />
+        <StatCard title="Active Today" value="3 Active" icon={Calendar} />
+      </div>
+
+      {/* Roster Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-card p-4 rounded-lg border border-border shadow-sm mb-6">
+        <FormSelect 
+          label="Filter by Status" 
+          value={statusFilter} 
+          onChange={(e) => setStatusFilter(e.target.value)}
+          options={[
+            { value: 'pending', label: 'Pending Approvals' },
+            { value: 'approved', label: 'Approved Leaves' },
+            { value: 'rejected', label: 'Rejected Leaves' }
+          ]}
+          className="space-y-0"
+        />
+        <FormSelect 
+          label="Applicant Type" 
+          value={typeFilter} 
+          onChange={(e) => setTypeFilter(e.target.value)}
+          options={[
+            { value: '', label: 'All Applicants' },
+            { value: 'student', label: 'Students' },
+            { value: 'teacher', label: 'Teachers / Staff' }
+          ]}
+          className="space-y-0"
+        />
+        <div className="flex items-end justify-end">
+          <Button className="w-full flex items-center justify-center gap-1.5" onClick={fetchLeaves}>
+            Refresh Requests
+          </Button>
+        </div>
+      </div>
+
+      <SimpleCard title="Leave Requests register">
+        <ReusableTable columns={columns} data={leaves} />
+      </SimpleCard>
+
+      <SuccessDialog open={successOpen} onClose={() => setSuccessOpen(false)} message={successMsg} />
+    </PageContainer>
   )
 }
