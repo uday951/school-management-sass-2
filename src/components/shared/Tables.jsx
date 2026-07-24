@@ -147,7 +147,7 @@ export function ReusableTable({
                   )}
                 >
                   {selectable && (
-                    <td className="px-4 py-3 text-center">
+                    <td key="select" className="px-4 py-3 text-center">
                       <input 
                         type="checkbox" 
                         checked={isRowChecked} 
@@ -165,7 +165,7 @@ export function ReusableTable({
                     )
                   })}
                   {(onView || onDelete) && (
-                    <td className="px-4 py-3 text-right">
+                    <td key="actions" className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {onView && (
                           <button 
