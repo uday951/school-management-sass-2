@@ -6,95 +6,12 @@ const ParentStudentMapping = require('./models/parent-student-mapping.model');
 const ParentCommunication = require('./models/parent-communication.model');
 const Student = require('../student/models/student.model');
 
-// Mock memory store for offline/testing fallback mode
-const MOCK_PARENTS = [
-  {
-    _id: '60d01b123432ab3452391001',
-    id: '60d01b123432ab3452391001',
-    name: 'Robert Vance',
-    relationship: 'Father',
-    email: 'robert.vance@example.com',
-    phone: '(555) 234-5678',
-    altPhone: '(555) 876-5432',
-    address: '742 Evergreen Terrace',
-    city: 'Springfield',
-    state: 'IL',
-    country: 'USA',
-    occupation: 'Civil Engineer',
-    avatarUrl: '',
-    status: 'active',
-    isDeleted: false,
-    createdAt: new Date('2026-01-15')
-  },
-  {
-    _id: '60d01b123432ab3452391002',
-    id: '60d01b123432ab3452391002',
-    name: 'Eleanor Vance',
-    relationship: 'Mother',
-    email: 'eleanor.vance@example.com',
-    phone: '(555) 345-6789',
-    altPhone: '',
-    address: '742 Evergreen Terrace',
-    city: 'Springfield',
-    state: 'IL',
-    country: 'USA',
-    occupation: 'Pediatrician',
-    avatarUrl: '',
-    status: 'active',
-    isDeleted: false,
-    createdAt: new Date('2026-01-16')
-  }
-];
-
-const MOCK_MAPPINGS = [
-  {
-    _id: '60d01b123432ab3452392001',
-    parentId: '60d01b123432ab3452391001',
-    studentId: '60d01b123432ab34523912a1',
-    relationship: 'Father',
-    isPrimary: true
-  }
-];
-
-const MOCK_GUARDIANS = [
-  {
-    _id: '60d01b123432ab3452393001',
-    parentId: '60d01b123432ab3452391001',
-    guardianName: 'Arthur Vance',
-    relationship: 'Uncle',
-    phone: '(555) 999-8888',
-    email: 'arthur.vance@example.com',
-    address: '100 Main St, Springfield',
-    isEmergencyContact: true,
-    emergencyPhone: '(555) 999-8888',
-    emergencyRelation: 'Uncle'
-  }
-];
-
-const MOCK_DOCUMENTS = [
-  {
-    _id: '60d01b123432ab3452394001',
-    parentId: '60d01b123432ab3452391001',
-    documentName: 'Identity_Proof_Passport.pdf',
-    documentType: 'Passport',
-    fileUrl: 'https://via.placeholder.com/150',
-    publicId: 'doc_passport_001',
-    uploadedDate: new Date('2026-02-01'),
-    status: 'active'
-  }
-];
-
-const MOCK_COMMCOMMUNICATIONS = [
-  {
-    _id: '60d01b123432ab3452395001',
-    parentId: '60d01b123432ab3452391001',
-    type: 'SMS',
-    title: 'Term 1 Fee Reminder',
-    message: 'Dear Robert, your tuition payment for Term 1 is due on Friday.',
-    status: 'Delivered',
-    sentAt: new Date('2026-02-10')
-  }
-];
+// Empty fallback arrays for offline mode
+const MOCK_PARENTS = [];
+const MOCK_MAPPINGS = [];
+const MOCK_GUARDIANS = [];
+const MOCK_DOCUMENTS = [];
+const MOCK_COMMCOMMUNICATIONS = [];
 
 class ParentRepository {
   isDbConnected() {

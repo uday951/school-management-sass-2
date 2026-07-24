@@ -108,6 +108,12 @@ class ParentController {
     return sendSuccess(res, 'Communication logs retrieved.', comms);
   });
 
+  // POST /api/v1/parents/:id/communications
+  addCommunication = asyncHandler(async (req, res) => {
+    const comm = await parentService.addCommunication(req.params.id, req.body);
+    return sendCreated(res, 'Communication log recorded.', comm);
+  });
+
   // POST /api/v1/parents/import
   importParents = asyncHandler(async (req, res) => {
     const records = Array.isArray(req.body.records) ? req.body.records : Array.isArray(req.body) ? req.body : [];

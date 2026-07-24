@@ -20,11 +20,21 @@ const connectDB = async () => {
     const Class = require('../src/modules/academic/class.model');
     const Subject = require('../src/modules/academic/subject.model');
     const User = require('../src/modules/user/user.model');
+    const Parent = require('../src/modules/parent/parent.model');
+    const Guardian = require('../src/modules/parent/models/guardian.model');
+    const ParentDocument = require('../src/modules/parent/models/parent-document.model');
+    const ParentStudentMapping = require('../src/modules/parent/models/parent-student-mapping.model');
+    const ParentCommunication = require('../src/modules/parent/models/parent-communication.model');
 
     await Promise.all([
       Class.createCollection().catch(() => {}),
       Subject.createCollection().catch(() => {}),
-      User.createCollection().catch(() => {})
+      User.createCollection().catch(() => {}),
+      Parent.createCollection().catch(() => {}),
+      Guardian.createCollection().catch(() => {}),
+      ParentDocument.createCollection().catch(() => {}),
+      ParentStudentMapping.createCollection().catch(() => {}),
+      ParentCommunication.createCollection().catch(() => {})
     ]);
     return conn.connection;
   } catch (error) {

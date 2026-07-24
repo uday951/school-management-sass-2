@@ -21,95 +21,12 @@ const setStoredData = (key, val) => {
   }
 };
 
-const INITIAL_PARENTS = [
-  {
-    id: 'P001',
-    _id: '60d01b123432ab3452391001',
-    name: 'Robert Vance',
-    relationship: 'Father',
-    email: 'robert.vance@example.com',
-    phone: '(555) 234-5678',
-    altPhone: '(555) 876-5432',
-    address: '742 Evergreen Terrace',
-    city: 'Springfield',
-    state: 'IL',
-    country: 'USA',
-    occupation: 'Civil Engineer',
-    avatarUrl: '',
-    status: 'active',
-    guardians: [
-      {
-        id: 'G001',
-        guardianName: 'Arthur Vance',
-        relationship: 'Uncle',
-        phone: '(555) 999-8888',
-        email: 'arthur.vance@example.com',
-        isEmergencyContact: true
-      }
-    ],
-    linkedStudents: [
-      {
-        id: 'M001',
-        studentId: '60d01b123432ab34523912a1',
-        relationship: 'Father',
-        student: {
-          id: '60d01b123432ab34523912a1',
-          name: 'Alex Rivera',
-          admissionNo: 'ADM001',
-          rollNo: '101',
-          class: 'Grade 10',
-          section: 'A',
-          gender: 'male',
-          status: 'active'
-        }
-      }
-    ],
-    documents: [
-      {
-        id: 'D001',
-        documentName: 'Identity_Proof_Passport.pdf',
-        documentType: 'Passport',
-        fileUrl: 'https://via.placeholder.com/150',
-        uploadedDate: '2026-02-01'
-      }
-    ],
-    communications: [
-      {
-        id: 'C001',
-        type: 'SMS',
-        title: 'Term 1 Fee Reminder',
-        message: 'Dear Robert, tuition payment for Term 1 is due on Friday.',
-        status: 'Delivered',
-        sentAt: '2026-02-10T10:00:00.000Z'
-      }
-    ]
-  },
-  {
-    id: 'P002',
-    _id: '60d01b123432ab3452391002',
-    name: 'Eleanor Vance',
-    relationship: 'Mother',
-    email: 'eleanor.vance@example.com',
-    phone: '(555) 345-6789',
-    altPhone: '',
-    address: '742 Evergreen Terrace',
-    city: 'Springfield',
-    state: 'IL',
-    country: 'USA',
-    occupation: 'Pediatrician',
-    avatarUrl: '',
-    status: 'active',
-    guardians: [],
-    linkedStudents: [],
-    documents: [],
-    communications: []
-  }
-];
+const INITIAL_PARENTS = [];
 
 const loadLocalParents = () => {
   let parents = getStoredData('school_parents_db', null);
-  if (!parents || !Array.isArray(parents) || parents.length === 0) {
-    parents = INITIAL_PARENTS;
+  if (!parents || !Array.isArray(parents)) {
+    parents = [];
     setStoredData('school_parents_db', parents);
   }
   return parents;
