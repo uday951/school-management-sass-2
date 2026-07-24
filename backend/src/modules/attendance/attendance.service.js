@@ -274,6 +274,7 @@ class AttendanceService {
     const teacherRecords = await attendanceRepository.findTeacherAttendance({});
     const holidays = await attendanceRepository.findAllHolidays({});
     const biometricLogs = await this.getBiometricLogs();
+    const leaves = await attendanceRepository.findLeaveRequests({});
 
     const studentTotal = studentRecords.length;
     const studentPresent = studentRecords.filter(r => r.status === 'present').length;
@@ -282,11 +283,28 @@ class AttendanceService {
     const teacherTotal = teacherRecords.length;
     const teacherPresent = teacherRecords.filter(r => r.status === 'present').length;
 
+    const pendingLeaves = leaves.filter(l => l.status === 'pending').length;
+    const approvedLeaves = leaves.filter(l => l.status === 'approved').length;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const activeLeavesToday = leaves.filter(l => {
+      if (l.status !== 'approved') return false;
+      const start = new Date(l.startDate);
+      const end = new Date(l.endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      return start <= today && end >= today;
+    }).length;
+
     return {
       studentRate: `${studentRate}%`,
       teachersPresent: `${teacherPresent} / ${teacherTotal || 30}`,
       holidaysCount: `${holidays.length} Days`,
-      biometricCheckins: `${biometricLogs.length} Checkins`
+      biometricCheckins: `${biometricLogs.length} Checkins`,
+      pendingLeaves,
+      approvedLeaves,
+      activeLeavesToday
     };
   }
 }

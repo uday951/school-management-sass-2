@@ -19,10 +19,30 @@ export default function Leaves() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('pending')
   const [typeFilter, setTypeFilter] = useState('')
+  const [stats, setStats] = useState({
+    pendingLeaves: 0,
+    approvedLeaves: 0,
+    activeLeavesToday: 0
+  })
   
   // Feedback Dialog
   const [successOpen, setSuccessOpen] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
+
+  const fetchStats = async () => {
+    try {
+      const res = await axiosClient.get('/attendance/stats')
+      if (res.data.success) {
+        setStats({
+          pendingLeaves: res.data.data.pendingLeaves || 0,
+          approvedLeaves: res.data.data.approvedLeaves || 0,
+          activeLeavesToday: res.data.data.activeLeavesToday || 0
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   // Fetch leave requests
   const fetchLeaves = async () => {
@@ -40,6 +60,7 @@ export default function Leaves() {
   }
 
   useEffect(() => {
+    fetchStats()
     fetchLeaves()
   }, [statusFilter, typeFilter])
 
@@ -60,11 +81,6 @@ export default function Leaves() {
       console.error(err)
     }
   }
-
-  // Count summaries
-  const pendingCount = leaves.filter(l => l.status === 'pending').length
-  const approvedCount = leaves.filter(l => l.status === 'approved').length
-
   const columns = [
     { header: 'Applicant', accessor: 'applicantName' },
     { 
@@ -114,9 +130,9 @@ export default function Leaves() {
 
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <StatCard title="Pending Approvals" value={pendingCount} icon={Clock} />
-        <StatCard title="Approved Leaves" value={approvedCount} icon={Check} />
-        <StatCard title="Active Today" value="3 Active" icon={Calendar} />
+        <StatCard title="Pending Approvals" value={stats.pendingLeaves} icon={Clock} />
+        <StatCard title="Approved Leaves" value={stats.approvedLeaves} icon={Check} />
+        <StatCard title="Active Today" value={`${stats.activeLeavesToday} Active`} icon={Calendar} />
       </div>
 
       {/* Roster Controls */}
