@@ -53,7 +53,47 @@ class StudentService {
     const medical = await studentRepository.findMedicalRecord(id);
     const documents = await studentRepository.findDocuments(id);
 
-    return toStudentProfileDTO(student, parent, medical, documents);
+    const mongoose = require('mongoose');
+
+    // 1. Fetch attendance records
+    const StudentAttendance = mongoose.models.StudentAttendance || mongoose.model('StudentAttendance');
+    const attendanceRecords = await StudentAttendance.find({ studentId: id }).lean();
+
+    // 2. Fetch fees records
+    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
+    const studentFees = await StudentFee.find({ studentId: id })
+      .populate({
+        path: 'feeStructureId',
+        populate: { path: 'category' }
+      })
+      .lean();
+
+    // 3. Fetch academic class subjects
+    const Class = mongoose.models.Class || mongoose.model('Class');
+    const Subject = mongoose.models.Subject || mongoose.model('Subject');
+    const classObj = await Class.findOne({ className: student.class, isDeleted: false }).lean();
+    let subjects = [];
+    if (classObj) {
+      subjects = await Subject.find({ classes: classObj._id, isDeleted: false }).populate('teacher').lean();
+    }
+    if (subjects.length === 0) {
+      subjects = await Subject.find({ isDeleted: false }).populate('teacher').limit(6).lean();
+    }
+
+    // 4. Fetch class timetable
+    const Timetable = mongoose.models.Timetable || mongoose.model('Timetable');
+    const timetable = await Timetable.find({ class: student.class, section: student.section }).lean();
+
+    return toStudentProfileDTO(
+      student, 
+      parent, 
+      medical, 
+      documents, 
+      attendanceRecords, 
+      studentFees, 
+      subjects, 
+      timetable
+    );
   }
 
   async createAdmission(payload) {

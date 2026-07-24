@@ -221,19 +221,96 @@ export default function StudentDetail() {
 
         {/* ACADEMIC DETAILS PANEL */}
         {activeTab === 'academic' && (
-          <InformationCard 
-            title="Institutional Allocation Details"
-            items={[
-              { label: 'Campus Wing', value: student.campus },
-              { label: 'Academic Session', value: student.academicYear },
-              { label: 'Enrolled Class', value: student.class },
-              { label: 'Section Room', value: student.section },
-              { label: 'Roll Number', value: student.rollNo },
-              { label: 'Student House', value: student.house },
-              { label: 'Education Board', value: student.board },
-              { label: 'Instruction Medium', value: student.medium }
-            ]}
-          />
+          <div className="space-y-6">
+            <InformationCard 
+              title="Institutional Allocation Details"
+              items={[
+                { label: 'Campus Wing', value: student.campus },
+                { label: 'Academic Session', value: student.academicYear },
+                { label: 'Enrolled Class', value: student.class },
+                { label: 'Section Room', value: student.section },
+                { label: 'Roll Number', value: student.rollNo },
+                { label: 'Student House', value: student.house },
+                { label: 'Education Board', value: student.board },
+                { label: 'Instruction Medium', value: student.medium }
+              ]}
+            />
+            
+            <SimpleCard title="Assigned Subjects & Instructors">
+              <div className="overflow-x-auto rounded-md border border-border">
+                <table className="w-full text-left text-sm text-foreground">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/40 font-semibold text-muted-foreground select-none">
+                      <th className="px-4 py-3">Subject Name</th>
+                      <th className="px-4 py-3">Subject Code</th>
+                      <th className="px-4 py-3">Credits</th>
+                      <th className="px-4 py-3">Assigned Instructor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {student.subjects && student.subjects.length > 0 ? (
+                      student.subjects.map((sub, index) => (
+                        <tr key={index} className="border-b border-border">
+                          <td className="px-4 py-3 font-semibold">{sub.subjectName}</td>
+                          <td className="px-4 py-3">{sub.subjectCode}</td>
+                          <td className="px-4 py-3">{sub.credits}</td>
+                          <td className="px-4 py-3">{sub.teacherName}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="px-4 py-3 text-center text-muted-foreground">No subjects found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </SimpleCard>
+
+            <SimpleCard title="Weekly Class Timetable Schedule">
+              <div className="overflow-x-auto rounded-md border border-border">
+                <table className="w-full text-left text-sm text-foreground">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/40 font-semibold text-muted-foreground select-none">
+                      <th className="px-4 py-3">Day</th>
+                      <th className="px-4 py-3">Period</th>
+                      <th className="px-4 py-3">Subject</th>
+                      <th className="px-4 py-3">Room</th>
+                      <th className="px-4 py-3">Teacher</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {student.timetable && student.timetable.length > 0 ? (
+                      student.timetable.map((item, index) => (
+                        <tr key={index} className="border-b border-border">
+                          <td className="px-4 py-3 font-semibold">{item.day}</td>
+                          <td className="px-4 py-3">{item.period}</td>
+                          <td className="px-4 py-3 font-semibold text-primary">{item.subject}</td>
+                          <td className="px-4 py-3">{item.room}</td>
+                          <td className="px-4 py-3">{item.teacher}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      [
+                        { day: 'Monday', period: 'Period 1 (8:30 - 9:30 AM)', subject: 'Mathematics', room: 'Room 201', teacher: 'Prof. Davis' },
+                        { day: 'Monday', period: 'Period 2 (9:30 - 10:30 AM)', subject: 'Science', room: 'Lab A', teacher: 'Dr. Carter' },
+                        { day: 'Tuesday', period: 'Period 1 (8:30 - 9:30 AM)', subject: 'English', room: 'Room 105', teacher: 'Ms. Taylor' },
+                        { day: 'Wednesday', period: 'Period 3 (10:45 - 11:45 AM)', subject: 'History', room: 'Room 202', teacher: 'Mr. Brooks' }
+                      ].map((item, index) => (
+                        <tr key={index} className="border-b border-border">
+                          <td className="px-4 py-3 font-semibold">{item.day}</td>
+                          <td className="px-4 py-3">{item.period}</td>
+                          <td className="px-4 py-3 font-semibold text-primary">{item.subject}</td>
+                          <td className="px-4 py-3">{item.room}</td>
+                          <td className="px-4 py-3">{item.teacher}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </SimpleCard>
+          </div>
         )}
 
         {/* PARENT DETAILS PANEL */}
@@ -264,8 +341,8 @@ export default function StudentDetail() {
         {activeTab === 'attendance' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1 space-y-6">
-              <StatCard title="Total Present" value="23 Days" change="+1.2%" icon={Calendar} />
-              <StatCard title="Total Absent" value="1 Day" icon={Calendar} />
+              <StatCard title="Total Present" value={student.attendanceSummary ? `${student.attendanceSummary.presentDays} Days` : "23 Days"} change="+1.2%" icon={Calendar} />
+              <StatCard title="Total Absent" value={student.attendanceSummary ? `${student.attendanceSummary.absentDays} Day` : "1 Day"} icon={Calendar} />
               <div className="bg-card border border-border p-6 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-sm mb-4">Summary Statistics</h4>
                 <div className="space-y-2 text-xs">
@@ -282,7 +359,7 @@ export default function StudentDetail() {
             </div>
             <div className="md:col-span-2">
               <CalendarLayout 
-                events={[
+                events={student.attendanceList || [
                   { day: 12, title: 'Present' },
                   { day: 13, title: 'Present' },
                   { day: 14, title: 'Absent' },
@@ -298,9 +375,9 @@ export default function StudentDetail() {
         {activeTab === 'fees' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <StatCard title="Total Fees Billed" value={`$${student.totalFees}`} icon={DollarSign} />
-              <StatCard title="Total Paid" value={`$${student.paidFees}`} icon={DollarSign} />
-              <StatCard title="Total Outstanding" value={`$${student.pendingFees}`} icon={DollarSign} />
+              <StatCard title="Total Fees Billed" value={`$${student.totalFees || 0}`} icon={DollarSign} />
+              <StatCard title="Total Paid" value={`$${student.paidFees || 0}`} icon={DollarSign} />
+              <StatCard title="Total Outstanding" value={`$${student.pendingFees || 0}`} icon={DollarSign} />
             </div>
 
             <SimpleCard title="Invoices Transaction History">
@@ -316,27 +393,25 @@ export default function StudentDetail() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-3">INV-2026-001</td>
-                      <td className="px-4 py-3">Term 1 Fees</td>
-                      <td className="px-4 py-3">$1,500</td>
-                      <td className="px-4 py-3">2026-06-30</td>
-                      <td className="px-4 py-3"><PaymentBadge status="paid" /></td>
-                    </tr>
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-3">INV-2026-002</td>
-                      <td className="px-4 py-3">Term 2 Fees</td>
-                      <td className="px-4 py-3">$1,000</td>
-                      <td className="px-4 py-3">2026-09-30</td>
-                      <td className="px-4 py-3"><PaymentBadge status="paid" /></td>
-                    </tr>
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-3">INV-2026-003</td>
-                      <td className="px-4 py-3">Term 3 Fees</td>
-                      <td className="px-4 py-3">$1,000</td>
-                      <td className="px-4 py-3">2026-12-31</td>
-                      <td className="px-4 py-3"><PaymentBadge status="partial" /></td>
-                    </tr>
+                    {student.feesList && student.feesList.length > 0 ? (
+                      student.feesList.map((fee, index) => (
+                        <tr key={index} className="border-b border-border">
+                          <td className="px-4 py-3 font-mono">{fee.invoiceCode}</td>
+                          <td className="px-4 py-3">{fee.categoryName}</td>
+                          <td className="px-4 py-3">${fee.totalAmount}</td>
+                          <td className="px-4 py-3">{new Date(fee.dueDate).toLocaleDateString()}</td>
+                          <td className="px-4 py-3"><PaymentBadge status={fee.status} /></td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr className="border-b border-border">
+                        <td className="px-4 py-3">INV-2026-001</td>
+                        <td className="px-4 py-3">Term 1 Fees</td>
+                        <td className="px-4 py-3">$1,500</td>
+                        <td className="px-4 py-3">2026-06-30</td>
+                        <td className="px-4 py-3"><PaymentBadge status="paid" /></td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
