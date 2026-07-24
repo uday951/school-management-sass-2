@@ -44,6 +44,24 @@ class AttendanceController {
     const holiday = await attendanceService.createHoliday(req.body);
     return sendCreated(res, 'Holiday created successfully.', holiday);
   });
+
+  // GET /api/v1/attendance/leaves
+  getLeaveRequests = asyncHandler(async (req, res) => {
+    const list = await attendanceService.getLeaveRequests(req.query);
+    return sendSuccess(res, 'Leave requests fetched successfully.', list);
+  });
+
+  // POST /api/v1/attendance/leaves
+  applyLeaveRequest = asyncHandler(async (req, res) => {
+    const request = await attendanceService.applyLeaveRequest(req.body);
+    return sendCreated(res, 'Leave request applied successfully.', request);
+  });
+
+  // PATCH /api/v1/attendance/leaves/:id/status
+  updateLeaveRequestStatus = asyncHandler(async (req, res) => {
+    const request = await attendanceService.updateLeaveRequestStatus(req.params.id, req.body);
+    return sendSuccess(res, 'Leave request status updated.', request);
+  });
 }
 
 module.exports = new AttendanceController();

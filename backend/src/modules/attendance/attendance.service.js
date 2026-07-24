@@ -171,6 +171,73 @@ class AttendanceService {
     }
     return attendanceRepository.createHoliday({ title, date, description });
   }
+
+  // ─── Leave Request Services ───────────────────────────────────────────────
+  async applyLeaveRequest(payload) {
+    const { applicantId, applicantName, type, leaveType, startDate, endDate, reason = '' } = payload;
+    if (!applicantId || !applicantName || !type || !startDate || !endDate) {
+      throw ApiError.badRequest('Missing required leave request fields.');
+    }
+    return attendanceRepository.createLeaveRequest({
+      applicantId,
+      applicantName,
+      type,
+      leaveType,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      reason
+    });
+  }
+
+  async getLeaveRequests(queryParams) {
+    const filter = {};
+    if (queryParams.status) filter.status = queryParams.status;
+    if (queryParams.type) filter.type = queryParams.type;
+    if (queryParams.applicantId) filter.applicantId = queryParams.applicantId;
+
+    return attendanceRepository.findLeaveRequests(filter);
+  }
+
+  async updateLeaveRequestStatus(id, payload) {
+    const { status, actionRemarks = '', actionBy = 'Admin' } = payload;
+    if (!status || !['approved', 'rejected'].includes(status)) {
+      throw ApiError.badRequest('Invalid status update parameter.');
+    }
+
+    const leave = await attendanceRepository.findLeaveRequestById(id);
+    if (!leave) throw ApiError.notFound('Leave request not found.');
+
+    const updated = await attendanceRepository.updateLeaveRequestStatus(id, status, actionRemarks, actionBy);
+
+    // If approved, automatically create attendance records for all dates in the range
+    if (status === 'approved') {
+      const start = new Date(leave.startDate);
+      const end = new Date(leave.endDate);
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const currentDate = new Date(d);
+        if (leave.type === 'student') {
+          await attendanceRepository.markStudentAttendance(
+            leave.applicantId,
+            currentDate,
+            'absent',
+            `Approved Leave: ${leave.reason || 'No reason provided'}`,
+            actionBy
+          );
+        } else {
+          await attendanceRepository.markTeacherAttendance(
+            leave.applicantId,
+            currentDate,
+            'absent',
+            `Approved Leave: ${leave.reason || 'No reason provided'}`,
+            actionBy
+          );
+        }
+      }
+    }
+
+    return updated;
+  }
 }
 
 module.exports = new AttendanceService();

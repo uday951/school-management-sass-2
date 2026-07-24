@@ -16,4 +16,9 @@ router.post('/teacher', markTeacherSchema, validate, attendanceController.markTe
 // ─── Attendance Reports ───────────────────────────────────────────────────
 router.get('/report', attendanceController.getAttendanceReport);
 
+// ─── Leave Management ──────────────────────────────────────────────────────
+router.get('/leaves', attendanceController.getLeaveRequests);
+router.post('/leaves', attendanceController.applyLeaveRequest);
+router.patch('/leaves/:id/status', attendanceController.updateLeaveRequestStatus);
+
 module.exports = router;

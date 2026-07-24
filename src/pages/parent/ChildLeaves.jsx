@@ -1,10 +1,83 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import axiosClient from '@/config/axiosClient'
+import { 
+  PageHeader, 
+  PageContainer, 
+  SimpleCard, 
+  Button, 
+  ReusableTable, 
+  StatusChip,
+  Badge
+} from '@/components/shared'
+import { Plus, ArrowLeft } from 'lucide-react'
 
 export default function ChildLeaves() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [leaves, setLeaves] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // Fetch leave history for this child/student
+  const fetchLeaveHistory = async () => {
+    setLoading(true)
+    try {
+      const res = await axiosClient.get(`/attendance/leaves?applicantId=${id}`)
+      if (res.data.success) {
+        setLeaves(res.data.data)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLeaveHistory()
+  }, [id])
+
+  const columns = [
+    { 
+      header: 'Leave Type', 
+      accessor: (row) => <Badge className="capitalize bg-secondary">{row.leaveType}</Badge> 
+    },
+    { 
+      header: 'Start Date', 
+      accessor: (row) => new Date(row.startDate).toLocaleDateString() 
+    },
+    { 
+      header: 'End Date', 
+      accessor: (row) => new Date(row.endDate).toLocaleDateString() 
+    },
+    { header: 'Reason', accessor: 'reason' },
+    {
+      header: 'Status',
+      accessor: (row) => <StatusChip status={row.status} />
+    },
+    { header: 'Remarks', accessor: (row) => row.actionRemarks || 'N/A' }
+  ]
+
   return (
-    <div className="p-6 bg-card rounded-lg border border-border shadow-sm">
-      <h1 className="text-2xl font-bold text-foreground mb-2">Child leaves requests log</h1>
-      <p className="text-sm text-muted-foreground">Foundation Page for routing validation. Fully functional placeholder.</p>
-    </div>
+    <PageContainer>
+      <PageHeader 
+        title="Leave History"
+        subtitle="Track status and logs of applied student leaves."
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex items-center gap-1.5" onClick={() => navigate('/parent/dashboard')}>
+              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+            </Button>
+            <Button className="flex items-center gap-1.5" onClick={() => navigate(`/parent/child/${id}/leaves/apply`)}>
+              <Plus className="h-4 w-4" /> Apply Leave
+            </Button>
+          </div>
+        }
+      />
+
+      <SimpleCard title="Applied Leaves history list">
+        <ReusableTable columns={columns} data={leaves} />
+      </SimpleCard>
+    </PageContainer>
   )
 }
