@@ -24,6 +24,11 @@ export default function ChildAttendance() {
   const fetchChildAttendance = async () => {
     setLoading(true)
     try {
+      const logsRes = await axiosClient.get(`/attendance/student?studentId=${id}`)
+      if (logsRes.data.success) {
+        setAttendanceRecords(logsRes.data.data)
+      }
+
       // Fetch details from backend report/student routes
       const res = await axiosClient.get(`/attendance/report?type=student`)
       if (res.data.success && Array.isArray(res.data.data)) {
@@ -58,13 +63,20 @@ export default function ChildAttendance() {
     
     const totalDays = new Date(year, month + 1, 0).getDate()
     
-    // Roster mock patterns based on stats
     for (let day = 1; day <= totalDays; day++) {
+      const dayDate = new Date(year, month, day)
+      const dateString = dayDate.toISOString().split('T')[0]
+      const foundRecord = attendanceRecords.find(r => new Date(r.date).toISOString().split('T')[0] === dateString)
+
       let status = 'present'
-      if (day === 8) status = 'absent'
-      if (day === 14) status = 'holiday'
-      if (day === 19) status = 'late'
-      if (day === 21) status = 'holiday'
+      if (foundRecord) {
+        status = foundRecord.status
+      } else {
+        const dayOfWeek = dayDate.getDay()
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          status = 'holiday'
+        }
+      }
       
       days.push({ day, status })
     }

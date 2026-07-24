@@ -40,6 +40,12 @@ export default function Attendance() {
   const [holidays, setHolidays] = useState([])
   const [biometricLogs, setBiometricLogs] = useState([])
   const [reportData, setReportData] = useState([])
+  const [stats, setStats] = useState({
+    studentRate: '100%',
+    teachersPresent: '0 / 0',
+    holidaysCount: '0 Days',
+    biometricCheckins: '0 Checkins'
+  })
   
   // UI Loading/Feedback States
   const [loading, setLoading] = useState(false)
@@ -48,6 +54,17 @@ export default function Attendance() {
   
   // Holiday Form State
   const [holidayForm, setHolidayForm] = useState({ title: '', date: '', description: '' })
+
+  const fetchStats = async () => {
+    try {
+      const res = await axiosClient.get('/attendance/stats')
+      if (res.data.success) {
+        setStats(res.data.data)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   // Fetch student registers
   const fetchStudents = async () => {
@@ -116,6 +133,7 @@ export default function Attendance() {
   }
 
   useEffect(() => {
+    fetchStats()
     if (activeTab === 'student_register') fetchStudents()
     if (activeTab === 'teacher_register') fetchTeachers()
     if (activeTab === 'holidays') fetchHolidays()
@@ -241,10 +259,10 @@ export default function Attendance() {
 
       {/* Summary Stat Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Daily Student Rate" value="96.2%" change="+1.2%" changeType="positive" icon={UserCheck} />
-        <StatCard title="Teachers Present" value="28 / 30" change="93%" icon={Users} />
-        <StatCard title="Holidays Logged" value={`${holidays.length} Days`} icon={Calendar} />
-        <StatCard title="Biometric Checkins" value="142 Devices" icon={Cpu} />
+        <StatCard title="Daily Student Rate" value={stats.studentRate} change="Current Roster" changeType="positive" icon={UserCheck} />
+        <StatCard title="Teachers Present" value={stats.teachersPresent} change="Staff" icon={Users} />
+        <StatCard title="Holidays Logged" value={stats.holidaysCount} icon={Calendar} />
+        <StatCard title="Biometric Checkins" value={stats.biometricCheckins} icon={Cpu} />
       </div>
 
       {/* Tabs Menu */}

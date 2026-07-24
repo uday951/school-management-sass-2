@@ -24,4 +24,7 @@ router.patch('/leaves/:id/status', attendanceController.updateLeaveRequestStatus
 // ─── Biometric Logs ────────────────────────────────────────────────────────
 router.get('/biometric-logs', attendanceController.getBiometricLogs);
 
+// ─── Attendance Stats ──────────────────────────────────────────────────────
+router.get('/stats', attendanceController.getAttendanceStats);
+
 module.exports = router;

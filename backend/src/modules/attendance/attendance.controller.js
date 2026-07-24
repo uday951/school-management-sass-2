@@ -68,6 +68,12 @@ class AttendanceController {
     const logs = await attendanceService.getBiometricLogs();
     return sendSuccess(res, 'Recent biometric logs fetched.', logs);
   });
+
+  // GET /api/v1/attendance/stats
+  getAttendanceStats = asyncHandler(async (req, res) => {
+    const stats = await attendanceService.getAttendanceStats();
+    return sendSuccess(res, 'Attendance summary stats fetched.', stats);
+  });
 }
 
 module.exports = new AttendanceController();

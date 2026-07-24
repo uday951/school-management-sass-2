@@ -125,6 +125,7 @@ export default function AppRoutes() {
                         { path: 'teachers/:id', element: <TeacherDetail /> },
                         { path: 'parents', element: <Parents /> },
                         { path: 'parents/:id', element: <ParentDetail /> },
+                        { path: 'attendance', element: <Navigate to="/admin/attendance/roster" replace /> },
                         { path: 'attendance/roster', element: <Attendance /> },
                         { path: 'attendance/leaves', element: <Leaves /> },
                         { path: 'timetables', element: <Timetable /> },
