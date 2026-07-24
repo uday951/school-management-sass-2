@@ -97,6 +97,8 @@ class StudentService {
     // Save Parent Details
     const parentData = {
       studentId: student._id,
+      name: payload.fatherName || payload.parentName || 'Test Parent',
+      phone: payload.parentPhone || payload.phone || '(555) 000-0000',
       fatherName: payload.fatherName || payload.parentName || '',
       motherName: payload.motherName || '',
       guardianName: payload.guardianName || '',
@@ -114,8 +116,31 @@ class StudentService {
   }
 
   async getNextAdmissionNumber() {
-    const nextNo = `ADM${Math.floor(1000 + Math.random() * 9000)}`;
-    return { admissionNo: nextNo };
+    const Student = require('./models/student.model');
+    const latestStudent = await Student.findOne({ admissionNo: /^ADM\d+$/ })
+      .sort({ admissionNo: -1 })
+      .lean();
+
+    let nextNum = 4669; // Start after the conflicted ADM4668 to guarantee safety
+    if (latestStudent && latestStudent.admissionNo) {
+      const match = latestStudent.admissionNo.match(/\d+/);
+      if (match) {
+        const parsed = parseInt(match[0], 10);
+        if (parsed >= nextNum) {
+          nextNum = parsed + 1;
+        }
+      }
+    }
+
+    let admissionNo = `ADM${nextNum}`;
+    let exists = await Student.findOne({ admissionNo });
+    while (exists) {
+      nextNum++;
+      admissionNo = `ADM${nextNum}`;
+      exists = await Student.findOne({ admissionNo });
+    }
+
+    return { admissionNo };
   }
 
   async deleteStudent(id) {
