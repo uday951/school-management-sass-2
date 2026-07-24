@@ -137,7 +137,7 @@ class StudentService {
     // Save Parent Details
     const parentData = {
       studentId: student._id,
-      name: payload.fatherName || payload.parentName || 'Test Parent',
+      name: payload.fatherName || payload.parentName || payload.motherName || payload.guardianName || 'Test Parent',
       phone: payload.parentPhone || payload.phone || '(555) 000-0000',
       fatherName: payload.fatherName || payload.parentName || '',
       motherName: payload.motherName || '',
