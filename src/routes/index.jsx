@@ -129,6 +129,7 @@ export default function AppRoutes() {
                         { path: 'attendance/roster', element: <Attendance /> },
                         { path: 'attendance/leaves', element: <Leaves /> },
                         { path: 'timetables', element: <Timetable /> },
+                        { path: 'timetables/*', element: <Timetable /> },
                         { path: 'exams/setup', element: <Exams /> },
                         { path: 'exams/results', element: <Results /> },
                         { path: 'fees/invoices', element: <Invoices /> },
