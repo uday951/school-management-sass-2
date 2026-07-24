@@ -8,6 +8,8 @@ const parentRoutes = require('../modules/parent/parent.routes');
 const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
 
+const teacherRoutes = require('../modules/teacher/teacher.routes');
+
 const router = express.Router();
 
 // ─── Base API Info ─────────────────────────────────────────────────────────
@@ -23,6 +25,9 @@ router.get('/', (_req, res) => {
 router.use('/', healthRoute);
 router.use('/', schoolRoutes);
 router.use('/students', studentRoutes);
+router.use('/teachers', teacherRoutes);
+router.use('/departments', teacherRoutes);
+router.use('/designations', teacherRoutes);
 router.use('/classes', classRoutes);
 router.use('/subjects', subjectRoutes);
 router.use('/parents', parentRoutes);
