@@ -62,6 +62,12 @@ class AttendanceController {
     const request = await attendanceService.updateLeaveRequestStatus(req.params.id, req.body);
     return sendSuccess(res, 'Leave request status updated.', request);
   });
+
+  // GET /api/v1/attendance/biometric-logs
+  getBiometricLogs = asyncHandler(async (req, res) => {
+    const logs = await attendanceService.getBiometricLogs();
+    return sendSuccess(res, 'Recent biometric logs fetched.', logs);
+  });
 }
 
 module.exports = new AttendanceController();

@@ -25,6 +25,13 @@ beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
     process.env.MONGODB_URI = uri;
+    
+    // Inject memory server URI into loaded config
+    const env = require('../config/environment');
+    env.mongoUri = uri;
+
+    const { connectDB } = require('../config/database');
+    await connectDB();
   } catch (err) {
     console.warn('[Test Setup] MongoMemoryServer notice:', err.message);
   }

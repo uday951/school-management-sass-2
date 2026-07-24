@@ -238,6 +238,36 @@ class AttendanceService {
 
     return updated;
   }
+
+  async getBiometricLogs() {
+    const studentRecords = await attendanceRepository.findStudentAttendance({});
+    const teacherRecords = await attendanceRepository.findTeacherAttendance({});
+
+    const logs = [];
+    studentRecords.forEach((r, idx) => {
+      logs.push({
+        id: `s-${idx}`,
+        empId: r.studentId?.admissionNo || 'STU001',
+        name: r.studentId ? `${r.studentId.firstName} ${r.studentId.lastName}`.trim() : 'Student',
+        time: new Date(r.updatedAt || r.createdAt).toLocaleTimeString(),
+        device: 'Student Lobby Reader',
+        status: r.status === 'present' ? 'In' : 'Out'
+      });
+    });
+
+    teacherRecords.forEach((r, idx) => {
+      logs.push({
+        id: `t-${idx}`,
+        empId: r.teacherId,
+        name: 'Teacher Staff',
+        time: new Date(r.updatedAt || r.createdAt).toLocaleTimeString(),
+        device: 'Main Entry Reader',
+        status: r.status === 'present' ? 'In' : 'Out'
+      });
+    });
+
+    return logs.slice(0, 50);
+  }
 }
 
 module.exports = new AttendanceService();

@@ -103,15 +103,16 @@ export default function Attendance() {
     }
   }
 
-  // Mock biometric logs generator
-  const loadBiometricLogs = () => {
-    setBiometricLogs([
-      { id: '1', empId: 'EMP101', name: 'Carlos Rivera', time: '08:12 AM', device: 'Main Entry Reader', status: 'In' },
-      { id: '2', empId: 'EMP102', name: 'Diana Prince', time: '08:15 AM', device: 'Gate 2 Reader', status: 'In' },
-      { id: '3', empId: 'EMP103', name: 'Clark Kent', time: '08:19 AM', device: 'Main Entry Reader', status: 'In' },
-      { id: '4', empId: 'EMP104', name: 'Alex Rivera', time: '08:24 AM', device: 'Student Lobby Reader', status: 'In' },
-      { id: '5', empId: 'EMP105', name: 'Chloe Chen', time: '08:26 AM', device: 'Student Lobby Reader', status: 'In' }
-    ])
+  // Fetch real biometric logs from backend
+  const loadBiometricLogs = async () => {
+    try {
+      const res = await axiosClient.get('/attendance/biometric-logs')
+      if (res.data.success) {
+        setBiometricLogs(res.data.data)
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   useEffect(() => {
