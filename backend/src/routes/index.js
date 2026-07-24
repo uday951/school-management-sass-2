@@ -7,8 +7,8 @@ const subjectRoutes = require('../modules/academic/subject.routes');
 const parentRoutes = require('../modules/parent/parent.routes');
 const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
-
 const teacherRoutes = require('../modules/teacher/teacher.routes');
+const timetableRoutes = require('../modules/timetable/timetable.routes');
 
 const router = express.Router();
 
@@ -24,6 +24,7 @@ router.get('/', (_req, res) => {
 // ─── Mount Sub-routes ──────────────────────────────────────────────────────
 router.use('/', healthRoute);
 router.use('/', schoolRoutes);
+router.use('/', timetableRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
 router.use('/departments', teacherRoutes);
@@ -34,4 +35,4 @@ router.use('/parents', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
 
-module.exports = router;
+module.exports = router;

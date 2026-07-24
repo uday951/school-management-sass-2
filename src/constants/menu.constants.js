@@ -71,8 +71,17 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Timetable',
-    path: '/admin/timetables',
-    icon: CalendarClock
+    icon: CalendarClock,
+    children: [
+      { title: 'Timetable List', path: '/admin/timetables/list' },
+      { title: 'Create Timetable', path: '/admin/timetables/create' },
+      { title: 'Teacher Timetable', path: '/admin/timetables/teacher' },
+      { title: 'Class Timetable', path: '/admin/timetables/class' },
+      { title: 'Room Allocation', path: '/admin/timetables/rooms' },
+      { title: 'Period Management', path: '/admin/timetables/periods' },
+      { title: 'Subject Allocation', path: '/admin/timetables/subjects' },
+      { title: 'Substitute Management', path: '/admin/timetables/substitutes' }
+    ]
   },
   {
     title: 'Exams & Grades',
