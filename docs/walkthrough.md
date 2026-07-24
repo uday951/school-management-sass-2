@@ -16,7 +16,7 @@ All mock/fallback entries have been completely erased, and the module interacts 
   * `holiday.model.js` — School holidays register.
   * `leave-request.model.js` — Leave request details, duration, status (`pending`, `approved`, `rejected`).
 * **Real Database Queries:**
-  * Removed all offline check mock fallbacks from `attendance.repository.js`. All queries interact directly with Mongoose collections.
+  * Removed all offline check mock fallbacks from `attendance.repository.js`. All queries interact diversity with Mongoose collections.
   * Added dynamic biometric logs endpoint compiling real marked activity registers instead of hardcoded entries.
   * Teacher roster fetches real teacher profiles from the `User` database schema.
 
@@ -52,5 +52,5 @@ PASS tests/leaves.test.js (5.739 s)
 ### 2.2 Frontend Compilation Build
 Production build compiles cleanly with zero warnings or bundle issues:
 ```
-✓ built in 1.38s
+✓ built in 1.26s
 ```
