@@ -1,4 +1,9 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
+let MongoMemoryServer;
+try {
+  MongoMemoryServer = require('mongodb-memory-server').MongoMemoryServer;
+} catch (err) {
+  // Safe fallback if package is not installed
+}
 const mongoose = require('mongoose');
 
 process.env.NODE_ENV = 'test';
@@ -12,10 +17,21 @@ process.env.COOKIE_SECRET = 'test_cookie_secret';
 let mongod;
 
 beforeAll(async () => {
+  if (!MongoMemoryServer) {
+    console.log('[Test Setup] MongoMemoryServer not installed. Running in offline fallback mode.');
+    return;
+  }
   try {
     mongod = await MongoMemoryServer.create();
     const uri = mongod.getUri();
     process.env.MONGODB_URI = uri;
+    
+    // Inject memory server URI into loaded config
+    const env = require('../config/environment');
+    env.mongoUri = uri;
+
+    const { connectDB } = require('../config/database');
+    await connectDB();
   } catch (err) {
     console.warn('[Test Setup] MongoMemoryServer notice:', err.message);
   }
