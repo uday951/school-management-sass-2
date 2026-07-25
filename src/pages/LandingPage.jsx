@@ -258,7 +258,7 @@ export default function LandingPage() {
           <span className="font-fredoka font-bold text-[#0C4A6E]">Metropolitan Academy</span>
         </div>
         <p>© 2026 Metropolitan Academy. All rights reserved. Registered under school branch structures.</p>
-        <p className="text-[10px] text-muted-foreground">Powered by Antigravity Design Systems</p>
+        <p className="text-[10px] text-muted-foreground">Powered by ignivance Design Systems</p>
       </footer>
     </div>
   )

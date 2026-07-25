@@ -3,7 +3,13 @@ const ApiError = require('../../utils/apiError.util');
 
 class AttendanceService {
   async getStudentRegister(queryParams) {
-    const { class: className, section, date = new Date() } = queryParams;
+    const { class: className, section, date = new Date(), studentId } = queryParams;
+
+    if (studentId) {
+      const records = await attendanceRepository.findStudentAttendance({ studentId });
+      return records;
+    }
+
     const formattedDate = new Date(new Date(date).setHours(0, 0, 0, 0));
 
     // 1. Fetch all students in this class/section
