@@ -49,8 +49,8 @@ export const academicService = {
           department: t.department || ''
         }));
       }
-    } catch (_err) {
-      // Fallback
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch teachers from backend server, using local database:', err.message);
     }
     const { teachers } = loadDb();
     return teachers;
