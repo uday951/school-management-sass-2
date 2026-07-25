@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: Object.values(ROLES),
       default: ROLES.TEACHER
     },
     department: {
@@ -25,9 +24,44 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: ''
     },
+    designation: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    employeeId: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    username: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    mobile: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    password: {
+      type: String,
+      default: 'password123'
+    },
+    failedLoginAttempts: {
+      type: Number,
+      default: 0
+    },
+    lockedUntil: {
+      type: Date
+    },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false
+    },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
+      enum: ['active', 'inactive', 'locked'],
       default: 'active'
     },
     isDeleted: {
@@ -49,6 +83,7 @@ userSchema.set('toJSON', {
   virtuals: true,
   transform: (_doc, ret) => {
     delete ret.__v;
+    delete ret.password;
     return ret;
   }
 });
