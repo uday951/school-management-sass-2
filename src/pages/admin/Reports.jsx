@@ -68,56 +68,56 @@ export default function Reports() {
   const fetchStudentReports = async () => {
     try {
       const res = await axiosClient.get('/reports/students')
-      if (res.data.success) setStudentReports(res.data.data)
+      if (res.data.success) setStudentReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchTeacherReports = async () => {
     try {
       const res = await axiosClient.get('/reports/teachers')
-      if (res.data.success) setTeacherReports(res.data.data)
+      if (res.data.success) setTeacherReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchAttendanceReports = async () => {
     try {
       const res = await axiosClient.get('/reports/attendance')
-      if (res.data.success) setAttendanceReports(res.data.data)
+      if (res.data.success) setAttendanceReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchFeeReports = async () => {
     try {
       const res = await axiosClient.get('/reports/fees')
-      if (res.data.success) setFeeReports(res.data.data)
+      if (res.data.success) setFeeReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchExamReports = async () => {
     try {
       const res = await axiosClient.get('/reports/exams')
-      if (res.data.success) setExamReports(res.data.data)
+      if (res.data.success) setExamReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchAcademicReports = async () => {
     try {
       const res = await axiosClient.get('/reports/academic')
-      if (res.data.success) setAcademicReports(res.data.data)
+      if (res.data.success) setAcademicReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchFinanceReports = async () => {
     try {
       const res = await axiosClient.get('/reports/finance')
-      if (res.data.success) setFinanceReports(res.data.data)
+      if (res.data.success) setFinanceReports(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
   const fetchTemplates = async () => {
     try {
       const res = await axiosClient.get('/reports/templates')
-      if (res.data.success) setTemplates(res.data.data)
+      if (res.data.success) setTemplates(Array.isArray(res.data.data) ? res.data.data : [])
     } catch (err) { console.error(err) }
   }
 
@@ -287,7 +287,7 @@ export default function Reports() {
                 { header: 'Section', accessor: (row) => row._id?.section || 'N/A' },
                 { header: 'Student Count', accessor: 'studentCount' }
               ]}
-              data={studentReports}
+              data={Array.isArray(studentReports) ? studentReports : []}
             />
           </SimpleCard>
         </div>
@@ -306,7 +306,7 @@ export default function Reports() {
                 { header: 'Department', accessor: (row) => row._id || 'N/A' },
                 { header: 'Faculty Count', accessor: 'teacherCount' }
               ]}
-              data={teacherReports}
+              data={Array.isArray(teacherReports) ? teacherReports : []}
             />
           </SimpleCard>
         </div>
@@ -322,7 +322,7 @@ export default function Reports() {
                 { header: 'Total Logs', accessor: 'total' },
                 { header: 'Present Averages', accessor: (row) => `${Math.round((row.present / row.total) * 100)}%` }
               ]}
-              data={attendanceReports}
+              data={Array.isArray(attendanceReports) ? attendanceReports : []}
             />
           </SimpleCard>
         </div>
@@ -339,7 +339,7 @@ export default function Reports() {
                 { header: 'Outstanding Amount', accessor: (row) => `$${row.pendingAmount}` },
                 { header: 'Paid Amount', accessor: (row) => `$${row.totalAmount - row.pendingAmount}` }
               ]}
-              data={feeReports}
+              data={Array.isArray(feeReports) ? feeReports : []}
             />
           </SimpleCard>
         </div>
@@ -355,7 +355,7 @@ export default function Reports() {
                 { header: 'Exams Scheduled', accessor: 'examCount' },
                 { header: 'Participating Grades', accessor: (row) => row.classWise?.join(', ') || 'N/A' }
               ]}
-              data={examReports}
+              data={Array.isArray(examReports) ? examReports : []}
             />
           </SimpleCard>
         </div>
@@ -370,7 +370,7 @@ export default function Reports() {
                 { header: 'Status', accessor: (row) => <Badge>{row._id}</Badge> },
                 { header: 'Subject Count', accessor: 'subjectCount' }
               ]}
-              data={academicReports}
+              data={Array.isArray(academicReports) ? academicReports : []}
             />
           </SimpleCard>
         </div>
@@ -385,7 +385,7 @@ export default function Reports() {
                 { header: 'Timeline Month', accessor: (row) => `${row._id.month}/${row._id.year}` },
                 { header: 'Net Cash Inflow', accessor: (row) => `$${row.collectedAmount}` }
               ]}
-              data={financeReports}
+              data={Array.isArray(financeReports) ? financeReports : []}
             />
           </SimpleCard>
         </div>
