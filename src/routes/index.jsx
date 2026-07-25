@@ -42,8 +42,7 @@ const Payroll = lazy(() => import('@/pages/admin/Payroll'))
 const Transport = lazy(() => import('@/pages/admin/Transport'))
 const Library = lazy(() => import('@/pages/admin/Library'))
 const Inventory = lazy(() => import('@/pages/admin/Inventory'))
-const Circulars = lazy(() => import('@/pages/admin/Circulars'))
-const SMS = lazy(() => import('@/pages/admin/SMS'))
+const AdminCommunication = lazy(() => import('@/pages/admin/Communication'))
 const Visitors = lazy(() => import('@/pages/admin/Visitors'))
 const Reports = lazy(() => import('@/pages/admin/Reports'))
 const Settings = lazy(() => import('@/pages/admin/Settings'))
@@ -141,8 +140,8 @@ export default function AppRoutes() {
                         { path: 'library', element: <Library /> },
                         { path: 'library/*', element: <Library /> },
                         { path: 'inventory', element: <Inventory /> },
-                        { path: 'communication/circulars', element: <Circulars /> },
-                        { path: 'communication/sms', element: <SMS /> },
+                        { path: 'communication/circulars', element: <AdminCommunication defaultTab="notices" /> },
+                        { path: 'communication/sms', element: <AdminCommunication defaultTab="dashboard" /> },
                         { path: 'visitors', element: <Visitors /> },
                         { path: 'reports', element: <Reports /> },
                         { path: 'settings', element: <Settings /> }
