@@ -42,7 +42,7 @@ export const academicService = {
   // --- Teachers ---
   async getTeachers() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/users?role=teacher`);
+      const response = await axios.get(`${API_BASE_URL}/administration/users?role=teacher`);
       if (response.data?.success && Array.isArray(response.data.data)) {
         return response.data.data.map((t) => ({
           id: t._id || t.id,
@@ -52,7 +52,7 @@ export const academicService = {
         }));
       }
     } catch (_err) {
-      // Fallback to local storage if user endpoints are not present yet
+      // Fallback
     }
     const { teachers } = loadDb();
     return teachers;
