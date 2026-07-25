@@ -157,11 +157,6 @@ export const ADMIN_MENU = [
     ]
   },
   {
-    title: 'Guest registers',
-    path: '/admin/visitors',
-    icon: CalendarDays
-  },
-  {
     title: 'School Reports',
     path: '/admin/reports',
     icon: BookMarked
