@@ -139,6 +139,7 @@ export default function AppRoutes() {
                         { path: 'payroll', element: <Payroll /> },
                         { path: 'transport', element: <Transport /> },
                         { path: 'library', element: <Library /> },
+                        { path: 'library/*', element: <Library /> },
                         { path: 'inventory', element: <Inventory /> },
                         { path: 'communication/circulars', element: <Circulars /> },
                         { path: 'communication/sms', element: <SMS /> },
