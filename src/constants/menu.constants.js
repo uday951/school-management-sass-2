@@ -145,8 +145,19 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Inventory store',
-    path: '/admin/inventory',
-    icon: Package
+    icon: Package,
+    children: [
+      { title: 'Dashboard', path: '/admin/inventory/dashboard' },
+      { title: 'Asset Categories', path: '/admin/inventory/categories' },
+      { title: 'Assets Directory', path: '/admin/inventory/assets' },
+      { title: 'Stock Management', path: '/admin/inventory/stock' },
+      { title: 'Vendors', path: '/admin/inventory/vendors' },
+      { title: 'Purchase Orders', path: '/admin/inventory/purchase-orders' },
+      { title: 'Asset Allocation', path: '/admin/inventory/allocations' },
+      { title: 'Maintenance Logs', path: '/admin/inventory/maintenance' },
+      { title: 'Asset History', path: '/admin/inventory/history' },
+      { title: 'Inventory Reports', path: '/admin/inventory/reports' }
+    ]
   },
   {
     title: 'Communication',

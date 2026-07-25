@@ -12,6 +12,7 @@ const timetableRoutes = require('../modules/timetable/timetable.routes');
 const financeRoutes = require('../modules/finance/finance.routes');
 const examRoutes = require('../modules/exam/exam.routes');
 const libraryRoutes = require('../modules/library/library.routes');
+const inventoryRoutes = require('../modules/inventory/inventory.routes');
 
 const router = express.Router();
 
@@ -30,6 +31,7 @@ router.use('/', schoolRoutes);
 router.use('/', timetableRoutes);
 router.use('/', financeRoutes);
 router.use('/', libraryRoutes);
+router.use('/', inventoryRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
 router.use('/departments', teacherRoutes);
@@ -46,4 +48,5 @@ router.use('/reports', require('../modules/reports/reports.routes'));
 router.use('/payroll', require('../modules/payroll/payroll.routes'));
 router.use('/communication', require('../modules/communication/communication.routes'));
 
-module.exports = router;
+module.exports = router;
+

@@ -140,6 +140,7 @@ export default function AppRoutes() {
                         { path: 'library', element: <Library /> },
                         { path: 'library/*', element: <Library /> },
                         { path: 'inventory', element: <Inventory /> },
+                        { path: 'inventory/*', element: <Inventory /> },
                         { path: 'communication/circulars', element: <AdminCommunication defaultTab="notices" /> },
                         { path: 'communication/sms', element: <AdminCommunication defaultTab="dashboard" /> },
                         { path: 'visitors', element: <Visitors /> },
