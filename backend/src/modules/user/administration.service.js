@@ -1,5 +1,6 @@
 const administrationRepository = require('./administration.repository');
 const ApiError = require('../../utils/apiError.util');
+const mongoose = require('mongoose');
 
 class AdministrationService {
   // ─── Dashboard Stats ───────────────────────────────────────────────────────
@@ -9,6 +10,30 @@ class AdministrationService {
 
   // ─── Users Services ────────────────────────────────────────────────────────
   async getUsers(filter = {}) {
+    if (filter.role === 'teacher') {
+      try {
+        const Teacher = mongoose.models.Teacher || mongoose.model('Teacher');
+        const User = mongoose.models.User || mongoose.model('User');
+        const teachersList = await Teacher.find({ isDeleted: false });
+        for (const t of teachersList) {
+          const existingUser = await User.findOne({ email: t.email });
+          if (!existingUser) {
+            await User.create({
+              name: `${t.firstName} ${t.lastName}`,
+              email: t.email,
+              role: 'teacher',
+              department: t.department || '',
+              designation: t.designation || '',
+              employeeId: t.employeeId,
+              mobile: t.phone || '',
+              status: 'active'
+            });
+          }
+        }
+      } catch (err) {
+        console.error('[JIT Sync Error] Failed to sync teachers to users:', err.message);
+      }
+    }
     return administrationRepository.findUsers(filter);
   }
 
