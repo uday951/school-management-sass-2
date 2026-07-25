@@ -34,7 +34,8 @@ import {
   Trash2,
   Download,
   Eye,
-  Plus
+  Plus,
+  Bus
 } from 'lucide-react'
 
 // Mock Data (Cleared)
@@ -136,7 +137,8 @@ export default function StudentDetail() {
           { id: 'exams', label: 'Exam Results', icon: FileSpreadsheet },
           { id: 'medical', label: 'Medical Records', icon: Activity },
           { id: 'documents', label: 'Documents', icon: Paperclip },
-          { id: 'timeline', label: 'Activity Timeline', icon: Clock }
+          { id: 'timeline', label: 'Activity Timeline', icon: Clock },
+          { id: 'transport', label: 'Transport', icon: Bus }
         ].map((tab) => {
           const Icon = tab.icon
           return (
@@ -519,6 +521,25 @@ export default function StudentDetail() {
               ]}
             />
           </SimpleCard>
+        )}
+
+        {/* TRANSPORT PANEL */}
+        {activeTab === 'transport' && (
+          <div className="space-y-6">
+            <InformationCard 
+              title="Assigned Transport details"
+              items={[
+                { label: 'Vehicle Plate No', value: student.transport?.vehicleNo || 'N/A' },
+                { label: 'Assigned Driver', value: student.transport?.driverName || 'N/A' },
+                { label: 'Driver Phone', value: student.transport?.driverPhone || 'N/A' },
+                { label: 'Route Name', value: student.transport?.routeName || 'N/A' },
+                { label: 'Route Code', value: student.transport?.routeCode || 'N/A' },
+                { label: 'Pickup Stop Point', value: student.transport?.pickupStop || 'N/A' },
+                { label: 'Drop Stop Point', value: student.transport?.dropStop || 'N/A' },
+                { label: 'Transport Status', value: student.transport?.status || 'No active allocation' }
+              ]}
+            />
+          </div>
         )}
       </div>
 
