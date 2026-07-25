@@ -43,5 +43,6 @@ router.use('/exams', examRoutes);
 router.use('/fees', require('../modules/fees/fees.routes'));
 router.use('/transport', require('../modules/transport/transport.routes'));
 router.use('/reports', require('../modules/reports/reports.routes'));
+router.use('/payroll', require('../modules/payroll/payroll.routes'));
 
 module.exports = router;
