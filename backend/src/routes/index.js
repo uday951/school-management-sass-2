@@ -9,21 +9,8 @@ const attendanceRoutes = require('../modules/attendance/attendance.routes');
 const holidayRoutes = require('../modules/attendance/holiday.routes');
 const teacherRoutes = require('../modules/teacher/teacher.routes');
 const timetableRoutes = require('../modules/timetable/timetable.routes');
-
-// ─── Try-require Optional Branches Modules to Prevent Crash ──────────────────
-let financeRoutes;
-try {
-  financeRoutes = require('../modules/finance/finance.routes');
-} catch (e) {
-  // Not loaded on this branch
-}
-
-let examRoutes;
-try {
-  examRoutes = require('../modules/exam/exam.routes');
-} catch (e) {
-  // Not loaded on this branch
-}
+const financeRoutes = require('../modules/finance/finance.routes');
+const examRoutes = require('../modules/exam/exam.routes');
 
 const router = express.Router();
 
@@ -40,11 +27,7 @@ router.get('/', (_req, res) => {
 router.use('/', healthRoute);
 router.use('/', schoolRoutes);
 router.use('/', timetableRoutes);
-
-if (financeRoutes) {
-  router.use('/', financeRoutes);
-}
-
+router.use('/', financeRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
 router.use('/departments', teacherRoutes);
@@ -54,11 +37,7 @@ router.use('/subjects', subjectRoutes);
 router.use('/parents', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
-
-if (examRoutes) {
-  router.use('/exams', examRoutes);
-}
-
+router.use('/exams', examRoutes);
 router.use('/fees', require('../modules/fees/fees.routes'));
 
 module.exports = router;

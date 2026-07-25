@@ -22,10 +22,17 @@ const createFileFilter = (allowedTypes) => (_req, file, cb) => {
   }
 };
 
+const fs = require('fs');
+
+const uploadDir = path.resolve(__dirname, '../../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // ─── Disk Storage ────────────────────────────────────────────────────────────
 const diskStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, path.resolve(__dirname, '../../uploads'));
+    cb(null, uploadDir);
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
