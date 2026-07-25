@@ -128,8 +128,20 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Library catalog',
-    path: '/admin/library',
-    icon: BookOpen
+    icon: BookOpen,
+    children: [
+      { title: 'Dashboard', path: '/admin/library/dashboard' },
+      { title: 'Book Categories', path: '/admin/library/categories' },
+      { title: 'Books Directory', path: '/admin/library/books' },
+      { title: 'Authors', path: '/admin/library/authors' },
+      { title: 'Publishers', path: '/admin/library/publishers' },
+      { title: 'Book Issue', path: '/admin/library/issues' },
+      { title: 'Book Return', path: '/admin/library/returns' },
+      { title: 'Reservations', path: '/admin/library/reservations' },
+      { title: 'Fine Management', path: '/admin/library/fines' },
+      { title: 'Library Members', path: '/admin/library/members' },
+      { title: 'Library Reports', path: '/admin/library/reports' }
+    ]
   },
   {
     title: 'Inventory store',
