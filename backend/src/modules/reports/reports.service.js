@@ -2,6 +2,11 @@ const reportsRepository = require('./reports.repository');
 const ApiError = require('../../utils/apiError.util');
 const mongoose = require('mongoose');
 
+// Direct requires of cross-module models to guarantee compile order
+const Student = require('../student/models/student.model');
+const Teacher = require('../teacher/models/teacher.model');
+const StudentFee = require('../fees/models/student-fee.model');
+
 class ReportsService {
   // ─── Dashboard Stats with caching ─────────────────────────────────────────
   async getDashboardSummary() {
@@ -128,9 +133,6 @@ class ReportsService {
     }
 
     let records = [];
-    const Student = mongoose.models.Student || mongoose.model('Student');
-    const Teacher = mongoose.models.Teacher || mongoose.model('Teacher');
-    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
 
     if (category === 'students') {
       records = await Student.find({ isDeleted: false, ...filters }).lean();
@@ -151,9 +153,6 @@ class ReportsService {
   async generateExport(queryParams) {
     const { format = 'csv', category = 'students' } = queryParams;
     let records = [];
-
-    const Student = mongoose.models.Student || mongoose.model('Student');
-    const Teacher = mongoose.models.Teacher || mongoose.model('Teacher');
 
     if (category === 'students') {
       records = await Student.find({ isDeleted: false }).limit(50).lean();

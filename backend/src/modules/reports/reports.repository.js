@@ -3,6 +3,14 @@ const ReportTemplate = require('./models/report-template.model');
 const ReportExport = require('./models/report-export.model');
 const AnalyticsCache = require('./models/analytics-cache.model');
 
+// Direct requires of cross-module models to guarantee compile order
+const Student = require('../student/models/student.model');
+const Teacher = require('../teacher/models/teacher.model');
+const StudentFee = require('../fees/models/student-fee.model');
+const StudentAttendance = require('../attendance/models/student-attendance.model');
+const Subject = require('../academic/subject.model');
+const Exam = require('../exam/models/exam.model');
+
 class ReportsRepository {
   // ─── Cache Helpers ────────────────────────────────────────────────────────
   async getCache(cacheKey) {
@@ -57,11 +65,6 @@ class ReportsRepository {
 
   // ─── High Performance BI Aggregations ─────────────────────────────────────
   async getDashboardAnalytics() {
-    const Student = mongoose.models.Student || mongoose.model('Student');
-    const Teacher = mongoose.models.Teacher || mongoose.model('Teacher');
-    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
-    const StudentAttendance = mongoose.models.StudentAttendance || mongoose.model('StudentAttendance');
-
     // 1. Students Analytics
     const studentStats = await Student.aggregate([
       { $match: { isDeleted: false } },
@@ -139,7 +142,6 @@ class ReportsRepository {
   }
 
   async getStudentAnalytics(filter = {}) {
-    const Student = mongoose.models.Student || mongoose.model('Student');
     return Student.aggregate([
       { $match: { isDeleted: false, ...filter } },
       {
@@ -154,7 +156,6 @@ class ReportsRepository {
   }
 
   async getTeacherAnalytics(filter = {}) {
-    const Teacher = mongoose.models.Teacher || mongoose.model('Teacher');
     return Teacher.aggregate([
       { $match: { isDeleted: false, ...filter } },
       {
@@ -168,7 +169,6 @@ class ReportsRepository {
   }
 
   async getAttendanceAnalytics(filter = {}) {
-    const StudentAttendance = mongoose.models.StudentAttendance || mongoose.model('StudentAttendance');
     const match = {};
     if (filter.startDate && filter.endDate) {
       match.date = { $gte: new Date(filter.startDate), $lte: new Date(filter.endDate) };
@@ -190,7 +190,6 @@ class ReportsRepository {
   }
 
   async getFeeAnalytics(filter = {}) {
-    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
     return StudentFee.aggregate([
       { $match: { isDeleted: false } },
       {
@@ -205,8 +204,6 @@ class ReportsRepository {
   }
 
   async getExamAnalytics(filter = {}) {
-    const Exam = mongoose.models.Exam || mongoose.model('Exam');
-    if (!Exam) return [];
     return Exam.aggregate([
       { $match: { isDeleted: false } },
       {
@@ -220,7 +217,6 @@ class ReportsRepository {
   }
 
   async getAcademicAnalytics(filter = {}) {
-    const Subject = mongoose.models.Subject || mongoose.model('Subject');
     return Subject.aggregate([
       { $match: { isDeleted: false } },
       {
@@ -233,7 +229,6 @@ class ReportsRepository {
   }
 
   async getFinancialAnalytics(filter = {}) {
-    const StudentFee = mongoose.models.StudentFee || mongoose.model('StudentFee');
     // Group monthly fee collections timeline
     return StudentFee.aggregate([
       { $match: { isDeleted: false, status: 'paid' } },
