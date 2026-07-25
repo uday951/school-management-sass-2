@@ -11,11 +11,11 @@ const SecurityPolicy = require('./models/security-policy.model');
 class AdministrationRepository {
   // ─── Users CRUD & Status ───────────────────────────────────────────────────
   async findUsers(filter = {}) {
-    return User.find({ isDeleted: false, ...filter }).sort({ name: 1 }).lean();
+    return User.find({ isDeleted: { $ne: true }, ...filter }).sort({ name: 1 }).lean();
   }
 
   async findUserById(id) {
-    return User.findOne({ _id: id, isDeleted: false }).lean();
+    return User.findOne({ _id: id, isDeleted: { $ne: true } }).lean();
   }
 
   async createUser(data) {

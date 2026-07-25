@@ -140,11 +140,19 @@ class TeacherService {
 
     // Auto-create User account for the teacher
     try {
-      const existingUser = await User.findOne({ email: teacher.email });
+      let emailToUse = teacher.email;
+      let existingUser = await User.findOne({ email: teacher.email });
+
+      if (existingUser && existingUser.employeeId !== teacher.employeeId) {
+        const emailParts = teacher.email.split('@');
+        emailToUse = `${emailParts[0]}+${teacher.employeeId}@${emailParts[1]}`;
+        existingUser = await User.findOne({ email: emailToUse });
+      }
+
       if (!existingUser) {
         await User.create({
           name: `${teacher.firstName} ${teacher.lastName}`,
-          email: teacher.email,
+          email: emailToUse,
           role: 'teacher',
           department: teacher.department,
           designation: teacher.designation,
@@ -179,16 +187,24 @@ class TeacherService {
 
     // Auto-update User account for the teacher
     try {
+      let emailToUse = teacher.email;
+      let existingUser = await User.findOne({ email: teacher.email });
+
+      if (existingUser && existingUser.employeeId !== teacher.employeeId) {
+        const emailParts = teacher.email.split('@');
+        emailToUse = `${emailParts[0]}+${teacher.employeeId}@${emailParts[1]}`;
+      }
+
       await User.findOneAndUpdate(
-        { email: oldEmail },
+        { employeeId: teacher.employeeId },
         {
           name: `${teacher.firstName} ${teacher.lastName}`,
-          email: teacher.email,
+          email: emailToUse,
           department: teacher.department,
           designation: teacher.designation,
-          employeeId: teacher.employeeId,
           mobile: teacher.phone
-        }
+        },
+        { upsert: true, new: true }
       );
     } catch (err) {
       console.error('[Sync Error] Failed to auto-update user account for teacher:', err.message);

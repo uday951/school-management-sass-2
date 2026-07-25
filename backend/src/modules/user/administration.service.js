@@ -16,11 +16,19 @@ class AdministrationService {
         const User = mongoose.models.User || mongoose.model('User');
         const teachersList = await Teacher.find({ isDeleted: false });
         for (const t of teachersList) {
-          const existingUser = await User.findOne({ email: t.email });
+          let emailToUse = t.email;
+          let existingUser = await User.findOne({ email: t.email });
+          
+          if (existingUser && existingUser.employeeId !== t.employeeId) {
+            const emailParts = t.email.split('@');
+            emailToUse = `${emailParts[0]}+${t.employeeId}@${emailParts[1]}`;
+            existingUser = await User.findOne({ email: emailToUse });
+          }
+
           if (!existingUser) {
             await User.create({
               name: `${t.firstName} ${t.lastName}`,
-              email: t.email,
+              email: emailToUse,
               role: 'teacher',
               department: t.department || '',
               designation: t.designation || '',
