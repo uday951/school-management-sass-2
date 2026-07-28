@@ -173,7 +173,7 @@ class ParentService {
             await this.linkStudent(parentId, studentRef, rec.relationship || 'Parent', true);
             linkedCount++;
           } catch (_linkErr) {
-            // Ignore if student reference not resolved or already linked
+            // Ignore link error
           }
         }
       } catch (err) {
@@ -182,6 +182,31 @@ class ParentService {
     }
 
     return { importedCount, totalParsed: records.length, linkedCount, errors };
+  }
+
+  // --- Parent Portal Feature Services ---
+  async getDashboard(parentId, studentId) {
+    return parentRepository.getDashboardData(parentId, studentId);
+  }
+
+  async getChildren(parentId) {
+    return parentRepository.getChildren(parentId);
+  }
+
+  async getChildProfile(childId) {
+    return parentRepository.getChildProfile(childId);
+  }
+
+  async getAttendanceSummary(childId) {
+    return parentRepository.getAttendanceSummary(childId);
+  }
+
+  async getTimetable(childId) {
+    return parentRepository.getTimetable(childId);
+  }
+
+  async getCalendar() {
+    return parentRepository.getCalendar();
   }
 }
 
