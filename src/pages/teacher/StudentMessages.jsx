@@ -7,41 +7,46 @@ import {
   Badge,
   SkeletonLoader
 } from '@/components/shared'
-import { MessageSquare, User, Send, Search, Phone, Mail, GraduationCap } from 'lucide-react'
+import { Send, User, Search, GraduationCap } from 'lucide-react'
 
-export default function Communication() {
-  const [conversations, setConversations] = useState([])
+export default function StudentMessages() {
+  const [students, setStudents] = useState([])
   const [messages, setMessages] = useState([])
-  const [selectedConv, setSelectedConv] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedStudent, setSelectedStudent] = useState(null)
   const [newMessage, setNewMessage] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
 
-  const fetchConversations = async () => {
+  const fetchStudents = async () => {
     setLoading(true)
     try {
+      // Find students assigned to this teacher's classes via conversations/profile
       const res = await axiosClient.get('/teacher/conversations')
       if (res.data.success && Array.isArray(res.data.data)) {
-        setConversations(res.data.data)
+        // Collect students from mapping list
+        const list = res.data.data.map(c => c.student).filter(Boolean)
+        // De-duplicate list
+        const unique = Array.from(new Map(list.map(s => [s.id, s])).values())
+        setStudents(unique)
       }
     } catch (err) {
-      console.error('Error fetching chat conversations:', err)
+      console.error('Error fetching student list:', err)
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchMessages = async (conv) => {
+  const fetchMessages = async (student) => {
     setMessagesLoading(true)
     try {
-      const res = await axiosClient.get(`/teacher/messages?recipientId=${conv.id}`)
+      const res = await axiosClient.get(`/teacher/messages?recipientId=${student.id}`)
       if (res.data.success) {
         setMessages(res.data.data)
-        setSelectedConv(conv)
+        setSelectedStudent(student)
       }
     } catch (err) {
-      console.error('Error fetching message history:', err)
+      console.error(err)
     } finally {
       setMessagesLoading(false)
     }
@@ -49,43 +54,40 @@ export default function Communication() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!newMessage.trim() || !selectedConv) return
+    if (!newMessage.trim() || !selectedStudent) return
 
     try {
       const res = await axiosClient.post('/teacher/chat', {
-        recipientId: selectedConv.id,
-        message: newMessage,
-        studentContextId: selectedConv.student?.id
+        recipientId: selectedStudent.id,
+        message: newMessage
       })
       if (res.data.success) {
         setMessages(prev => [...prev, res.data.data])
         setNewMessage('')
       }
     } catch (err) {
-      console.error('Error sending message:', err)
+      console.error(err)
     }
   }
 
   useEffect(() => {
-    fetchConversations()
+    fetchStudents()
   }, [])
 
-  // Filter conversation list based on parent name or student name
-  const filteredConversations = conversations.filter(c => {
-    const term = searchTerm.toLowerCase()
-    return c.name.toLowerCase().includes(term) ||
-           c.student?.name.toLowerCase().includes(term)
-  })
+  const filteredStudents = students.filter(s =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.class.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <PageContainer>
       <PageHeader
-        title="Parent Communication Chat"
-        subtitle="Secure one-to-one messaging channel with student classroom context."
+        title="Student Alerts & Messages"
+        subtitle="Broadcast task notes or message students directly."
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px] border border-border bg-card rounded-2xl overflow-hidden shadow-sm">
-        {/* Left Side: Parent Contacts List */}
+        {/* Left contacts list */}
         <div className="md:col-span-1 border-r border-border flex flex-col h-full bg-muted/10">
           <div className="p-4 border-b border-border bg-card">
             <div className="relative">
@@ -94,7 +96,7 @@ export default function Communication() {
               </span>
               <input
                 type="text"
-                placeholder="Search parents or students..."
+                placeholder="Search students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-background border border-border rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-primary"
@@ -104,26 +106,23 @@ export default function Communication() {
 
           <div className="flex-1 overflow-y-auto divide-y divide-border/60">
             {loading ? (
-              <SkeletonLoader count={4} className="h-16 m-3" />
-            ) : filteredConversations.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center p-6">No parent contacts found.</p>
+              <SkeletonLoader count={4} className="h-14 m-3" />
+            ) : filteredStudents.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center p-6">No students found.</p>
             ) : (
-              filteredConversations.map((conv) => (
+              filteredStudents.map((stud) => (
                 <button
-                  key={conv.id}
-                  onClick={() => fetchMessages(conv)}
-                  className={`w-full p-4 text-left flex items-start gap-3 hover:bg-muted/40 transition duration-150 cursor-pointer ${selectedConv?.id === conv.id ? 'bg-primary/5 border-l-4 border-primary' : ''}`}
+                  key={stud.id}
+                  onClick={() => fetchMessages(stud)}
+                  className={`w-full p-4 text-left flex items-start gap-3 hover:bg-muted/40 transition duration-150 cursor-pointer ${selectedStudent?.id === stud.id ? 'bg-primary/5 border-l-4 border-primary' : ''}`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0 text-primary font-bold">
-                    {conv.name[0]}
+                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold">
+                    {stud.name[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline">
-                      <h4 className="text-xs font-bold text-foreground truncate">{conv.name}</h4>
-                      <Badge className="bg-primary/10 text-primary text-[9px] font-bold">{conv.relationship}</Badge>
-                    </div>
-                    <p className="text-[10px] text-muted-foreground truncate mt-1 flex items-center gap-1">
-                      <GraduationCap className="h-3.5 w-3.5" /> Child: {conv.student?.name} ({conv.student?.class})
+                    <h4 className="text-xs font-bold text-foreground truncate">{stud.name}</h4>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <GraduationCap className="h-3.5 w-3.5" /> Class: {stud.class}
                     </p>
                   </div>
                 </button>
@@ -132,27 +131,22 @@ export default function Communication() {
           </div>
         </div>
 
-        {/* Right Side: Message Window */}
+        {/* Right message log */}
         <div className="md:col-span-2 flex flex-col h-full bg-card">
-          {selectedConv ? (
+          {selectedStudent ? (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-border flex justify-between items-center bg-card">
-                <div>
-                  <h3 className="text-xs font-bold text-foreground">{selectedConv.name}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Child: {selectedConv.student?.name} ({selectedConv.student?.class})</p>
-                </div>
-                <div className="flex gap-4 text-xs font-semibold text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {selectedConv.phone}</span>
-                </div>
+              <div className="p-4 border-b border-border bg-card">
+                <h3 className="text-xs font-bold text-foreground">{selectedStudent.name}</h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Assigned Class: {selectedStudent.class}</p>
               </div>
 
-              {/* Message history bubble list */}
+              {/* Bubbles */}
               <div className="flex-1 overflow-y-auto p-4 bg-muted/5 space-y-4">
                 {messagesLoading ? (
-                  <SkeletonLoader count={3} className="h-10" />
+                  <SkeletonLoader count={2} className="h-10" />
                 ) : messages.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center p-6">No message history. Send a message to start conversing.</p>
+                  <p className="text-xs text-muted-foreground text-center p-6">No message logs. Start typing below.</p>
                 ) : (
                   messages.map((m) => {
                     const isMe = m.senderRole === 'teacher'
@@ -170,11 +164,11 @@ export default function Communication() {
                 )}
               </div>
 
-              {/* Chat Input form */}
+              {/* Send box */}
               <form onSubmit={handleSendMessage} className="p-4 border-t border-border bg-card flex gap-3">
                 <input
                   type="text"
-                  placeholder="Type a message to parent..."
+                  placeholder={`Send notice alert to ${selectedStudent.name}...`}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   className="flex-1 px-4 py-2 border border-border bg-background rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-primary"
@@ -189,9 +183,9 @@ export default function Communication() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mb-3" />
-              <h4 className="text-sm font-bold text-foreground">No Chat Selected</h4>
-              <p className="text-xs text-muted-foreground mt-1 max-w-xs">Select a parent contact from the list on the left to start conversing.</p>
+              <User className="h-12 w-12 text-muted-foreground mb-3" />
+              <h4 className="text-sm font-bold text-foreground">Select Student</h4>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs">Select a student from the sidebar roster to view logs or broadcast alerts.</p>
             </div>
           )}
         </div>

@@ -58,6 +58,13 @@ const HomeworkSubmissions = lazy(() => import('@/pages/teacher/HomeworkSubmissio
 const ExamMarks = lazy(() => import('@/pages/teacher/ExamMarks'))
 const Communication = lazy(() => import('@/pages/teacher/Communication'))
 const Profile = lazy(() => import('@/pages/teacher/Profile'))
+const StudentMessages = lazy(() => import('@/pages/teacher/StudentMessages'))
+const TeacherAnnouncements = lazy(() => import('@/pages/teacher/Announcements'))
+const TeacherLeaves = lazy(() => import('@/pages/teacher/LeaveManagement'))
+const TeacherPayslips = lazy(() => import('@/pages/teacher/Payslips'))
+const TeacherDocuments = lazy(() => import('@/pages/teacher/Documents'))
+const TeacherReports = lazy(() => import('@/pages/teacher/Reports'))
+const TeacherSettings = lazy(() => import('@/pages/teacher/Settings'))
 
 // Parent Pages
 const ParentDashboard = lazy(() => import('@/pages/parent/Dashboard'))
@@ -177,7 +184,14 @@ export default function AppRoutes() {
                         { path: 'homework/:id', element: <HomeworkSubmissions /> },
                         { path: 'exams/marks', element: <ExamMarks /> },
                         { path: 'communication', element: <Communication /> },
-                        { path: 'profile', element: <Profile /> }
+                        { path: 'profile', element: <Profile /> },
+                        { path: 'messages', element: <StudentMessages /> },
+                        { path: 'announcements', element: <TeacherAnnouncements /> },
+                        { path: 'leaves', element: <TeacherLeaves /> },
+                        { path: 'payslips', element: <TeacherPayslips /> },
+                        { path: 'documents', element: <TeacherDocuments /> },
+                        { path: 'reports', element: <TeacherReports /> },
+                        { path: 'settings', element: <TeacherSettings /> }
                       ]
                     }
                   ]

@@ -51,6 +51,7 @@ router.use('/communication', require('../modules/communication/communication.rou
 router.use('/administration', require('../modules/user/administration.routes'));
 router.use('/dashboard', require('../modules/dashboard/dashboard.routes'));
 router.use('/portal', require('../modules/parent/parent-portal.routes'));
+router.use('/teacher', require('../modules/teacher/teacher-portal.routes'));
 
 module.exports = router;
 

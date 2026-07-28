@@ -15,7 +15,11 @@ import {
   Package, 
   Mail, 
   BookMarked,
-  UserCog
+  UserCog,
+  Megaphone,
+  TrendingUp,
+  CreditCard,
+  User
 } from 'lucide-react'
 
 export const ADMIN_MENU = [
@@ -212,14 +216,19 @@ export const TEACHER_MENU = [
     icon: FileSpreadsheet
   },
   {
-    title: 'Parent Chats',
-    path: '/teacher/communication',
-    icon: Mail
-  },
-  {
-    title: 'My Personal File',
-    path: '/teacher/profile',
-    icon: UserCog
+    title: 'Teacher Services',
+    icon: Settings,
+    children: [
+      { title: 'Parent Chat', path: '/teacher/communication' },
+      { title: 'Student Messages', path: '/teacher/messages' },
+      { title: 'Announcements', path: '/teacher/announcements' },
+      { title: 'Leave Management', path: '/teacher/leaves' },
+      { title: 'Payslips', path: '/teacher/payslips' },
+      { title: 'My Profile', path: '/teacher/profile' },
+      { title: 'Documents', path: '/teacher/documents' },
+      { title: 'Reports', path: '/teacher/reports' },
+      { title: 'Settings', path: '/teacher/settings' }
+    ]
   }
 ]
 
