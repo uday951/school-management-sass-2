@@ -1,6 +1,6 @@
 const dashboardService = require('./dashboard.service');
 const { sendSuccess } = require('../../utils/response.util');
-const asyncHandler = require('../../middlewares/async-handler.middleware');
+const asyncHandler = require('../../utils/asyncHandler.util');
 
 class DashboardController {
   getOverview = asyncHandler(async (req, res) => {
