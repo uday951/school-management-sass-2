@@ -73,9 +73,11 @@ export default function Communication() {
   // Filter conversation list based on parent name or student name
   const filteredConversations = conversations.filter(c => {
     const term = searchTerm.toLowerCase()
-    return c.name.toLowerCase().includes(term) ||
-           c.student?.name.toLowerCase().includes(term)
+    const parentName = (c.name || '').toLowerCase()
+    const studentName = (c.student?.name || '').toLowerCase()
+    return parentName.includes(term) || studentName.includes(term)
   })
+
 
   return (
     <PageContainer>

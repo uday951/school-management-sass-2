@@ -74,10 +74,13 @@ export default function StudentMessages() {
     fetchStudents()
   }, [])
 
-  const filteredStudents = students.filter(s =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.class.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredStudents = students.filter(s => {
+    const term = searchTerm.toLowerCase()
+    const studentName = (s.name || '').toLowerCase()
+    const studentClass = (s.class || '').toLowerCase()
+    return studentName.includes(term) || studentClass.includes(term)
+  })
+
 
   return (
     <PageContainer>

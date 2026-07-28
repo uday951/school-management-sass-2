@@ -54,7 +54,7 @@ export default function Payslips() {
     },
     {
       header: 'Allowances / Bonuses',
-      accessor: (row) => `$${row.allowancesAmount + row.bonusesAmount}`
+      accessor: (row) => `$${(row.allowancesAmount || 0) + (row.bonusesAmount || 0)}`
     },
     {
       header: 'Deductions',
