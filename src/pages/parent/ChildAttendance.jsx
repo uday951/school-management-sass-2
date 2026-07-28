@@ -66,7 +66,14 @@ export default function ChildAttendance() {
     for (let day = 1; day <= totalDays; day++) {
       const dayDate = new Date(year, month, day)
       const dateString = dayDate.toISOString().split('T')[0]
-      const foundRecord = attendanceRecords.find(r => new Date(r.date).toISOString().split('T')[0] === dateString)
+      const foundRecord = Array.isArray(attendanceRecords) 
+        ? attendanceRecords.find(r => {
+            if (!r || !r.date) return false;
+            const d = new Date(r.date);
+            if (isNaN(d.getTime())) return false;
+            return d.toISOString().split('T')[0] === dateString;
+          })
+        : null;
 
       let status = 'present'
       if (foundRecord) {

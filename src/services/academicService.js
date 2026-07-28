@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+import axiosClient from '@/config/axiosClient';
 
 // LocalStorage fallback helpers
 const getStoredData = (key, initial) => {
@@ -42,7 +40,7 @@ export const academicService = {
   // --- Teachers ---
   async getTeachers() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/users?role=teacher`);
+      const response = await axiosClient.get('/administration/users?role=teacher');
       if (response.data?.success && Array.isArray(response.data.data)) {
         return response.data.data.map((t) => ({
           id: t._id || t.id,
@@ -51,8 +49,8 @@ export const academicService = {
           department: t.department || ''
         }));
       }
-    } catch (_err) {
-      // Fallback to local storage if user endpoints are not present yet
+    } catch (err) {
+      console.warn('[API Warning] Could not fetch teachers from backend server, using local database:', err.message);
     }
     const { teachers } = loadDb();
     return teachers;
@@ -61,7 +59,7 @@ export const academicService = {
   // --- Classes ---
   async getClasses() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/classes?limit=100`);
+      const response = await axiosClient.get('/classes?limit=100');
       if (response.data?.success && Array.isArray(response.data.data)) {
         const classes = response.data.data.map((item) => ({
           id: item._id || item.id,
@@ -84,7 +82,7 @@ export const academicService = {
 
   async getClassById(id) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/classes/${id}`);
+      const response = await axiosClient.get(`/classes/${id}`);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         return {
@@ -117,7 +115,7 @@ export const academicService = {
         status: (classData.status || 'ACTIVE').toUpperCase()
       };
 
-      const response = await axios.post(`${API_BASE_URL}/classes`, payload);
+      const response = await axiosClient.post('/classes', payload);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const newClass = {
@@ -181,7 +179,7 @@ export const academicService = {
         status: (classData.status || 'ACTIVE').toUpperCase()
       };
 
-      const response = await axios.put(`${API_BASE_URL}/classes/${id}`, payload);
+      const response = await axiosClient.put(`/classes/${id}`, payload);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const updated = {
@@ -228,8 +226,8 @@ export const academicService = {
 
   async deleteClass(id) {
     try {
-      await axios.delete(`${API_BASE_URL}/classes/${id}`);
-      const { classes, subjects } = loadDb();
+      await axiosClient.delete(`/classes/${id}`);
+      const { classes } = loadDb();
       const updatedClasses = classes.filter((c) => c.id !== id);
       setStoredData('academic_classes', updatedClasses);
       return true;
@@ -241,7 +239,7 @@ export const academicService = {
       }
     }
 
-    const { classes, subjects } = loadDb();
+    const { classes } = loadDb();
     const updatedClasses = classes.filter((c) => c.id !== id);
     setStoredData('academic_classes', updatedClasses);
     return true;
@@ -250,7 +248,7 @@ export const academicService = {
   // --- Subjects ---
   async getSubjects() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/subjects?limit=100`);
+      const response = await axiosClient.get('/subjects?limit=100');
       if (response.data?.success && Array.isArray(response.data.data)) {
         const subjects = response.data.data.map((item) => ({
           id: item._id || item.id,
@@ -275,7 +273,7 @@ export const academicService = {
 
   async getSubjectById(id) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/subjects/${id}`);
+      const response = await axiosClient.get(`/subjects/${id}`);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         return {
@@ -312,7 +310,7 @@ export const academicService = {
         classes: subjectData.assignedClasses || []
       };
 
-      const response = await axios.post(`${API_BASE_URL}/subjects`, payload);
+      const response = await axiosClient.post('/subjects', payload);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const newSubject = {
@@ -369,7 +367,7 @@ export const academicService = {
         status: (subjectData.status || 'ACTIVE').toUpperCase()
       };
 
-      const response = await axios.put(`${API_BASE_URL}/subjects/${id}`, payload);
+      const response = await axiosClient.put(`/subjects/${id}`, payload);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const updated = {
@@ -414,7 +412,7 @@ export const academicService = {
 
   async deleteSubject(id) {
     try {
-      await axios.delete(`${API_BASE_URL}/subjects/${id}`);
+      await axiosClient.delete(`/subjects/${id}`);
       const { subjects } = loadDb();
       const updatedSubjects = subjects.filter((s) => s.id !== id);
       setStoredData('academic_subjects', updatedSubjects);
@@ -433,7 +431,7 @@ export const academicService = {
 
   async toggleSubjectStatus(id) {
     try {
-      const response = await axios.patch(`${API_BASE_URL}/subjects/${id}/status`);
+      const response = await axiosClient.patch(`/subjects/${id}/status`);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const updated = {
@@ -479,7 +477,7 @@ export const academicService = {
         classes: assignedClasses || []
       };
 
-      const response = await axios.put(`${API_BASE_URL}/subjects/${id}/assign`, payload);
+      const response = await axiosClient.put(`/subjects/${id}/assign`, payload);
       if (response.data?.success && response.data.data) {
         const item = response.data.data;
         const updated = {

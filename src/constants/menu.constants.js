@@ -101,8 +101,20 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Finance & Ledger',
-    path: '/admin/finance/ledger',
-    icon: Wallet
+    icon: Wallet,
+    children: [
+      { title: 'Dashboard', path: '/admin/finance/dashboard' },
+      { title: 'Income', path: '/admin/finance/income' },
+      { title: 'Expenses', path: '/admin/finance/expenses' },
+      { title: 'Ledger Accounts', path: '/admin/finance/ledger' },
+      { title: 'Transactions', path: '/admin/finance/transactions' },
+      { title: 'Bank Accounts', path: '/admin/finance/bank-accounts' },
+      { title: 'Cash Book', path: '/admin/finance/cash-book' },
+      { title: 'Payment Vouchers', path: '/admin/finance/payment-vouchers' },
+      { title: 'Receipt Vouchers', path: '/admin/finance/receipt-vouchers' },
+      { title: 'Journal Entries', path: '/admin/finance/journal-entries' },
+      { title: 'Financial Reports', path: '/admin/finance/reports' }
+    ]
   },
   {
     title: 'Payroll System',
@@ -116,13 +128,36 @@ export const ADMIN_MENU = [
   },
   {
     title: 'Library catalog',
-    path: '/admin/library',
-    icon: BookOpen
+    icon: BookOpen,
+    children: [
+      { title: 'Dashboard', path: '/admin/library/dashboard' },
+      { title: 'Book Categories', path: '/admin/library/categories' },
+      { title: 'Books Directory', path: '/admin/library/books' },
+      { title: 'Authors', path: '/admin/library/authors' },
+      { title: 'Publishers', path: '/admin/library/publishers' },
+      { title: 'Book Issue', path: '/admin/library/issues' },
+      { title: 'Book Return', path: '/admin/library/returns' },
+      { title: 'Reservations', path: '/admin/library/reservations' },
+      { title: 'Fine Management', path: '/admin/library/fines' },
+      { title: 'Library Members', path: '/admin/library/members' },
+      { title: 'Library Reports', path: '/admin/library/reports' }
+    ]
   },
   {
     title: 'Inventory store',
-    path: '/admin/inventory',
-    icon: Package
+    icon: Package,
+    children: [
+      { title: 'Dashboard', path: '/admin/inventory/dashboard' },
+      { title: 'Asset Categories', path: '/admin/inventory/categories' },
+      { title: 'Assets Directory', path: '/admin/inventory/assets' },
+      { title: 'Stock Management', path: '/admin/inventory/stock' },
+      { title: 'Vendors', path: '/admin/inventory/vendors' },
+      { title: 'Purchase Orders', path: '/admin/inventory/purchase-orders' },
+      { title: 'Asset Allocation', path: '/admin/inventory/allocations' },
+      { title: 'Maintenance Logs', path: '/admin/inventory/maintenance' },
+      { title: 'Asset History', path: '/admin/inventory/history' },
+      { title: 'Inventory Reports', path: '/admin/inventory/reports' }
+    ]
   },
   {
     title: 'Communication',
@@ -131,11 +166,6 @@ export const ADMIN_MENU = [
       { title: 'Circular logs', path: '/admin/communication/circulars' },
       { title: 'SMS dispatchers', path: '/admin/communication/sms' }
     ]
-  },
-  {
-    title: 'Guest registers',
-    path: '/admin/visitors',
-    icon: CalendarDays
   },
   {
     title: 'School Reports',

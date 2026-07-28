@@ -8,6 +8,7 @@ const TeacherAttendance = require('./models/attendance.model');
 const TeacherLeave = require('./models/leave.model');
 const ApiError = require('../../utils/apiError.util');
 const { paginate } = require('../../utils/pagination.util');
+const User = require('../user/user.model');
 
 class TeacherService {
   // ─── TEACHER CRUD ────────────────────────────────────────────────────────
@@ -136,6 +137,34 @@ class TeacherService {
     }
 
     const teacher = await Teacher.create(payload);
+
+    // Auto-create User account for the teacher
+    try {
+      let emailToUse = teacher.email;
+      let existingUser = await User.findOne({ email: teacher.email });
+
+      if (existingUser && existingUser.employeeId !== teacher.employeeId) {
+        const emailParts = teacher.email.split('@');
+        emailToUse = `${emailParts[0]}+${teacher.employeeId}@${emailParts[1]}`;
+        existingUser = await User.findOne({ email: emailToUse });
+      }
+
+      if (!existingUser) {
+        await User.create({
+          name: `${teacher.firstName} ${teacher.lastName}`,
+          email: emailToUse,
+          role: 'teacher',
+          department: teacher.department,
+          designation: teacher.designation,
+          employeeId: teacher.employeeId,
+          mobile: teacher.phone,
+          status: 'active'
+        });
+      }
+    } catch (err) {
+      console.error('[Sync Error] Failed to auto-create user account for teacher:', err.message);
+    }
+
     return teacher;
   }
 
@@ -152,8 +181,35 @@ class TeacherService {
       }
     }
 
+    const oldEmail = teacher.email;
     Object.assign(teacher, payload);
     await teacher.save();
+
+    // Auto-update User account for the teacher
+    try {
+      let emailToUse = teacher.email;
+      let existingUser = await User.findOne({ email: teacher.email });
+
+      if (existingUser && existingUser.employeeId !== teacher.employeeId) {
+        const emailParts = teacher.email.split('@');
+        emailToUse = `${emailParts[0]}+${teacher.employeeId}@${emailParts[1]}`;
+      }
+
+      await User.findOneAndUpdate(
+        { employeeId: teacher.employeeId },
+        {
+          name: `${teacher.firstName} ${teacher.lastName}`,
+          email: emailToUse,
+          department: teacher.department,
+          designation: teacher.designation,
+          mobile: teacher.phone
+        },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.error('[Sync Error] Failed to auto-update user account for teacher:', err.message);
+    }
+
     return teacher;
   }
 
@@ -165,6 +221,14 @@ class TeacherService {
 
     teacher.isDeleted = true;
     await teacher.save();
+
+    // Soft delete corresponding User account
+    try {
+      await User.findOneAndUpdate({ email: teacher.email }, { isDeleted: true });
+    } catch (err) {
+      console.error('[Sync Error] Failed to soft-delete user account for teacher:', err.message);
+    }
+
     return { message: 'Teacher record soft deleted successfully.' };
   }
 
@@ -180,6 +244,17 @@ class TeacherService {
 
     teacher.status = status;
     await teacher.save();
+
+    // Toggle corresponding User account status
+    try {
+      await User.findOneAndUpdate(
+        { email: teacher.email },
+        { status: status === 'active' ? 'active' : 'inactive' }
+      );
+    } catch (err) {
+      console.error('[Sync Error] Failed to toggle user status for teacher:', err.message);
+    }
+
     return teacher;
   }
 

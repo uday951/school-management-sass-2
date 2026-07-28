@@ -54,7 +54,8 @@ const toStudentProfileDTO = (
   attendanceRecords = [], 
   studentFees = [], 
   subjectsList = [], 
-  timetableList = []
+  timetableList = [],
+  transport = null
 ) => {
   // Dynamic Attendance calculations
   const totalDays = attendanceRecords.length;
@@ -173,7 +174,17 @@ const toStudentProfileDTO = (
       gpa: '0.00',
       rank: 'N/A',
       recentMarks: []
-    }
+    },
+    transport: transport ? {
+      vehicleNo: transport.routeId?.assignedVehicle?.vehicleNo || 'N/A',
+      driverName: transport.routeId?.assignedDriver?.name || 'N/A',
+      driverPhone: transport.routeId?.assignedDriver?.phone || 'N/A',
+      routeName: transport.routeId?.routeName || 'N/A',
+      routeCode: transport.routeId?.routeCode || 'N/A',
+      pickupStop: transport.pickupStopId?.stopName || 'N/A',
+      dropStop: transport.dropStopId?.stopName || 'N/A',
+      status: transport.status || 'inactive'
+    } : null
   };
 };
 

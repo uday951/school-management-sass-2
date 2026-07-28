@@ -84,6 +84,20 @@ class StudentService {
     const Timetable = mongoose.models.Timetable || mongoose.model('Timetable');
     const timetable = await Timetable.find({ class: student.class, section: student.section }).lean();
 
+    // 5. Fetch transport allocation details
+    const StudentTransport = mongoose.models.StudentTransport || mongoose.model('StudentTransport');
+    const transport = await StudentTransport.findOne({ studentId: id, isDeleted: false })
+      .populate({
+        path: 'routeId',
+        populate: [
+          { path: 'assignedVehicle' },
+          { path: 'assignedDriver' }
+        ]
+      })
+      .populate('pickupStopId')
+      .populate('dropStopId')
+      .lean();
+
     return toStudentProfileDTO(
       student, 
       parent, 
@@ -92,7 +106,8 @@ class StudentService {
       attendanceRecords, 
       studentFees, 
       subjects, 
-      timetable
+      timetable,
+      transport
     );
   }
 
