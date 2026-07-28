@@ -30,14 +30,25 @@ export default function Sidebar() {
     menuItems = PARENT_MENU
   }
 
+  const resolvePath = (path) => {
+    if (!path) return '';
+    if (user?.role === 'parent' && path.includes('/parent/child/1/')) {
+      const activeChildId = localStorage.getItem('parent_active_child_id') || '6a62315fb63cbcaf89179eb1';
+      return path.replace('/parent/child/1/', `/parent/child/${activeChildId}/`);
+    }
+    return path;
+  }
+
   const renderMenuItem = (item) => {
     const Icon = item.icon
     const hasChildren = !!item.children
     const isOpen = !!openSubmenus[item.title]
-    const isLinkActive = location.pathname === item.path
+    
+    const resolvedPath = resolvePath(item.path)
+    const isLinkActive = location.pathname === resolvedPath
     
     // Check if any child is active
-    const isChildActive = hasChildren && item.children.some(child => location.pathname === child.path)
+    const isChildActive = hasChildren && item.children.some(child => location.pathname === resolvePath(child.path))
     const isParentActive = isLinkActive || isChildActive
 
     return (
@@ -66,11 +77,12 @@ export default function Sidebar() {
             {isOpen && !isCollapsed && (
               <div className="mt-1 ml-6 space-y-1 border-l border-border pl-3 animate-in slide-in-from-left-1 duration-100">
                 {item.children.map((child) => {
-                  const isSubActive = location.pathname === child.path
+                  const childResolvedPath = resolvePath(child.path)
+                  const isSubActive = location.pathname === childResolvedPath
                   return (
                     <Link
                       key={child.title}
-                      to={child.path}
+                      to={childResolvedPath}
                       className={cn(
                         "flex w-full items-center justify-between px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
                         isSubActive 
@@ -95,7 +107,7 @@ export default function Sidebar() {
           </div>
         ) : (
           <Link
-            to={item.path}
+            to={resolvedPath}
             className={cn(
               "flex w-full items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
               isLinkActive 
