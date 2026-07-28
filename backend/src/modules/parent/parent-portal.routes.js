@@ -23,6 +23,8 @@ router.get('/child/:studentId/results', parentPortalController.getChildResults);
 router.get('/child/:studentId/report-card', parentPortalController.getChildReportCard);
 router.get('/child/:studentId/library', parentPortalController.getChildLibrary);
 router.get('/child/:studentId/documents', parentPortalController.getChildDocuments);
+router.get('/child/:studentId/transport', parentPortalController.getChildTransport);
+
 
 // School Notices & Circulars
 router.get('/announcements', parentPortalController.getAnnouncements);

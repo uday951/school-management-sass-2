@@ -17,6 +17,8 @@ const Certificate = require('../student/models/certificate.model');
 const Announcement = require('../communication/models/announcement.model');
 const Notice = require('../communication/models/notice.model');
 const User = require('../user/user.model');
+const StudentTransport = require('../transport/models/student-transport.model');
+const Stop = require('../transport/models/stop.model');
 
 const asyncHandler = require('../../utils/asyncHandler.util');
 const { sendSuccess, sendCreated, sendError } = require('../../utils/response.util');
@@ -250,6 +252,34 @@ class ParentPortalController {
       .limit(20)
       .lean();
     return sendSuccess(res, 'Notices retrieved.', list);
+  });
+
+  // GET /portal/child/:studentId/transport
+  getChildTransport = asyncHandler(async (req, res) => {
+    const { studentId } = req.params;
+    
+    // Find the transport allocation for the child
+    const allocation = await StudentTransport.findOne({ studentId, isDeleted: false })
+      .populate({
+        path: 'routeId',
+        populate: [
+          { path: 'assignedVehicle' },
+          { path: 'assignedDriver' }
+        ]
+      })
+      .populate('pickupStopId')
+      .populate('dropStopId')
+      .lean();
+
+    let stops = [];
+    if (allocation && allocation.routeId) {
+      stops = await Stop.find({ routeId: allocation.routeId._id, isDeleted: false }).lean();
+    }
+
+    return sendSuccess(res, 'Child transport details retrieved.', {
+      allocation,
+      stops
+    });
   });
 }
 
