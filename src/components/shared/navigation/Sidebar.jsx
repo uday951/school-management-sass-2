@@ -43,6 +43,7 @@ export default function Sidebar() {
     const Icon = item.icon
     const hasChildren = !!item.children
     const isOpen = !!openSubmenus[item.title]
+    
     const resolvedItemPath = resolvePath(item.path)
     const isLinkActive = location.pathname === resolvedItemPath
     

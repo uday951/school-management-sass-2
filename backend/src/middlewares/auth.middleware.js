@@ -11,13 +11,36 @@ const authenticate = asyncHandler(async (req, _res, next) => {
   const token = extractBearerToken(req.headers.authorization);
   
   if (token && token.startsWith('mock_token')) {
-    const role = token.split('_')[2] || 'school_admin';
+    let role = token.split('_')[2];
+    if (!role) {
+      if (req.originalUrl.includes('/parent') || req.originalUrl.includes('/portal')) role = 'parent';
+      else if (req.originalUrl.includes('/teacher')) role = 'teacher';
+      else role = 'school_admin';
+    }
+    
     if (role === 'parent') {
-      req.user = { id: '6a63785e11b63a63ef656825', role: 'parent', tenantId: 'default_tenant', email: '123@gmail.com' };
+      req.user = { 
+        id: '6a63785e11b63a63ef656825', 
+        email: '123@gmail.com', 
+        role: 'parent', 
+        name: 'robert daniel', 
+        tenantId: 'default_school' 
+      };
     } else if (role === 'teacher') {
-      req.user = { id: '6a6237bed724b22b37b5255a', role: 'teacher', tenantId: 'default_tenant', email: 's.jenkins@school.edu' };
+      req.user = { 
+        id: '6a6237bed724b22b37b5255a', 
+        email: 's.jenkins@school.edu', 
+        role: 'teacher', 
+        name: 'Sarah Jenkins', 
+        tenantId: 'default_school' 
+      };
     } else {
-      req.user = { id: '6a6237bed724b22b37b5255a', role: role, tenantId: 'default_tenant' };
+      req.user = { 
+        id: '6a6237bed724b22b37b5255a', 
+        role: role, 
+        name: 'Mock User', 
+        tenantId: 'default_school' 
+      };
     }
     return next();
   }
