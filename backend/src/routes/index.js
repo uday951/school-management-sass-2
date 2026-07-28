@@ -48,6 +48,7 @@ router.use('/reports', require('../modules/reports/reports.routes'));
 router.use('/payroll', require('../modules/payroll/payroll.routes'));
 router.use('/communication', require('../modules/communication/communication.routes'));
 router.use('/administration', require('../modules/user/administration.routes'));
+router.use('/dashboard', require('../modules/dashboard/dashboard.routes'));
 
 module.exports = router;
 
