@@ -71,6 +71,9 @@ const ChildLeaves = lazy(() => import('@/pages/parent/ChildLeaves'))
 const ChildLeavesApply = lazy(() => import('@/pages/parent/ChildLeavesApply'))
 const CommunicationChats = lazy(() => import('@/pages/parent/CommunicationChats'))
 const Documents = lazy(() => import('@/pages/parent/Documents'))
+const ChildLibrary = lazy(() => import('@/pages/parent/ChildLibrary'))
+const ParentSettings = lazy(() => import('@/pages/parent/Settings'))
+
 
 // Error Pages
 const ErrorPage = lazy(() => import('@/pages/ErrorPage'))
@@ -203,8 +206,10 @@ export default function AppRoutes() {
                         { path: 'child/:id/transport', element: <ChildTransport /> },
                         { path: 'child/:id/leaves', element: <ChildLeaves /> },
                         { path: 'child/:id/leaves/apply', element: <ChildLeavesApply /> },
+                        { path: 'child/:id/library', element: <ChildLibrary /> },
                         { path: 'communication/chats', element: <CommunicationChats /> },
-                        { path: 'documents', element: <Documents /> }
+                        { path: 'documents', element: <Documents /> },
+                        { path: 'settings', element: <ParentSettings /> }
                       ]
                     }
                   ]

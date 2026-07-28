@@ -257,6 +257,11 @@ export const PARENT_MENU = [
     icon: CalendarDays
   },
   {
+    title: 'Library books',
+    path: '/parent/child/1/library',
+    icon: BookOpen
+  },
+  {
     title: 'Teacher messages',
     path: '/parent/communication/chats',
     icon: Mail
@@ -264,6 +269,12 @@ export const PARENT_MENU = [
   {
     title: 'School documents',
     path: '/parent/documents',
-    icon: BookOpen
+    icon: FileSpreadsheet
+  },
+  {
+    title: 'Portal Settings',
+    path: '/parent/settings',
+    icon: UserCog
   }
 ]
+

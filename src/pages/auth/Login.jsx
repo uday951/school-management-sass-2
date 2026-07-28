@@ -7,7 +7,7 @@ export default function Login() {
   const navigate = useNavigate()
   
   const handleMockLogin = (role) => {
-    login('mock_token', { name: `Mock ${role}`, role })
+    login(`mock_token_${role}`, { name: `Mock ${role}`, role })
     if (role === 'school_admin' || role === 'super_admin') {
       navigate('/admin/dashboard')
     } else if (role === 'teacher') {

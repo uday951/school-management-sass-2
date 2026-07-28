@@ -4,12 +4,21 @@ import { useAuthStore, useSidebarStore } from '@/store'
 import { ADMIN_MENU, TEACHER_MENU, PARENT_MENU } from '@/constants/menu.constants'
 import { ChevronDown, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useChildStore } from '@/store'
 
 export default function Sidebar() {
   const { user } = useAuthStore()
   const { isCollapsed, isOpenMobile, toggleMobileSidebar } = useSidebarStore()
+  const { activeChild } = useChildStore()
   const location = useLocation()
   
+  // Resolve child ID paths dynamically
+  const resolvePath = (path) => {
+    if (!path) return ''
+    const childId = activeChild?.id || activeChild?._id || '1'
+    return path.replace(/\/child\/1\//g, `/child/${childId}/`)
+  }
+
   // Track open state of submenus
   const [openSubmenus, setOpenSubmenus] = useState({})
 
@@ -34,10 +43,11 @@ export default function Sidebar() {
     const Icon = item.icon
     const hasChildren = !!item.children
     const isOpen = !!openSubmenus[item.title]
-    const isLinkActive = location.pathname === item.path
+    const resolvedItemPath = resolvePath(item.path)
+    const isLinkActive = location.pathname === resolvedItemPath
     
     // Check if any child is active
-    const isChildActive = hasChildren && item.children.some(child => location.pathname === child.path)
+    const isChildActive = hasChildren && item.children.some(child => location.pathname === resolvePath(child.path))
     const isParentActive = isLinkActive || isChildActive
 
     return (
@@ -66,11 +76,12 @@ export default function Sidebar() {
             {isOpen && !isCollapsed && (
               <div className="mt-1 ml-6 space-y-1 border-l border-border pl-3 animate-in slide-in-from-left-1 duration-100">
                 {item.children.map((child) => {
-                  const isSubActive = location.pathname === child.path
+                  const resolvedChildPath = resolvePath(child.path)
+                  const isSubActive = location.pathname === resolvedChildPath
                   return (
                     <Link
                       key={child.title}
-                      to={child.path}
+                      to={resolvedChildPath}
                       className={cn(
                         "flex w-full items-center justify-between px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
                         isSubActive 
@@ -95,7 +106,7 @@ export default function Sidebar() {
           </div>
         ) : (
           <Link
-            to={item.path}
+            to={resolvedItemPath}
             className={cn(
               "flex w-full items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
               isLinkActive 
