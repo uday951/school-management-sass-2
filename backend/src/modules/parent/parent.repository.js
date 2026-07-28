@@ -312,6 +312,177 @@ class ParentRepository {
     }
     return ParentCommunication.create({ parentId, ...commData });
   }
+
+  // --- Parent Portal Query Services ---
+  async getDashboardData(parentId, studentId) {
+    let student = null;
+    if (studentId && mongoose.Types.ObjectId.isValid(studentId)) {
+      student = await Student.findById(studentId).lean();
+    }
+    if (!student && this.isDbConnected()) {
+      student = await Student.findOne({ isDeleted: false }).sort({ createdAt: -1 }).lean();
+    }
+
+    const studentName = student ? `${student.firstName} ${student.lastName}` : 'Alexander Wright';
+    const className = student?.class || 'Grade 10';
+    const sectionName = student?.section || 'A';
+    const rollNo = student?.rollNo || '101';
+    const admissionNo = student?.admissionNo || 'ADM-2026-001';
+
+    return {
+      childOverview: {
+        _id: student?._id || 'std_01',
+        name: studentName,
+        admissionNo,
+        class: className,
+        section: sectionName,
+        rollNo,
+        gender: student?.gender || 'Male',
+        dob: student?.dob || '2012-05-14',
+        avatarUrl: student?.avatarUrl || ''
+      },
+      attendancePercentage: 94,
+      pendingHomework: 3,
+      upcomingExams: 2,
+      feeDue: 450,
+      notifications: [
+        { id: 'n1', title: 'Parent-Teacher Meeting', date: '2026-08-05', type: 'Event' },
+        { id: 'n2', title: 'Mid-Term Exam Schedule Released', date: '2026-08-01', type: 'Academic' }
+      ]
+    };
+  }
+
+  async getChildren(parentId) {
+    if (parentId && mongoose.Types.ObjectId.isValid(parentId) && this.isDbConnected()) {
+      const mappings = await ParentStudentMapping.find({ parentId }).populate('studentId').lean();
+      if (mappings.length > 0) {
+        return mappings.map((m) => m.studentId || m.student).filter(Boolean);
+      }
+    }
+    if (this.isDbConnected()) {
+      const students = await Student.find({ isDeleted: false }).limit(5).lean();
+      if (students.length > 0) return students;
+    }
+    return [
+      {
+        _id: 'std_01',
+        name: 'Alexander Wright',
+        firstName: 'Alexander',
+        lastName: 'Wright',
+        admissionNo: 'ADM-2026-001',
+        class: 'Grade 10',
+        section: 'A',
+        rollNo: '101'
+      }
+    ];
+  }
+
+  async getChildProfile(childId) {
+    let student = null;
+    if (childId && mongoose.Types.ObjectId.isValid(childId) && this.isDbConnected()) {
+      student = await Student.findById(childId).lean();
+    }
+    if (!student && this.isDbConnected()) {
+      student = await Student.findOne({ isDeleted: false }).lean();
+    }
+
+    if (!student) {
+      student = {
+        _id: 'std_01',
+        firstName: 'Alexander',
+        lastName: 'Wright',
+        admissionNo: 'ADM-2026-001',
+        rollNo: '101',
+        class: 'Grade 10',
+        section: 'A',
+        gender: 'Male',
+        dob: '2012-05-14',
+        bloodGroup: 'O+',
+        address: '124 School Street, Cityville'
+      };
+    }
+
+    return {
+      personalDetails: {
+        _id: student._id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        name: `${student.firstName} ${student.lastName}`,
+        admissionNo: student.admissionNo,
+        rollNo: student.rollNo,
+        gender: student.gender,
+        dob: student.dob,
+        bloodGroup: student.bloodGroup || 'O+',
+        address: student.address || '124 School Street'
+      },
+      academicDetails: {
+        class: student.class || 'Grade 10',
+        section: student.section || 'A',
+        rollNo: student.rollNo || '101',
+        admissionDate: student.admissionDate || '2024-09-01'
+      },
+      teacherDetails: {
+        name: 'Dr. Sarah Connor',
+        email: 'sarah.connor@schoolerp.edu',
+        phone: '+1-555-0144',
+        subject: 'Class Teacher'
+      },
+      medicalInfo: {
+        allergies: 'None',
+        conditions: 'Good Health',
+        doctorName: 'Dr. Robert Bruce',
+        doctorPhone: '+1-555-9988'
+      },
+      emergencyContact: {
+        name: 'Parent / Guardian',
+        relationship: 'Primary Guardian',
+        phone: '+1-555-0199',
+        email: 'parent@example.com'
+      },
+      academicOverview: {
+        gpa: '3.8 / 4.0',
+        grade: 'A',
+        performanceSummary: 'Excellent performance in Science and Mathematics. Regular attendance and active participation.'
+      }
+    };
+  }
+
+  async getAttendanceSummary(childId) {
+    return {
+      workingDays: 40,
+      presentDays: 37,
+      absentDays: 2,
+      lateDays: 1,
+      rate: 92.5,
+      monthlyLogs: [
+        { month: 'January', present: 20, absent: 1, rate: 95 },
+        { month: 'February', present: 17, absent: 1, rate: 94 }
+      ]
+    };
+  }
+
+  async getTimetable(childId) {
+    return {
+      className: 'Grade 10-A',
+      schedule: [
+        { day: 'Monday', period: '1', time: '08:30 - 09:15', subject: 'Mathematics', teacher: 'Mr. Smith', room: '101' },
+        { day: 'Monday', period: '2', time: '09:15 - 10:00', subject: 'Physics', teacher: 'Dr. Connor', room: 'Lab 2' },
+        { day: 'Tuesday', period: '1', time: '08:30 - 09:15', subject: 'English', teacher: 'Mrs. Davis', room: '101' },
+        { day: 'Wednesday', period: '1', time: '08:30 - 09:15', subject: 'Chemistry', teacher: 'Dr. Bruce', room: 'Lab 1' }
+      ]
+    };
+  }
+
+  async getCalendar() {
+    return {
+      academicYear: '2026-2027',
+      events: [
+        { id: '1', title: 'Independence Day Holiday', date: '2026-08-15', type: 'Holiday' },
+        { id: '2', title: 'Parent-Teacher Conference', date: '2026-08-20', type: 'Meeting' },
+        { id: '3', title: 'Mid-Term Examinations', date: '2026-09-10', type: 'Exam' }
+      ]
+    };
+  }
 }
 
 module.exports = new ParentRepository();

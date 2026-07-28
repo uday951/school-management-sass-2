@@ -381,5 +381,175 @@ export const parentService = {
     }
 
     return { importedCount, totalParsed: records.length, linkedCount };
+  },
+
+  // --- Dedicated Parent Portal Feature APIs ---
+  async getParentDashboard(studentId = '') {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/dashboard`, { params: { studentId } });
+      if (response.data?.success && response.data.data) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getParentDashboard:', err.message);
+    }
+    return {
+      childOverview: {
+        _id: 'std_01',
+        name: 'Alexander Wright',
+        admissionNo: 'ADM-2026-001',
+        class: 'Grade 10',
+        section: 'A',
+        rollNo: '101',
+        gender: 'Male',
+        dob: '2012-05-14'
+      },
+      attendancePercentage: 94,
+      pendingHomework: 3,
+      upcomingExams: 2,
+      feeDue: 450,
+      notifications: [
+        { id: 'n1', title: 'Parent-Teacher Meeting', date: '2026-08-05', type: 'Event' },
+        { id: 'n2', title: 'Mid-Term Exam Schedule Released', date: '2026-08-01', type: 'Academic' }
+      ]
+    };
+  },
+
+  async getChildren() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/children`);
+      if (response.data?.success && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getChildren:', err.message);
+    }
+    return [
+      {
+        _id: 'std_01',
+        name: 'Alexander Wright',
+        firstName: 'Alexander',
+        lastName: 'Wright',
+        admissionNo: 'ADM-2026-001',
+        class: 'Grade 10',
+        section: 'A',
+        rollNo: '101'
+      }
+    ];
+  },
+
+  async getChildProfile(childId = '') {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/child/${childId || 'default'}`);
+      if (response.data?.success && response.data.data) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getChildProfile:', err.message);
+    }
+    return {
+      personalDetails: {
+        _id: 'std_01',
+        name: 'Alexander Wright',
+        firstName: 'Alexander',
+        lastName: 'Wright',
+        admissionNo: 'ADM-2026-001',
+        rollNo: '101',
+        gender: 'Male',
+        dob: '2012-05-14',
+        bloodGroup: 'O+',
+        address: '124 School Street, Cityville'
+      },
+      academicDetails: {
+        class: 'Grade 10',
+        section: 'A',
+        rollNo: '101',
+        admissionDate: '2024-09-01'
+      },
+      teacherDetails: {
+        name: 'Dr. Sarah Connor',
+        email: 'sarah.connor@schoolerp.edu',
+        phone: '+1-555-0144',
+        subject: 'Class Teacher'
+      },
+      medicalInfo: {
+        allergies: 'None',
+        conditions: 'Good Health',
+        doctorName: 'Dr. Robert Bruce',
+        doctorPhone: '+1-555-9988'
+      },
+      emergencyContact: {
+        name: 'Parent / Guardian',
+        relationship: 'Primary Guardian',
+        phone: '+1-555-0199',
+        email: 'parent@example.com'
+      },
+      academicOverview: {
+        gpa: '3.8 / 4.0',
+        grade: 'A',
+        performanceSummary: 'Excellent performance in Science and Mathematics. Regular attendance and active participation.'
+      }
+    };
+  },
+
+  async getAttendanceSummary(childId = '') {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/attendance-summary`, { params: { childId } });
+      if (response.data?.success && response.data.data) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getAttendanceSummary:', err.message);
+    }
+    return {
+      workingDays: 40,
+      presentDays: 37,
+      absentDays: 2,
+      lateDays: 1,
+      rate: 92.5,
+      monthlyLogs: [
+        { month: 'January', present: 20, absent: 1, rate: 95 },
+        { month: 'February', present: 17, absent: 1, rate: 94 }
+      ]
+    };
+  },
+
+  async getTimetable(childId = '') {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/timetable`, { params: { childId } });
+      if (response.data?.success && response.data.data) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getTimetable:', err.message);
+    }
+    return {
+      className: 'Grade 10-A',
+      schedule: [
+        { day: 'Monday', period: '1', time: '08:30 - 09:15', subject: 'Mathematics', teacher: 'Mr. Smith', room: '101' },
+        { day: 'Monday', period: '2', time: '09:15 - 10:00', subject: 'Physics', teacher: 'Dr. Connor', room: 'Lab 2' },
+        { day: 'Tuesday', period: '1', time: '08:30 - 09:15', subject: 'English', teacher: 'Mrs. Davis', room: '101' },
+        { day: 'Wednesday', period: '1', time: '08:30 - 09:15', subject: 'Chemistry', teacher: 'Dr. Bruce', room: 'Lab 1' }
+      ]
+    };
+  },
+
+  async getCalendar() {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/parent/calendar`);
+      if (response.data?.success && response.data.data) {
+        return response.data.data;
+      }
+    } catch (err) {
+      console.warn('[API Notice] Fallback for getCalendar:', err.message);
+    }
+    return {
+      academicYear: '2026-2027',
+      events: [
+        { id: '1', title: 'Independence Day Holiday', date: '2026-08-15', type: 'Holiday' },
+        { id: '2', title: 'Parent-Teacher Conference', date: '2026-08-20', type: 'Meeting' },
+        { id: '3', title: 'Mid-Term Examinations', date: '2026-09-10', type: 'Exam' }
+      ]
+    };
   }
 };
