@@ -12,6 +12,14 @@ const { uploadDocument, handleMulterError } = require('../../middlewares/upload.
 
 const router = express.Router();
 
+// Parent Portal Dedicated Feature Endpoints (Defined before /:id to avoid route collision)
+router.get('/dashboard', parentController.getDashboard);
+router.get('/children', parentController.getChildren);
+router.get('/child/:id', parentController.getChildProfile);
+router.get('/attendance-summary', parentController.getAttendanceSummary);
+router.get('/timetable', parentController.getTimetable);
+router.get('/calendar', parentController.getCalendar);
+
 // Parent CRUD & Bulk Import
 router.get('/', parentController.getParents);
 router.post('/', createParentSchema, validate, parentController.createParent);

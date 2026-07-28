@@ -120,6 +120,48 @@ class ParentController {
     const result = await parentService.importParents(records);
     return sendSuccess(res, `Bulk import processed. ${result.importedCount} parents imported, ${result.linkedCount} students linked.`, result);
   });
+
+  // GET /api/v1/parent/dashboard
+  getDashboard = asyncHandler(async (req, res) => {
+    const parentId = req.user?._id || req.query.parentId;
+    const studentId = req.query.studentId || req.query.childId;
+    const data = await parentService.getDashboard(parentId, studentId);
+    return sendSuccess(res, 'Parent dashboard metrics retrieved successfully.', data);
+  });
+
+  // GET /api/v1/parent/children
+  getChildren = asyncHandler(async (req, res) => {
+    const parentId = req.user?._id || req.query.parentId;
+    const children = await parentService.getChildren(parentId);
+    return sendSuccess(res, 'Linked children retrieved successfully.', children);
+  });
+
+  // GET /api/v1/parent/child/:id
+  getChildProfile = asyncHandler(async (req, res) => {
+    const childId = req.params.id;
+    const profile = await parentService.getChildProfile(childId);
+    return sendSuccess(res, 'Child profile details retrieved successfully.', profile);
+  });
+
+  // GET /api/v1/parent/attendance-summary
+  getAttendanceSummary = asyncHandler(async (req, res) => {
+    const childId = req.query.childId || req.query.studentId;
+    const summary = await parentService.getAttendanceSummary(childId);
+    return sendSuccess(res, 'Attendance summary retrieved successfully.', summary);
+  });
+
+  // GET /api/v1/parent/timetable
+  getTimetable = asyncHandler(async (req, res) => {
+    const childId = req.query.childId || req.query.studentId;
+    const timetable = await parentService.getTimetable(childId);
+    return sendSuccess(res, 'Child timetable retrieved successfully.', timetable);
+  });
+
+  // GET /api/v1/parent/calendar
+  getCalendar = asyncHandler(async (_req, res) => {
+    const calendar = await parentService.getCalendar();
+    return sendSuccess(res, 'School calendar retrieved successfully.', calendar);
+  });
 }
 
 module.exports = new ParentController();

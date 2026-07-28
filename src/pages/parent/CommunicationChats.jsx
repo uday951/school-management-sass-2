@@ -4,7 +4,6 @@ import {
   PageHeader, 
   PageContainer, 
   SimpleCard, 
-  Button, 
   Badge
 } from '@/components/shared'
 import { 
@@ -480,5 +479,21 @@ export default function CommunicationChats() {
         </div>
       )}
     </PageContainer>
+  )
+}
+
+// Simple internal Button component since it wasn't exported in shared index directly
+function Button({ children, variant = 'primary', className, ...props }) {
+  const styles = variant === 'primary' 
+    ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+    : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground text-foreground'
+  
+  return (
+    <button
+      className={`inline-flex items-center justify-center rounded-xl text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 cursor-pointer ${styles} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
   )
 }

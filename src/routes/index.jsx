@@ -71,6 +71,9 @@ const ChildLeaves = lazy(() => import('@/pages/parent/ChildLeaves'))
 const ChildLeavesApply = lazy(() => import('@/pages/parent/ChildLeavesApply'))
 const CommunicationChats = lazy(() => import('@/pages/parent/CommunicationChats'))
 const Documents = lazy(() => import('@/pages/parent/Documents'))
+const ChildLibrary = lazy(() => import('@/pages/parent/ChildLibrary'))
+const ParentSettings = lazy(() => import('@/pages/parent/Settings'))
+
 
 // Error Pages
 const ErrorPage = lazy(() => import('@/pages/ErrorPage'))
@@ -195,16 +198,26 @@ export default function AppRoutes() {
                       children: [
                         { path: '', element: <Navigate to="/parent/dashboard" replace /> },
                         { path: 'dashboard', element: <ParentDashboard /> },
+                        { path: 'child-profile', element: <ChildProfile /> },
                         { path: 'child/:id/profile', element: <ChildProfile /> },
+                        { path: 'attendance', element: <ChildAttendance /> },
                         { path: 'child/:id/attendance', element: <ChildAttendance /> },
+                        { path: 'homework', element: <ChildHomework /> },
                         { path: 'child/:id/homework', element: <ChildHomework /> },
+                        { path: 'results', element: <ChildResults /> },
                         { path: 'child/:id/results', element: <ChildResults /> },
+                        { path: 'fees', element: <ChildFees /> },
                         { path: 'child/:id/fees', element: <ChildFees /> },
+                        { path: 'transport', element: <ChildTransport /> },
                         { path: 'child/:id/transport', element: <ChildTransport /> },
+                        { path: 'leaves', element: <ChildLeaves /> },
                         { path: 'child/:id/leaves', element: <ChildLeaves /> },
+                        { path: 'leaves/apply', element: <ChildLeavesApply /> },
                         { path: 'child/:id/leaves/apply', element: <ChildLeavesApply /> },
+                        { path: 'child/:id/library', element: <ChildLibrary /> },
                         { path: 'communication/chats', element: <CommunicationChats /> },
-                        { path: 'documents', element: <Documents /> }
+                        { path: 'documents', element: <Documents /> },
+                        { path: 'settings', element: <ParentSettings /> }
                       ]
                     }
                   ]

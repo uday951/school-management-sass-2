@@ -1,62 +1,57 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Outlet, useParams, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '@/components/shared/navigation/Sidebar'
 import Navbar from '@/components/shared/navigation/Navbar'
 import ContentWrapper from '@/components/shared/layout/ContentWrapper'
-import { useSidebarStore } from '@/store'
-import { cn } from '@/lib/utils'
+import { useSidebarStore, useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
+import { cn } from '@/lib/utils'
 
 export default function ParentLayout() {
   const { isCollapsed } = useSidebarStore()
   const { id } = useParams()
+  const { children, activeChild, setChildren, setActiveChild } = useChildStore()
   const navigate = useNavigate()
   const location = useLocation()
-  
-  const [students, setStudents] = useState([])
-  const [activeChildId, setActiveChildId] = useState('')
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchChildren = async () => {
       try {
-        const res = await axiosClient.get('/parent/students')
-        if (res.data.success && res.data.data.length > 0) {
-          setStudents(res.data.data)
+        const res = await axiosClient.get('/portal/my-children')
+        if (res.data.success && Array.isArray(res.data.data)) {
+          setChildren(res.data.data)
           
-          // Determine starting child ID
-          let initialId = id
-          if (!initialId) {
-            initialId = localStorage.getItem('parent_active_child_id') || res.data.data[0]._id
+          // Determine starting active child
+          if (res.data.data.length > 0) {
+            let initialId = id
+            if (!initialId) {
+              initialId = localStorage.getItem('parent_active_child_id') || res.data.data[0]._id || res.data.data[0].id
+            }
+            const foundChild = res.data.data.find(c => c._id === initialId || c.id === initialId) || res.data.data[0]
+            setActiveChild(foundChild)
+            localStorage.setItem('parent_active_child_id', foundChild._id || foundChild.id)
           }
-          
-          // Verify if initialId is valid
-          const isValid = res.data.data.some(s => s._id === initialId)
-          const targetId = isValid ? initialId : res.data.data[0]._id
-          
-          setActiveChildId(targetId)
-          localStorage.setItem('parent_active_child_id', targetId)
         }
       } catch (err) {
-        console.error('Failed to fetch linked children:', err)
-      } finally {
-        setLoading(false)
+        console.error('Error fetching parent children:', err)
       }
     }
-    fetchStudents()
-  }, [id])
+    fetchChildren()
+  }, [setChildren, id])
 
-  const handleChildChange = (newId) => {
-    setActiveChildId(newId)
-    localStorage.setItem('parent_active_child_id', newId)
-
-    const pathParts = location.pathname.split('/')
-    const childIdx = pathParts.indexOf('child')
-    if (childIdx !== -1 && pathParts[childIdx + 1]) {
-      pathParts[childIdx + 1] = newId
-      navigate(pathParts.join('/'))
-    } else {
-      navigate(`/parent/child/${newId}/profile`)
+  const handleChildChange = (e) => {
+    const childId = e.target.value
+    const child = children.find(c => c.id === childId || c._id === childId)
+    if (child) {
+      setActiveChild(child)
+      localStorage.setItem('parent_active_child_id', childId)
+      
+      const match = location.pathname.match(/\/parent\/child\/[^\/]+\/([^\/]+)/)
+      if (match && match[1]) {
+        navigate(`/parent/child/${child.id || child._id}/${match[1]}`)
+      } else {
+        navigate(`/parent/child/${child.id || child._id}/profile`)
+      }
     }
   }
 
@@ -68,24 +63,22 @@ export default function ParentLayout() {
         isCollapsed ? "md:ml-16" : "md:ml-64"
       )}>
         <Navbar />
-        <div className="bg-primary/5 border-b border-border px-4 py-2 flex items-center justify-between text-xs font-semibold text-primary select-none">
-          <span>Active Child:</span>
-          {loading ? (
-            <span className="text-muted-foreground animate-pulse">Loading children...</span>
-          ) : (
-            <select 
-              value={activeChildId}
-              onChange={(e) => handleChildChange(e.target.value)}
+        {children.length > 0 && (
+          <div className="bg-primary/5 border-b border-border px-4 py-2 flex items-center justify-between text-xs font-semibold text-primary select-none">
+            <span>Active Child:</span>
+            <select
+              value={activeChild?.id || activeChild?._id || ''}
+              onChange={handleChildChange}
               className="bg-background border border-border rounded px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer font-medium"
             >
-              {students.map(s => (
-                <option key={s._id} value={s._id}>
-                  {s.firstName} {s.lastName} ({s.class || 'N/A'})
+              {children.map(c => (
+                <option key={c.id || c._id} value={c.id || c._id}>
+                  {c.firstName} {c.lastName} ({c.class || 'No Class'})
                 </option>
               ))}
             </select>
-          )}
-        </div>
+          </div>
+        )}
         <ContentWrapper>
           <main className="p-4 md:p-6">
             <Outlet />

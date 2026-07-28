@@ -19,18 +19,10 @@ export default function ChildTransport() {
   const fetchChildTransport = async () => {
     try {
       setLoading(true)
-      const res = await axiosClient.get(`/transport/allocations?studentId=${id}`)
-      if (res.data.success && res.data.data.length > 0) {
-        const alloc = res.data.data[0]
-        setAllocation(alloc)
-
-        // Fetch stops for the assigned route
-        if (alloc.routeId?._id) {
-          const stopsRes = await axiosClient.get(`/transport/stops?routeId=${alloc.routeId._id}`)
-          if (stopsRes.data.success) {
-            setRouteStops(stopsRes.data.data)
-          }
-        }
+      const res = await axiosClient.get(`/portal/child/${id}/transport`)
+      if (res.data.success && res.data.data) {
+        setAllocation(res.data.data.allocation)
+        setRouteStops(res.data.data.stops || [])
       }
     } catch (err) {
       console.error(err)
@@ -38,6 +30,7 @@ export default function ChildTransport() {
       setLoading(false)
     }
   }
+
 
   useEffect(() => {
     if (id) fetchChildTransport()
