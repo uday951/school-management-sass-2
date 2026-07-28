@@ -39,6 +39,7 @@ router.use('/designations', teacherRoutes);
 router.use('/classes', classRoutes);
 router.use('/subjects', subjectRoutes);
 router.use('/parents', parentRoutes);
+router.use('/parent', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
 router.use('/exams', examRoutes);

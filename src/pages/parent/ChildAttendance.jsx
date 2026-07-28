@@ -16,7 +16,7 @@ export default function ChildAttendance() {
   const navigate = useNavigate()
   
   // Data States
-  const [stats, setStats] = useState({ workingDays: 30, presentDays: 28, absentDays: 1, lateDays: 1, rate: 95 })
+  const [stats, setStats] = useState({ workingDays: 0, presentDays: 0, absentDays: 0, lateDays: 0, rate: 0 })
   const [attendanceRecords, setAttendanceRecords] = useState([])
   const [loading, setLoading] = useState(true)
 
