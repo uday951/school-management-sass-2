@@ -158,6 +158,35 @@ class TeacherController {
     const leave = await teacherService.updateLeaveStatus(req.params.leaveId, req.body.status, req.body.remarks, req.body.approvedBy);
     return sendSuccess(res, 'Leave status updated successfully.', leave);
   });
+
+  // ─── TEACHER PORTAL FEATURE ENDPOINTS ──────────────────────────────────────
+  getDashboard = asyncHandler(async (req, res) => {
+    const teacherId = req.user?._id || req.query.teacherId;
+    const data = await teacherService.getDashboard(teacherId);
+    return sendSuccess(res, 'Teacher dashboard data retrieved successfully.', data);
+  });
+
+  getClasses = asyncHandler(async (req, res) => {
+    const teacherId = req.user?._id || req.query.teacherId;
+    const classes = await teacherService.getClasses(teacherId);
+    return sendSuccess(res, 'Teacher assigned classes retrieved successfully.', classes);
+  });
+
+  getStudents = asyncHandler(async (req, res) => {
+    const { students, pagination } = await teacherService.getStudents(req.query);
+    return sendPaginated(res, 'Teacher classroom student roster retrieved successfully.', students, pagination);
+  });
+
+  getSchedule = asyncHandler(async (req, res) => {
+    const teacherId = req.user?._id || req.query.teacherId;
+    const schedule = await teacherService.getSchedule(teacherId);
+    return sendSuccess(res, 'Teacher class schedule retrieved successfully.', schedule);
+  });
+
+  getCalendar = asyncHandler(async (_req, res) => {
+    const calendar = await teacherService.getCalendar();
+    return sendSuccess(res, 'Teacher academic calendar retrieved successfully.', calendar);
+  });
 }
 
 module.exports = new TeacherController();
