@@ -15,7 +15,8 @@ import {
   Package, 
   Mail, 
   BookMarked,
-  UserCog
+  UserCog,
+  Megaphone
 } from 'lucide-react'
 
 export const ADMIN_MENU = [
@@ -217,9 +218,39 @@ export const TEACHER_MENU = [
     icon: Mail
   },
   {
-    title: 'My Personal File',
+    title: 'Announcements',
+    path: '/teacher/announcements',
+    icon: Megaphone
+  },
+  {
+    title: 'Leave Management',
+    path: '/teacher/leaves',
+    icon: CalendarDays
+  },
+  {
+    title: 'Payslips',
+    path: '/teacher/payslips',
+    icon: Receipt
+  },
+  {
+    title: 'My Profile',
     path: '/teacher/profile',
     icon: UserCog
+  },
+  {
+    title: 'Documents',
+    path: '/teacher/documents',
+    icon: BookOpen
+  },
+  {
+    title: 'Reports',
+    path: '/teacher/reports',
+    icon: FileSpreadsheet
+  },
+  {
+    title: 'Portal Settings',
+    path: '/teacher/settings',
+    icon: Settings
   }
 ]
 
