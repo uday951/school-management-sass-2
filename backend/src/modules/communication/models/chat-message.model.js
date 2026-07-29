@@ -10,39 +10,51 @@ const chatMessageSchema = new mongoose.Schema(
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      refPath: 'senderModel',
       index: true
     },
-    senderRole: {
+    senderModel: {
       type: String,
-      enum: ['parent', 'teacher'],
-      required: true
+      required: true,
+      enum: ['Parent', 'Teacher', 'Student', 'User']
     },
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      refPath: 'receiverModel',
       index: true
     },
-    receiverRole: {
+    receiverModel: {
       type: String,
-      enum: ['parent', 'teacher'],
-      required: true
+      required: true,
+      enum: ['Parent', 'Teacher', 'Student', 'User']
+    },
+    studentContextId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Student',
+      default: null,
+      index: true
     },
     message: {
       type: String,
-      required: [true, 'Message content is required'],
+      required: [true, 'Message text is required'],
       trim: true
     },
-    status: {
-      type: String,
-      enum: ['unread', 'read'],
-      default: 'unread'
-    },
-    isDeleted: {
+    attachments: [
+      {
+        name: { type: String },
+        url: { type: String }
+      }
+    ],
+    readStatus: {
       type: Boolean,
-      default: false
+      default: false,
+      index: true
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 );
 
 const ChatMessage = mongoose.models.ChatMessage || mongoose.model('ChatMessage', chatMessageSchema);

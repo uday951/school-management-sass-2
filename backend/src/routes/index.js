@@ -40,7 +40,7 @@ router.use('/designations', teacherRoutes);
 router.use('/classes', classRoutes);
 router.use('/subjects', subjectRoutes);
 router.use('/parents', parentRoutes);
-router.use('/parent', require('../modules/parent/parentPortal.routes'));
+router.use('/parent', parentRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/holidays', holidayRoutes);
 router.use('/exams', examRoutes);
@@ -52,6 +52,7 @@ router.use('/communication', require('../modules/communication/communication.rou
 router.use('/administration', require('../modules/user/administration.routes'));
 router.use('/dashboard', require('../modules/dashboard/dashboard.routes'));
 router.use('/portal', require('../modules/parent/parent-portal.routes'));
+router.use('/teacher', require('../modules/teacher/teacher-portal.routes'));
 
 module.exports = router;
 
