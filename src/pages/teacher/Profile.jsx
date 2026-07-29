@@ -19,7 +19,7 @@ import {
   FileText,
   Calendar
 } from 'lucide-react'
-import teacherService from '@/services/teacherService'
+import axiosClient from '@/config/axiosClient'
 
 export default function Profile() {
   const [profile, setProfile] = useState(null)
@@ -29,39 +29,9 @@ export default function Profile() {
     async function loadMyProfile() {
       setLoading(true)
       try {
-        const dashData = await teacherService.getTeacherDashboard()
-        const teacherProf = dashData?.teacherProfile
-
-        if (teacherProf?._id && teacherProf._id !== 'tch_01') {
-          try {
-            const fullProf = await teacherService.getTeacherById(teacherProf._id)
-            if (fullProf) {
-              setProfile(fullProf)
-              return
-            }
-          } catch (_e) {}
-        }
-        
-        setProfile({
-          _id: teacherProf?._id || 'tch_01',
-          firstName: teacherProf?.name ? teacherProf.name.split(' ')[0] : 'Dr. Sarah',
-          lastName: teacherProf?.name ? teacherProf.name.split(' ').slice(1).join(' ') : 'Connor',
-          employeeId: teacherProf?.employeeId || 'TCH-2026-08',
-          department: teacherProf?.department || 'Science & Mathematics',
-          designation: teacherProf?.designation || 'Senior Class Teacher',
-          email: teacherProf?.email || 'sarah.connor@schoolerp.edu',
-          phone: teacherProf?.phone || '+1-555-0144',
-          joiningDate: '2024-08-15',
-          qualification: 'Ph.D in Applied Physics',
-          experienceYears: 8,
-          status: 'active',
-          address: '742 Evergreen Terrace, Springfield',
-          assignedClasses: [
-            { className: 'Grade 10', section: 'A', subject: 'Mathematics' },
-            { className: 'Grade 10', section: 'B', subject: 'Physics' },
-            { className: 'Grade 9', section: 'A', subject: 'Mathematics' }
-          ]
-        })
+        const res = await axiosClient.get('/teacher/profile')
+        const teacher = res.data?.data || res.data || null
+        setProfile(teacher)
       } catch (err) {
         console.error(err)
       } finally {
@@ -71,13 +41,19 @@ export default function Profile() {
     loadMyProfile()
   }, [])
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <PageContainer className="flex items-center justify-center min-h-[300px]">
         <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </PageContainer>
     )
   }
+
+  if (!profile) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-muted-foreground">Profile data unavailable.</p>
+    </div>
+  )
 
   return (
     <PageContainer className="space-y-6">

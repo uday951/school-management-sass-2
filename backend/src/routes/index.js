@@ -34,7 +34,6 @@ router.use('/', libraryRoutes);
 router.use('/', inventoryRoutes);
 router.use('/students', studentRoutes);
 router.use('/teachers', teacherRoutes);
-router.use('/teacher', teacherRoutes);
 router.use('/departments', teacherRoutes);
 router.use('/designations', teacherRoutes);
 router.use('/classes', classRoutes);

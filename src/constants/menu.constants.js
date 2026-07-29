@@ -309,3 +309,44 @@ export const PARENT_MENU = [
   }
 ]
 
+export const getParentMenu = (activeChildId = '') => [
+  {
+    group: 'Overview',
+    items: [
+      { label: 'Dashboard', path: '/parent/dashboard', icon: 'LayoutDashboard' },
+      { label: 'Child Profile', path: activeChildId ? `/parent/child/${activeChildId}/profile` : '/parent/child-profile', icon: 'User' },
+    ]
+  },
+  {
+    group: 'Academics',
+    items: [
+      { label: 'Attendance', path: activeChildId ? `/parent/child/${activeChildId}/attendance` : '/parent/attendance', icon: 'CalendarCheck' },
+      { label: 'Homework', path: activeChildId ? `/parent/child/${activeChildId}/homework` : '/parent/homework', icon: 'BookOpen' },
+      { label: 'Exam Results', path: activeChildId ? `/parent/child/${activeChildId}/results` : '/parent/results', icon: 'Award' },
+      { label: 'Timetable', path: activeChildId ? `/parent/child/${activeChildId}/timetable` : '/parent/timetable', icon: 'Clock' },
+      { label: 'Performance', path: activeChildId ? `/parent/child/${activeChildId}/performance` : '/parent/performance', icon: 'TrendingUp' },
+      { label: 'Library', path: activeChildId ? `/parent/child/${activeChildId}/library` : '/parent/library', icon: 'Library' },
+    ]
+  },
+  {
+    group: 'Finance',
+    items: [
+      { label: 'Fees & Payments', path: activeChildId ? `/parent/child/${activeChildId}/fees` : '/parent/fees', icon: 'CreditCard' },
+    ]
+  },
+  {
+    group: 'Communication',
+    items: [
+      { label: 'Messages & Chat', path: '/parent/communication/chats', icon: 'MessageSquare' },
+      { label: 'Leaves', path: activeChildId ? `/parent/child/${activeChildId}/leaves` : '/parent/leaves', icon: 'CalendarOff' },
+    ]
+  },
+  {
+    group: 'Services',
+    items: [
+      { label: 'Transport', path: activeChildId ? `/parent/child/${activeChildId}/transport` : '/parent/transport', icon: 'Bus' },
+      { label: 'Documents', path: '/parent/documents', icon: 'FileText' },
+      { label: 'Settings', path: '/parent/settings', icon: 'Settings' },
+    ]
+  }
+];

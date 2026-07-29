@@ -60,12 +60,9 @@ export default function AttendanceLeaves() {
   const loadTeacherData = async () => {
     setTeacherLoading(true)
     try {
-      const listRes = await teacherService.getTeachers({ limit: 1 })
-      if (listRes?.data && listRes.data.length > 0) {
-        const firstTeacher = listRes.data[0]
-        const data = await teacherService.getTeacherById(firstTeacher._id || firstTeacher.id)
-        setTeacher(data)
-      }
+      const res = await axiosClient.get('/teacher/profile')
+      const teacher = res.data?.data || res.data
+      setTeacher(teacher)
     } catch (err) {
       console.error(err)
     } finally {
@@ -102,7 +99,7 @@ export default function AttendanceLeaves() {
     setIsLeaveModalOpen(false)
     try {
       if (teacher) {
-        await teacherService.addQualification(teacher._id || teacher.id, leaveForm) // Mock call mapping or actual
+        await axiosClient.post('/teacher/leave', leaveForm)
       }
       setLeaveForm({ leaveType: 'casual', startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0], reason: '' })
       setSuccessMsg('Leave request submitted to administration successfully.')
@@ -270,8 +267,8 @@ export default function AttendanceLeaves() {
         </form>
       </FormDialog>
 
-      <SuccessDialog open={studentSuccessOpen} onClose={() => setStudentSuccessOpen(false)} message={studentSuccessMsg} />
-      <SuccessDialog open={isSuccessOpen} onClose={() => setIsSuccessOpen(false)} message={successMsg} />
+      <SuccessDialog isOpen={studentSuccessOpen} onClose={() => setStudentSuccessOpen(false)} message={studentSuccessMsg} />
+      <SuccessDialog isOpen={isSuccessOpen} onClose={() => setIsSuccessOpen(false)} message={successMsg} />
     </PageContainer>
   )
 }

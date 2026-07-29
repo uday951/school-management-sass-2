@@ -1,33 +1,49 @@
 const express = require('express');
-const parentPortalController = require('./parent-portal.controller');
+const c = require('./parent-portal.controller');
 const { authenticate } = require('../../middlewares/auth.middleware');
 const { authorizeRoles } = require('../../middlewares/role.middleware');
 const ROLES = require('../../constants/roles');
 
 const router = express.Router();
-
-// All routes require parent authentication
 router.use(authenticate);
 router.use(authorizeRoles(ROLES.PARENT));
 
-// Parent Profile Settings
-router.get('/my-profile', parentPortalController.getMyProfile);
-router.put('/my-profile', parentPortalController.updateMyProfile);
-router.put('/change-password', parentPortalController.changePassword);
+// Profile
+router.get('/my-profile', c.getMyProfile);
+router.put('/my-profile', c.updateMyProfile);
+router.put('/change-password', c.changePassword);
 
-// Children Dossiers
-router.get('/my-children', parentPortalController.getMyChildren);
-router.get('/child/:studentId/summary', parentPortalController.getChildSummary);
-router.get('/child/:studentId/homework', parentPortalController.getChildHomework);
-router.get('/child/:studentId/results', parentPortalController.getChildResults);
-router.get('/child/:studentId/report-card', parentPortalController.getChildReportCard);
-router.get('/child/:studentId/library', parentPortalController.getChildLibrary);
-router.get('/child/:studentId/documents', parentPortalController.getChildDocuments);
-router.get('/child/:studentId/transport', parentPortalController.getChildTransport);
+// Children
+router.get('/my-children', c.getMyChildren);
 
+// Fees & Payments (new)
+router.get('/fees', c.getChildFees);
+router.get('/payments', c.getChildPayments);
+router.get('/receipts', c.getChildReceipts);
 
-// School Notices & Circulars
-router.get('/announcements', parentPortalController.getAnnouncements);
-router.get('/notices', parentPortalController.getNotices);
+// Announcements & Notices
+router.get('/announcements', c.getAnnouncements);
+router.get('/notices', c.getNotices);
+
+// Notifications (new)
+router.get('/notifications', c.getNotifications);
+router.patch('/notifications/:id/read', c.markNotificationRead);
+
+// Chat (new)
+router.get('/chat/teachers', c.getChatTeachers);
+router.get('/chat/messages/:teacherId', c.getChatMessages);
+router.post('/chat', c.sendChatMessage);
+
+// Child-specific routes
+router.get('/child/:studentId/summary', c.getChildSummary);
+router.get('/child/:studentId/attendance', c.getChildAttendance);
+router.get('/child/:studentId/homework', c.getChildHomework);
+router.get('/child/:studentId/results', c.getChildResults);
+router.get('/child/:studentId/report-card', c.getChildReportCard);
+router.get('/child/:studentId/library', c.getChildLibrary);
+router.get('/child/:studentId/documents', c.getChildDocuments);
+router.get('/child/:studentId/transport', c.getChildTransport);
+router.get('/child/:studentId/timetable', c.getChildTimetable);
+router.get('/child/:studentId/performance', c.getChildPerformance);
 
 module.exports = router;

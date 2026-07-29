@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { useAuthStore, useSidebarStore } from '@/store'
-import { ADMIN_MENU, TEACHER_MENU, PARENT_MENU } from '@/constants/menu.constants'
+import { ADMIN_MENU, TEACHER_MENU, PARENT_MENU, getParentMenu } from '@/constants/menu.constants'
 import { ChevronDown, ChevronRight, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useChildStore } from '@/store'
@@ -36,27 +36,29 @@ export default function Sidebar() {
   } else if (user?.role === 'teacher') {
     menuItems = TEACHER_MENU
   } else if (user?.role === 'parent') {
-    menuItems = PARENT_MENU
+    menuItems = getParentMenu(activeChild?._id || activeChild?.id || '')
   }
 
   const renderMenuItem = (item) => {
+    const title = item.title || item.group || item.label
     const Icon = item.icon
-    const hasChildren = !!item.children
-    const isOpen = !!openSubmenus[item.title]
+    const children = item.children || item.items
+    const hasChildren = !!children
+    const isOpen = !!openSubmenus[title]
     
     const resolvedItemPath = resolvePath(item.path)
     const isLinkActive = location.pathname === resolvedItemPath
     
     // Check if any child is active
-    const isChildActive = hasChildren && item.children.some(child => location.pathname === resolvePath(child.path))
+    const isChildActive = hasChildren && children.some(child => location.pathname === resolvePath(child.path))
     const isParentActive = isLinkActive || isChildActive
 
     return (
-      <div key={item.title} className="w-full">
+      <div key={title} className="w-full">
         {hasChildren ? (
           <div>
             <button
-              onClick={() => toggleSubmenu(item.title)}
+              onClick={() => toggleSubmenu(title)}
               className={cn(
                 "flex w-full items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
                 isParentActive 
@@ -67,7 +69,7 @@ export default function Sidebar() {
             >
               <div className="flex items-center gap-3">
                 {Icon && <Icon className="h-5 w-5 shrink-0" />}
-                {!isCollapsed && <span>{item.title}</span>}
+                {!isCollapsed && <span>{title}</span>}
               </div>
               {!isCollapsed && (
                 isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />
@@ -76,12 +78,13 @@ export default function Sidebar() {
             
             {isOpen && !isCollapsed && (
               <div className="mt-1 ml-6 space-y-1 border-l border-border pl-3 animate-in slide-in-from-left-1 duration-100">
-                {item.children.map((child) => {
+                {children.map((child) => {
+                  const childTitle = child.title || child.label
                   const resolvedChildPath = resolvePath(child.path)
                   const isSubActive = location.pathname === resolvedChildPath
                   return (
                     <Link
-                      key={child.title}
+                      key={childTitle}
                       to={resolvedChildPath}
                       className={cn(
                         "flex w-full items-center justify-between px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer",
@@ -90,7 +93,7 @@ export default function Sidebar() {
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <span>{child.title}</span>
+                      <span>{childTitle}</span>
                       {child.badge && (
                         <span className={cn(
                           "ml-2 rounded px-1.5 py-0.5 text-[10px] font-bold",
@@ -117,8 +120,8 @@ export default function Sidebar() {
             )}
           >
             <div className="flex items-center gap-3">
-              {Icon && <Icon className="h-5 w-5 shrink-0" />}
-              {!isCollapsed && <span>{item.title}</span>}
+              {Icon && typeof Icon !== 'string' ? <Icon className="h-5 w-5 shrink-0" /> : null}
+              {!isCollapsed && <span>{title}</span>}
             </div>
             {item.badge && !isCollapsed && (
               <span className={cn(

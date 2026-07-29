@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
@@ -13,7 +14,9 @@ import {
 import { Plus, ArrowLeft } from 'lucide-react'
 
 export default function ChildLeaves() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   const [leaves, setLeaves] = useState([])
   const [loading, setLoading] = useState(true)
@@ -21,6 +24,7 @@ export default function ChildLeaves() {
   // Fetch leave history for this child/student
   const fetchLeaveHistory = async () => {
     setLoading(true)
+    if (!id) { setLoading(false); return; }
     try {
       const res = await axiosClient.get(`/attendance/leaves?applicantId=${id}`)
       if (res.data.success) {

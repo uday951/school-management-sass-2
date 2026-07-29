@@ -4,7 +4,8 @@ import {
   PageHeader, 
   PageContainer, 
   SimpleCard, 
-  Badge
+  Badge,
+  Button
 } from '@/components/shared'
 import { 
   Mail, Volume2, FileText, Bell, Send, User, Clock, Check, Download, AlertCircle
@@ -39,7 +40,7 @@ export default function CommunicationChats() {
   // Fetch Teachers list
   const fetchTeachers = async () => {
     try {
-      const res = await axiosClient.get('/parent/chat/teachers')
+      const res = await axiosClient.get('/portal/chat/teachers')
       if (res.data.success) {
         setTeachers(res.data.data || [])
       }
@@ -51,7 +52,7 @@ export default function CommunicationChats() {
   // Fetch Announcements
   const fetchAnnouncements = async () => {
     try {
-      const res = await axiosClient.get('/parent/announcements')
+      const res = await axiosClient.get('/portal/announcements')
       if (res.data.success) {
         setAnnouncements(res.data.data || [])
       }
@@ -63,7 +64,7 @@ export default function CommunicationChats() {
   // Fetch Circulars
   const fetchCirculars = async () => {
     try {
-      const res = await axiosClient.get('/parent/circulars')
+      const res = await axiosClient.get('/portal/notices')
       if (res.data.success) {
         setCirculars(res.data.data || [])
       }
@@ -75,7 +76,7 @@ export default function CommunicationChats() {
   // Fetch Notifications
   const fetchNotifications = async () => {
     try {
-      const res = await axiosClient.get('/parent/notifications')
+      const res = await axiosClient.get('/portal/notifications')
       if (res.data.success) {
         setNotifications(res.data.data || [])
       }
@@ -88,7 +89,7 @@ export default function CommunicationChats() {
   const fetchChatHistory = async (teacherId) => {
     if (!teacherId) return
     try {
-      const res = await axiosClient.get(`/parent/chat/messages/${teacherId}`)
+      const res = await axiosClient.get(`/portal/chat/messages/${teacherId}`)
       if (res.data.success) {
         setMessages(res.data.data || [])
       }
@@ -148,7 +149,7 @@ export default function CommunicationChats() {
     setTypedMessage('')
 
     try {
-      const res = await axiosClient.post('/parent/chat', {
+      const res = await axiosClient.post('/portal/chat', {
         receiverId: activeTeacher._id,
         message: msgText
       })
@@ -164,7 +165,7 @@ export default function CommunicationChats() {
   // Mark notification read
   const handleMarkNotificationRead = async (notificationId) => {
     try {
-      const res = await axiosClient.patch(`/parent/notifications/${notificationId}/read`)
+      const res = await axiosClient.patch(`/portal/notifications/${notificationId}/read`)
       if (res.data.success) {
         setNotifications(prev => 
           prev.map(n => n._id === notificationId ? { ...n, status: 'read' } : n)
@@ -482,18 +483,3 @@ export default function CommunicationChats() {
   )
 }
 
-// Simple internal Button component since it wasn't exported in shared index directly
-function Button({ children, variant = 'primary', className, ...props }) {
-  const styles = variant === 'primary' 
-    ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-    : 'border border-input bg-background hover:bg-accent hover:text-accent-foreground text-foreground'
-  
-  return (
-    <button
-      className={`inline-flex items-center justify-center rounded-xl text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2 cursor-pointer ${styles} ${className}`}
-      {...props}
-    >
-      {children}
-    </button>
-  )
-}

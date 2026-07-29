@@ -92,7 +92,8 @@ export default function ChildResults() {
     {
       header: 'Status',
       accessor: (row) => {
-        const isPass = row.status?.toLowerCase() === 'passed' || row.marksObtained / row.maxMarks >= 0.35
+        const statusStr = row.status || row.resultStatus || ''
+        const isPass = statusStr.toLowerCase() === 'passed' || statusStr.toLowerCase() === 'pass'
         return (
           <Badge className={isPass ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}>
             {isPass ? 'Pass' : 'Fail'}
@@ -103,7 +104,25 @@ export default function ChildResults() {
   ]
 
   const printReportCard = (card) => {
-    window.print()
+    const printWindow = window.open('', '_blank')
+    printWindow.document.write(`
+      <html>
+        <head><title>Report Card</title>
+          <style>body{font-family:sans-serif;padding:32px} table{width:100%;border-collapse:collapse} th,td{border:1px solid #ddd;padding:8px;text-align:left} h2{color:#333}</style>
+        </head>
+        <body>
+          <h2>Report Card</h2>
+          <p><strong>Student:</strong> ${card.studentName || ''}</p>
+          <p><strong>Exam:</strong> ${card.examName || ''}</p>
+          <p><strong>Grade:</strong> ${card.finalGrade || card.grade || 'N/A'}</p>
+          <p><strong>Attendance:</strong> ${card.attendancePercentage || 'N/A'}%</p>
+          <p><strong>Status:</strong> ${card.resultStatus || card.status || 'N/A'}</p>
+          <p><strong>Teacher Remarks:</strong> ${card.teacherRemarks || 'N/A'}</p>
+          <br/><script>window.print()</script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
   }
 
   return (
@@ -182,16 +201,16 @@ export default function ChildResults() {
                     </div>
                     <div>
                       <p className="text-muted-foreground uppercase text-[9px] mb-0.5">Final Grade</p>
-                      <p className="text-foreground text-sm font-bold">{card.finalGrade || 'A+'}</p>
+                      <p className="text-foreground text-sm font-bold">{card.finalGrade || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground uppercase text-[9px] mb-0.5">Attendance Rate</p>
-                      <p className="text-foreground text-sm font-bold">{card.attendancePercentage || '100'}%</p>
+                      <p className="text-foreground text-sm font-bold">{card.attendancePercentage || 'N/A'}%</p>
                     </div>
                     <div>
                       <p className="text-muted-foreground uppercase text-[9px] mb-0.5">Result Status</p>
                       <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs">
-                        {card.resultStatus || 'Passed'}
+                        {card.resultStatus || 'N/A'}
                       </Badge>
                     </div>
                   </div>

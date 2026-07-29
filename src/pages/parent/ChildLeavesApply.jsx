@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
@@ -14,7 +15,9 @@ import {
 import { ArrowLeft, Save } from 'lucide-react'
 
 export default function ChildLeavesApply() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   
   // Child Name State
@@ -30,6 +33,7 @@ export default function ChildLeavesApply() {
 
   // Fetch child name on mount
   useEffect(() => {
+    if (!id) return;
     axiosClient.get(`/students/${id}/profile`)
       .then(res => {
         if (res.data.success && res.data.data) {
@@ -41,6 +45,7 @@ export default function ChildLeavesApply() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!id) return;
     try {
       const res = await axiosClient.post('/attendance/leaves', {
         applicantId: id,
@@ -119,7 +124,7 @@ export default function ChildLeavesApply() {
       </SimpleCard>
 
       <SuccessDialog 
-        open={successOpen} 
+        isOpen={successOpen} 
         onClose={() => {
           setSuccessOpen(false)
           navigate(`/parent/child/${id}/leaves`)

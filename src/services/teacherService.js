@@ -1,125 +1,122 @@
-import axios from 'axios'
-
-const API_BASE_URL = 'http://localhost:5000/api/v1'
+import axiosClient from '@/config/axiosClient'
 
 export const teacherService = {
-  // ─── TEACHER CRUD ──────────────────────────────────────────────────────────
+  // ─── ADMIN-FACING TEACHER CRUD (uses /teachers/ admin routes) ────────────────
   async getTeachers(params = {}) {
-    const response = await axios.get(`${API_BASE_URL}/teachers`, { params })
+    const response = await axiosClient.get('/teachers', { params })
     return response.data
   },
 
   async getTeacherById(id) {
-    const response = await axios.get(`${API_BASE_URL}/teachers/${id}/profile`)
+    const response = await axiosClient.get(`/teachers/${id}/profile`)
     return response.data?.data || response.data
   },
 
   async createTeacher(payload) {
-    const response = await axios.post(`${API_BASE_URL}/teachers`, payload)
+    const response = await axiosClient.post('/teachers', payload)
     return response.data
   },
 
   async updateTeacher(id, payload) {
-    const response = await axios.put(`${API_BASE_URL}/teachers/${id}`, payload)
+    const response = await axiosClient.put(`/teachers/${id}`, payload)
     return response.data
   },
 
   async deleteTeacher(id) {
-    const response = await axios.delete(`${API_BASE_URL}/teachers/${id}`)
+    const response = await axiosClient.delete(`/teachers/${id}`)
     return response.data
   },
 
   async toggleStatus(id, status) {
-    const response = await axios.patch(`${API_BASE_URL}/teachers/${id}/status`, { status })
+    const response = await axiosClient.patch(`/teachers/${id}/status`, { status })
     return response.data
   },
 
-  // ─── DEPARTMENTS ───────────────────────────────────────────────────────────
+  // ─── DEPARTMENTS ──────────────────────────────────────────────────────────────
   async getDepartments() {
-    const response = await axios.get(`${API_BASE_URL}/teachers/departments`)
+    const response = await axiosClient.get('/teachers/departments')
     return response.data?.data || []
   },
 
   async createDepartment(payload) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/departments`, payload)
+    const response = await axiosClient.post('/teachers/departments', payload)
     return response.data
   },
 
   async deleteDepartment(id) {
-    const response = await axios.delete(`${API_BASE_URL}/teachers/departments/${id}`)
+    const response = await axiosClient.delete(`/teachers/departments/${id}`)
     return response.data
   },
 
-  // ─── DESIGNATIONS ──────────────────────────────────────────────────────────
+  // ─── DESIGNATIONS ─────────────────────────────────────────────────────────────
   async getDesignations() {
-    const response = await axios.get(`${API_BASE_URL}/teachers/designations`)
+    const response = await axiosClient.get('/teachers/designations')
     return response.data?.data || []
   },
 
   async createDesignation(payload) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/designations`, payload)
+    const response = await axiosClient.post('/teachers/designations', payload)
     return response.data
   },
 
   async deleteDesignation(id) {
-    const response = await axios.delete(`${API_BASE_URL}/teachers/designations/${id}`)
+    const response = await axiosClient.delete(`/teachers/designations/${id}`)
     return response.data
   },
 
-  // ─── ASSIGNMENTS ───────────────────────────────────────────────────────────
+  // ─── ASSIGNMENTS ──────────────────────────────────────────────────────────────
   async assignClasses(id, assignedClasses) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/${id}/assign-class`, { assignedClasses })
+    const response = await axiosClient.post(`/teachers/${id}/assign-class`, { assignedClasses })
     return response.data
   },
 
   async assignSubjects(id, assignedSubjects) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/${id}/assign-subject`, { assignedSubjects })
+    const response = await axiosClient.post(`/teachers/${id}/assign-subject`, { assignedSubjects })
     return response.data
   },
 
-  // ─── QUALIFICATIONS & EXPERIENCES ──────────────────────────────────────────
+  // ─── QUALIFICATIONS & EXPERIENCES ─────────────────────────────────────────────
   async addQualification(teacherId, payload) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/${teacherId}/qualifications`, payload)
+    const response = await axiosClient.post(`/teachers/${teacherId}/qualifications`, payload)
     return response.data
   },
 
   async addExperience(teacherId, payload) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/${teacherId}/experiences`, payload)
+    const response = await axiosClient.post(`/teachers/${teacherId}/experiences`, payload)
     return response.data
   },
 
-  // ─── DOCUMENTS ─────────────────────────────────────────────────────────────
+  // ─── DOCUMENTS ────────────────────────────────────────────────────────────────
   async uploadDocument(teacherId, formData) {
-    const response = await axios.post(`${API_BASE_URL}/teachers/${teacherId}/documents`, formData, {
+    const response = await axiosClient.post(`/teachers/${teacherId}/documents`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data
   },
 
-  // ─── DEDICATED TEACHER PORTAL FEATURE APIs ────────────────────────────────
-  async getTeacherDashboard(teacherId = '') {
-    const response = await axios.get(`${API_BASE_URL}/teacher/dashboard`, { params: { teacherId } })
+  // ─── TEACHER PORTAL SELF-SERVICE (uses /teacher/ portal routes) ───────────────
+  async getTeacherDashboard() {
+    const response = await axiosClient.get('/teacher/dashboard')
     return response.data?.data || null
   },
 
-  async getTeacherClasses(teacherId = '') {
-    const response = await axios.get(`${API_BASE_URL}/teacher/classes`, { params: { teacherId } })
+  async getMyClasses() {
+    const response = await axiosClient.get('/teacher/my-classes')
     return response.data?.data || []
   },
 
+  async getMyStudents(params = {}) {
+    const response = await axiosClient.get('/teacher/my-students', { params })
+    return response.data || { data: [], pagination: { page: 1, limit: 20, total: 0, totalPages: 1 } }
+  },
+
+  // Keep legacy names for backward compat with existing pages that call these
+  async getTeacherClasses() {
+    return this.getMyClasses()
+  },
+
   async getTeacherStudents(params = {}) {
-    const response = await axios.get(`${API_BASE_URL}/teacher/students`, { params })
-    return response.data || { data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 } }
-  },
-
-  async getTeacherSchedule(teacherId = '') {
-    const response = await axios.get(`${API_BASE_URL}/teacher/schedule`, { params: { teacherId } })
-    return response.data?.data || { teacherName: '', weeklySchedule: [] }
-  },
-
-  async getTeacherCalendar() {
-    const response = await axios.get(`${API_BASE_URL}/teacher/calendar`)
-    return response.data?.data || { academicYear: '', events: [] }
+    return this.getMyStudents(params)
   }
 }
 

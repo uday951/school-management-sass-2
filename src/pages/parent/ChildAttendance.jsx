@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
@@ -12,7 +13,9 @@ import {
 import { Calendar, UserCheck, UserX, AlertTriangle, ArrowLeft } from 'lucide-react'
 
 export default function ChildAttendance() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   
   // Data States
@@ -24,24 +27,19 @@ export default function ChildAttendance() {
   const fetchChildAttendance = async () => {
     setLoading(true)
     try {
-      const logsRes = await axiosClient.get(`/attendance/student?studentId=${id}`)
+      const logsRes = await axiosClient.get(`/portal/child/${id}/attendance`)
       if (logsRes.data.success) {
-        setAttendanceRecords(logsRes.data.data)
-      }
-
-      // Fetch details from backend report/student routes
-      const res = await axiosClient.get(`/attendance/report?type=student`)
-      if (res.data.success && Array.isArray(res.data.data)) {
-        const myRecord = res.data.data.find(r => r.id === id)
-        if (myRecord) {
-          setStats({
-            workingDays: myRecord.presentCount + myRecord.absentCount,
-            presentDays: myRecord.presentCount,
-            absentDays: myRecord.absentCount,
-            lateDays: 0,
-            rate: myRecord.attendanceRate
-          })
-        }
+        const { records, summary } = logsRes.data.data || { records: [], summary: {} }
+        setAttendanceRecords(records)
+        const lateDays = Array.isArray(records) ? records.filter(r => r.status === 'late').length : 0
+        
+        setStats({
+          workingDays: summary.totalMarked || 0,
+          presentDays: summary.presentDays || 0,
+          absentDays: summary.absentDays || 0,
+          lateDays: lateDays || summary.lateDays || 0,
+          rate: summary.attendanceRate || 0
+        })
       }
     } catch (err) {
       console.error(err)
@@ -60,7 +58,7 @@ export default function ChildAttendance() {
     const baseDate = new Date()
     const year = baseDate.getFullYear()
     const month = baseDate.getMonth()
-    
+    const firstDayOfMonth = new Date(year, month, 1).getDay()
     const totalDays = new Date(year, month + 1, 0).getDate()
     
     for (let day = 1; day <= totalDays; day++) {
@@ -87,10 +85,10 @@ export default function ChildAttendance() {
       
       days.push({ day, status })
     }
-    return days
+    return { days, firstDayOfMonth }
   }
 
-  const calendarDays = generateMonthDays()
+  const { days: calendarDays, firstDayOfMonth } = generateMonthDays()
 
   return (
     <PageContainer>
@@ -127,8 +125,7 @@ export default function ChildAttendance() {
             </div>
             
             <div className="grid grid-cols-7 gap-2 text-center select-none">
-              {/* Padding empty slots for calendar starting day */}
-              {Array.from({ length: 4 }).map((_, i) => (
+              {Array.from({ length: firstDayOfMonth }).map((_, i) => (
                 <div key={`empty-${i}`} className="h-10 border border-transparent"></div>
               ))}
               

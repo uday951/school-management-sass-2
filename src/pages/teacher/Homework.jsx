@@ -5,35 +5,56 @@ import {
   Plus, 
   ArrowLeft, 
   RefreshCw, 
-  CheckCircle2, 
-  Clock 
+  Clock, 
+  CheckCircle2,
+  Trash2,
+  Eye
 } from 'lucide-react'
-import { Button, Badge, ReusableTable as AppTable, Alert } from '@/components/shared'
+import { Button, Badge, Alert } from '@/components/shared'
+import axiosClient from '@/config/axiosClient'
+
+const statusColor = (status) => {
+  if (status === 'evaluated') return 'success'
+  if (status === 'submitted') return 'info'
+  return 'warning'
+}
 
 export default function Homework() {
   const navigate = useNavigate()
 
   const [homeworkList, setHomeworkList] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  useEffect(() => {
-    const fetchHomework = async () => {
-      setLoading(true)
-      try {
-        const res = await axiosClient.get('/homework')
-        if (res.data?.success && Array.isArray(res.data.data)) {
-          setHomeworkList(res.data.data)
-        } else {
-          setHomeworkList([])
-        }
-      } catch (_err) {
+  const fetchHomework = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await axiosClient.get('/teacher/homework')
+      if (res.data?.success) {
+        setHomeworkList(Array.isArray(res.data.data) ? res.data.data : [])
+      } else {
         setHomeworkList([])
-      } finally {
-        setLoading(false)
       }
+    } catch (err) {
+      setError('Failed to load homework list. Please try again.')
+      setHomeworkList([])
+    } finally {
+      setLoading(false)
     }
-    fetchHomework()
-  }, [])
+  }
+
+  useEffect(() => { fetchHomework() }, [])
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this homework assignment?')) return
+    try {
+      await axiosClient.delete(`/teacher/homework/${id}`)
+      setHomeworkList(prev => prev.filter(hw => hw._id !== id && hw.id !== id))
+    } catch (err) {
+      setError('Failed to delete homework.')
+    }
+  }
 
   if (loading) {
     return (
@@ -61,39 +82,61 @@ export default function Homework() {
             <p className="text-sm text-muted-foreground mt-0.5">Assign daily homework tasks, evaluate student submissions, and manage deadlines.</p>
           </div>
         </div>
-
         <Button onClick={() => navigate('/teacher/homework/create')} className="flex items-center gap-1.5">
           <Plus className="h-4 w-4" /> Assign New Homework
         </Button>
       </div>
 
-      {/* Homework Table */}
-      <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
-        <AppTable
-          columns={[
-            { header: 'Class & Section', accessor: 'className' },
-            { header: 'Subject', accessor: 'subject' },
-            { header: 'Assignment Title', accessor: 'title' },
-            { header: 'Assigned Date', accessor: 'assignedDate' },
-            { header: 'Due Date', accessor: 'dueDate' },
-            { header: 'Submissions', accessor: row => <Badge variant="secondary">{row.submissions}</Badge> },
-            {
-              header: 'Actions',
-              accessor: row => (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => navigate(`/teacher/homework/${row.id}`)}
-                >
-                  View Submissions
-                </Button>
-              )
-            }
-          ]}
-          data={homeworkList}
-        />
-      </div>
+      {error && <Alert variant="danger">{error}</Alert>}
 
+      {/* Homework Cards */}
+      {homeworkList.length === 0 ? (
+        <div className="bg-card border border-border rounded-xl p-12 text-center">
+          <BookMarked className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+          <h3 className="font-semibold text-foreground mb-1">No Homework Assigned Yet</h3>
+          <p className="text-sm text-muted-foreground mb-4">Click &quot;Assign New Homework&quot; to create your first assignment.</p>
+          <Button onClick={() => navigate('/teacher/homework/create')}>
+            <Plus className="h-4 w-4 mr-1" /> Create Assignment
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {homeworkList.map((hw) => (
+            <div key={hw._id || hw.id} className="bg-card border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/50 transition-colors">
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-bold text-foreground">{hw.title}</h3>
+                  <Badge variant="outline" className="text-xs">{hw.subjectId?.subjectName || 'Subject'}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Due: <span className="font-semibold text-foreground">{hw.dueDate ? new Date(hw.dueDate).toLocaleDateString() : 'N/A'}</span>
+                  {' • '}
+                  Submissions: <span className="font-semibold text-primary">{hw.submittedCount || 0}/{hw.submissionsCount || 0}</span>
+                </p>
+                {hw.description && <p className="text-xs text-muted-foreground line-clamp-1">{hw.description}</p>}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/teacher/homework/${hw._id || hw.id}`)}
+                  className="flex items-center gap-1"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Submissions
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleDelete(hw._id || hw.id)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
