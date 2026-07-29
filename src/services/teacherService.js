@@ -94,6 +94,32 @@ export const teacherService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return response.data
+  },
+
+  // ─── DEDICATED TEACHER PORTAL FEATURE APIs ────────────────────────────────
+  async getTeacherDashboard(teacherId = '') {
+    const response = await axios.get(`${API_BASE_URL}/teacher/dashboard`, { params: { teacherId } })
+    return response.data?.data || null
+  },
+
+  async getTeacherClasses(teacherId = '') {
+    const response = await axios.get(`${API_BASE_URL}/teacher/classes`, { params: { teacherId } })
+    return response.data?.data || []
+  },
+
+  async getTeacherStudents(params = {}) {
+    const response = await axios.get(`${API_BASE_URL}/teacher/students`, { params })
+    return response.data || { data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 1 } }
+  },
+
+  async getTeacherSchedule(teacherId = '') {
+    const response = await axios.get(`${API_BASE_URL}/teacher/schedule`, { params: { teacherId } })
+    return response.data?.data || { teacherName: '', weeklySchedule: [] }
+  },
+
+  async getTeacherCalendar() {
+    const response = await axios.get(`${API_BASE_URL}/teacher/calendar`)
+    return response.data?.data || { academicYear: '', events: [] }
   }
 }
 

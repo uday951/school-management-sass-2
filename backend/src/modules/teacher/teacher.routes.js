@@ -15,6 +15,13 @@ const { uploadDocument } = require('../../middlewares/upload.middleware');
 
 const router = express.Router();
 
+// ─── TEACHER PORTAL DEDICATED FEATURE ENDPOINTS ──────────────────────────────
+router.get('/dashboard', teacherController.getDashboard);
+router.get('/classes', teacherController.getClasses);
+router.get('/students', teacherController.getStudents);
+router.get('/schedule', teacherController.getSchedule);
+router.get('/calendar', teacherController.getCalendar);
+
 // ─── DEPARTMENTS ─────────────────────────────────────────────────────────────
 router.get('/departments', teacherController.getDepartments);
 router.post('/departments', createDepartmentSchema, validate, teacherController.createDepartment);
