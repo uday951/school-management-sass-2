@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
@@ -11,7 +12,9 @@ import {
 import { Bus, Phone, MapPin, User, Navigation, AlertTriangle } from 'lucide-react'
 
 export default function ChildTransport() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const [allocation, setAllocation] = useState(null)
   const [routeStops, setRouteStops] = useState([])
   const [loading, setLoading] = useState(true)
@@ -73,7 +76,7 @@ export default function ChildTransport() {
                   </div>
                   <div>
                     <h3 className="text-foreground text-sm font-bold">Vehicle Details</h3>
-                    <p className="text-muted-foreground text-xs">{allocation.routeId?.assignedVehicle?.manufacturer || 'Tata'} {allocation.routeId?.assignedVehicle?.model || 'Starbus 2026'}</p>
+                    <p className="text-muted-foreground text-xs">{allocation.routeId?.assignedVehicle?.manufacturer || 'N/A'} {allocation.routeId?.assignedVehicle?.model || 'N/A'}</p>
                     <Badge className="mt-1">{allocation.routeId?.assignedVehicle?.vehicleNo || 'N/A'}</Badge>
                   </div>
                 </div>
@@ -125,47 +128,43 @@ export default function ChildTransport() {
             </SimpleCard>
           </div>
 
-          {/* Telemetry Column */}
           <div className="lg:col-span-2 space-y-6">
-            <SimpleCard title="GPS Route Telemetry (Architecture Ready)">
-              <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border bg-slate-950 flex flex-col justify-between p-4 text-white">
-                {/* Simulated Map Background Grid */}
-                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
-                
-                {/* Telemetry Header overlay */}
-                <div className="relative z-10 flex justify-between items-start">
-                  <div>
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                      <Navigation className="h-4 w-4 text-primary animate-pulse" />
-                      Route {allocation.routeId?.routeCode || 'R-101'} active telemetry
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Estimated time remaining: 12 mins</p>
-                  </div>
-                  <Badge className="bg-emerald-500 text-white">LIVE GPS</Badge>
-                </div>
-
-                {/* Simulated Location Dot */}
-                <div className="relative z-10 self-center flex flex-col items-center">
-                  <div className="h-4 w-4 bg-primary rounded-full animate-ping absolute" />
-                  <div className="h-4 w-4 bg-primary rounded-full border-2 border-white relative" />
-                  <span className="text-[10px] font-bold mt-1.5 bg-black/60 px-2 py-0.5 rounded-full border border-white/10">Bus Location</span>
-                </div>
-
-                {/* Telemetry Stats overlay */}
-                <div className="relative z-10 grid grid-cols-3 gap-2 bg-black/60 p-3 rounded-lg border border-white/10 text-xs font-semibold select-none backdrop-blur-sm">
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block">CURRENT SPEED</span>
-                    <span>42 km/h</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block">STATUS</span>
-                    <span className="text-emerald-400">On Schedule</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block">GPS SIGNAL</span>
-                    <span className="text-emerald-400">Strong</span>
-                  </div>
-                </div>
+            <SimpleCard title="Route Information" className="mt-4">
+              <div className="space-y-3">
+                {allocation?.routeId ? (
+                  <>
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                      <MapPin className="h-5 w-5 text-primary shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Route</p>
+                        <p className="font-semibold text-foreground">{allocation.routeId.routeName || allocation.routeId.name || 'N/A'}</p>
+                      </div>
+                    </div>
+                    {routeStops && routeStops.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">Route Stops</p>
+                        {routeStops.map((stop, i) => (
+                          <div key={stop._id || i} className="flex items-center gap-3">
+                            <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                              stop._id === allocation.pickupStopId?._id ? 'bg-emerald-500' :
+                              stop._id === allocation.dropStopId?._id ? 'bg-red-500' : 'bg-muted-foreground/40'
+                            }`} />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{stop.stopName || stop.name}</p>
+                              {(stop.pickupTime || stop.dropTime) && (
+                                <p className="text-xs text-muted-foreground">
+                                  Pickup: {stop.pickupTime || 'N/A'} &bull; Drop: {stop.dropTime || 'N/A'}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No route information available.</p>
+                )}
               </div>
             </SimpleCard>
           </div>

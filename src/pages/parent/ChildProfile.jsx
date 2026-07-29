@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import {
   PageContainer,
@@ -11,7 +12,9 @@ import {
 import { User, Mail, Phone, Calendar, Heart, Shield, Award } from 'lucide-react'
 
 export default function ChildProfile() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -59,7 +62,7 @@ export default function ChildProfile() {
     <PageContainer>
       <PageHeader
         title={`${profile.firstName} ${profile.lastName}`}
-        subtitle={`Academic Student Profile Dossier for Session ${profile.academicYear || '2026-2027'}.`}
+        subtitle={`Academic Student Profile Dossier for Session ${profile.academicYear || 'N/A'}.`}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -85,11 +88,11 @@ export default function ChildProfile() {
             <div className="space-y-4 text-xs font-semibold leading-relaxed">
               <div className="flex justify-between items-center pb-2 border-b border-border/60">
                 <span className="text-muted-foreground flex items-center gap-1.5"><Heart className="h-4 w-4 text-rose-500" /> Blood Group</span>
-                <span className="text-foreground">{profile.bloodGroup || 'AB+'}</span>
+                <span className="text-foreground">{profile.bloodGroup || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center pb-2 border-b border-border/60">
                 <span className="text-muted-foreground flex items-center gap-1.5"><Shield className="h-4 w-4 text-emerald-500" /> Vaccination status</span>
-                <span className="text-foreground">Completed</span>
+                <span className="text-foreground">{profile.vaccinationStatus || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground flex items-center gap-1.5"><Award className="h-4 w-4 text-amber-500" /> House Name</span>
@@ -109,15 +112,15 @@ export default function ChildProfile() {
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Medium of Instruction</p>
-                <p className="text-foreground">{profile.medium || 'English'}</p>
+                <p className="text-foreground">{profile.medium || 'N/A'}</p>
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Affiliated Board</p>
-                <p className="text-foreground">{profile.board || 'CBSE'}</p>
+                <p className="text-foreground">{profile.board || 'N/A'}</p>
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Campus Location</p>
-                <p className="text-foreground">{profile.campus || 'Main Campus'}</p>
+                <p className="text-foreground">{profile.campus || 'N/A'}</p>
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Date of Admission</p>

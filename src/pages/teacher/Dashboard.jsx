@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { teacherService } from '@/services/teacherService'
+import axiosClient from '@/config/axiosClient'
 import { 
   Users, 
   BookOpen, 
@@ -32,7 +32,8 @@ export default function TeacherDashboard() {
       setLoading(true)
       setError('')
       try {
-        const data = await teacherService.getTeacherDashboard()
+        const res = await axiosClient.get('/teacher/dashboard')
+        const data = res.data?.data || null
         setDashboardData(data)
       } catch (err) {
         setError('Failed to load teacher portal dashboard. Please retry.')

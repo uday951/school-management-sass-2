@@ -120,7 +120,7 @@ export default function ParentDashboard() {
             <div className="flex justify-between items-start mb-3">
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Outstanding Fees</p>
-                <h3 className="text-3xl font-bold mt-1 text-rose-600">${summary?.fees?.outstanding}</h3>
+                <h3 className="text-3xl font-bold mt-1 text-rose-600">₹{(summary?.fees?.outstanding || 0).toLocaleString('en-IN')}</h3>
               </div>
               <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600">
                 <CreditCard className="h-5 w-5" />
@@ -233,18 +233,17 @@ export default function ParentDashboard() {
         {/* Right column: Emergency contact details */}
         <div className="lg:col-span-1 space-y-6">
           <SimpleCard title="Emergency Contacts">
-            <div className="space-y-4 text-xs font-semibold leading-relaxed">
-              <div className="p-3 border border-border/80 rounded-xl bg-card">
-                <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-1">Campus Registrar</p>
-                <p className="text-foreground">Administrative Desk</p>
-                <p className="text-primary hover:underline cursor-pointer mt-1 font-bold">+1 (555) 019-2834</p>
+            {summary?.emergencyContact ? (
+              <div className="space-y-4 text-xs font-semibold leading-relaxed">
+                <div className="p-3 border border-border/80 rounded-xl bg-card">
+                  <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-1">Emergency Contact</p>
+                  <p className="text-foreground">{summary.emergencyContact.name || 'Not provided'}</p>
+                  <p className="text-primary hover:underline cursor-pointer mt-1 font-bold">{summary.emergencyContact.phone || summary.emergencyContact.number || 'No phone provided'}</p>
+                </div>
               </div>
-              <div className="p-3 border border-border/80 rounded-xl bg-card">
-                <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-1">School Medical Unit</p>
-                <p className="text-foreground">Dr. Helen Cho (Campus Nurse)</p>
-                <p className="text-primary hover:underline cursor-pointer mt-1 font-bold">+1 (555) 019-3388</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-xs text-muted-foreground p-3 border border-border/80 rounded-xl bg-card">Contact school administration for emergencies</p>
+            )}
           </SimpleCard>
         </div>
       </div>

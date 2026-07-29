@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import {
   PageContainer,
@@ -13,7 +14,9 @@ import {
 import { Search, Eye, Calendar, Download, FileText, CheckCircle, Clock } from 'lucide-react'
 
 export default function ChildHomework() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   const [homeworkList, setHomeworkList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,6 +26,7 @@ export default function ChildHomework() {
 
   const fetchHomework = async () => {
     setLoading(true)
+    if (!id) { setLoading(false); return; }
     try {
       const res = await axiosClient.get(`/portal/child/${id}/homework`)
       if (res.data.success) {
@@ -188,11 +192,11 @@ export default function ChildHomework() {
                 </div>
               </div>
 
-              {selectedHomework.attachments.length > 0 && (
+              {(selectedHomework?.attachments || []).length > 0 && (
                 <div>
                   <p className="text-muted-foreground uppercase text-[9px] mb-1.5 font-bold">Teacher Attachments</p>
                   <div className="space-y-1.5">
-                    {selectedHomework.attachments.map((file, index) => (
+                    {(selectedHomework?.attachments || []).map((file, index) => (
                       <a
                         key={index}
                         href={file.url}

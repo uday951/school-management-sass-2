@@ -218,7 +218,7 @@ export default function AttendanceMark() {
         )}
       </SimpleCard>
 
-      <SuccessDialog open={successOpen} onClose={() => setSuccessOpen(false)} message={successMsg} />
+      <SuccessDialog isOpen={successOpen} onClose={() => setSuccessOpen(false)} message={successMsg} />
     </PageContainer>
   )
 }

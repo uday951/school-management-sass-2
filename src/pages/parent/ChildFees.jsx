@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
@@ -17,7 +18,9 @@ import {
 } from 'lucide-react'
 
 export default function ChildFees() {
-  const { id } = useParams()
+  const { activeChild } = useChildStore()
+  const params = useParams()
+  const id = params.id || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   
   // Tab State
@@ -76,12 +79,19 @@ export default function ChildFees() {
   const fetchFeesData = async () => {
     setLoading(true)
     try {
-      const res = await axiosClient.get(`/parent/fees?studentId=${id}`)
+      const res = await axiosClient.get('/portal/fees')
       if (res.data.success) {
-        setStats(res.data.data.stats || {})
-        setTimeline(res.data.data.timeline || [])
-        setScholarships(res.data.data.scholarships || [])
-        setDiscounts(res.data.data.discounts || [])
+        setStats({
+          totalFees: res.data.data?.totalBilled || 0,
+          paidFees: res.data.data?.totalPaid || 0,
+          outstandingBalance: res.data.data?.outstanding || 0,
+          transportFees: 0,
+          scholarshipAmount: 0,
+          discountAmount: 0
+        })
+        setTimeline(res.data.data?.fees || [])
+        setScholarships(res.data.data?.scholarships || [])
+        setDiscounts(res.data.data?.discounts || [])
       }
     } catch (err) {
       console.error('Error fetching fees data:', err)
@@ -93,9 +103,8 @@ export default function ChildFees() {
   // Fetch Payments with search, sorting, filtering, and pagination
   const fetchPayments = async () => {
     try {
-      const res = await axiosClient.get(`/parent/payments`, {
+      const res = await axiosClient.get('/portal/payments', {
         params: {
-          studentId: id,
           search: searchQuery,
           status: statusFilter,
           page: paymentPage,
@@ -117,7 +126,7 @@ export default function ChildFees() {
   // Fetch Receipts
   const fetchReceipts = async () => {
     try {
-      const res = await axiosClient.get(`/parent/receipts?studentId=${id}`)
+      const res = await axiosClient.get('/portal/receipts')
       if (res.data.success) {
         setReceipts(res.data.data || [])
       }

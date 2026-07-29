@@ -79,6 +79,8 @@ const ChildLeavesApply = lazy(() => import('@/pages/parent/ChildLeavesApply'))
 const CommunicationChats = lazy(() => import('@/pages/parent/CommunicationChats'))
 const Documents = lazy(() => import('@/pages/parent/Documents'))
 const ChildLibrary = lazy(() => import('@/pages/parent/ChildLibrary'))
+const ChildTimetable = lazy(() => import('@/pages/parent/ChildTimetable'))
+const ChildPerformance = lazy(() => import('@/pages/parent/ChildPerformance'))
 const ParentSettings = lazy(() => import('@/pages/parent/Settings'))
 
 
@@ -227,7 +229,12 @@ export default function AppRoutes() {
                         { path: 'child/:id/leaves', element: <ChildLeaves /> },
                         { path: 'leaves/apply', element: <ChildLeavesApply /> },
                         { path: 'child/:id/leaves/apply', element: <ChildLeavesApply /> },
+                        { path: 'library', element: <ChildLibrary /> },
                         { path: 'child/:id/library', element: <ChildLibrary /> },
+                        { path: 'timetable', element: <ChildTimetable /> },
+                        { path: 'child/:id/timetable', element: <ChildTimetable /> },
+                        { path: 'performance', element: <ChildPerformance /> },
+                        { path: 'child/:id/performance', element: <ChildPerformance /> },
                         { path: 'communication/chats', element: <CommunicationChats /> },
                         { path: 'documents', element: <Documents /> },
                         { path: 'settings', element: <ParentSettings /> }
