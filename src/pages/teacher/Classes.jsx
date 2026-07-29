@@ -47,8 +47,8 @@ export default function Classes() {
         })
 
         if (res?.data) {
-          setStudents(res.data)
-          if (res.pagination) setPagination(res.pagination)
+          setStudents(res.data.data || [])
+          if (res.data.pagination) setPagination(res.data.pagination)
         }
       } catch (err) {
         setError('Failed to load classroom roster.')
