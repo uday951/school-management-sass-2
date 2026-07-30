@@ -469,7 +469,7 @@ export default function Transport() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estimated Service Cost</span>
-                    <span>$850</span>
+                    <span>{stats?.estimatedServiceCost ? '$' + stats.estimatedServiceCost : 'N/A'}</span>
                   </div>
                 </div>
               </SimpleCard>

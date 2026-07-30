@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import {
   PageContainer,
@@ -14,7 +15,9 @@ import { Printer, Download, Award, TrendingUp, BookOpen, FileText } from 'lucide
 import { LineChart } from '@/components/shared/Charts'
 
 export default function ChildResults() {
-  const { id } = useParams()
+  const { id: paramId } = useParams()
+  const { activeChild } = useChildStore()
+  const id = paramId || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('results')
   const [resultsList, setResultsList] = useState([])
@@ -22,6 +25,7 @@ export default function ChildResults() {
   const [loading, setLoading] = useState(true)
 
   const fetchData = async () => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     try {
       const [res1, res2] = await Promise.all([

@@ -27,6 +27,8 @@ import {
   Printer 
 } from 'lucide-react'
 
+
+
 export default function Attendance() {
   const [activeTab, setActiveTab] = useState('student_register')
   const [selectedClass, setSelectedClass] = useState('Grade 10')
@@ -341,9 +343,30 @@ export default function Attendance() {
             />
           )}
           <div className="flex items-end justify-end">
-            <Button className="w-full flex items-center justify-center gap-1.5" onClick={() => {
-              setSuccessMsg('Roster register successfully synced to cloud.')
-              setSuccessOpen(true)
+            <Button className="w-full flex items-center justify-center gap-1.5" onClick={async () => {
+              try {
+                setLoading(true)
+                const records = students.map(s => ({
+                  studentId: s._id || s.id,
+                  date: attendanceDate,
+                  status: s.status || 'absent',
+                  class: selectedClass,
+                  section: selectedSection
+                }))
+                await axiosClient.post('/attendance/student/bulk', { records }).catch(async (err) => {
+                  if (err.response?.status === 404) {
+                    await Promise.all(records.map(r => axiosClient.post('/attendance/student', r)))
+                  } else {
+                    throw err
+                  }
+                })
+                setSuccessMsg('Attendance roster saved successfully.')
+                setSuccessOpen(true)
+              } catch (err) {
+                console.error('Failed to save roster', err)
+              } finally {
+                setLoading(false)
+              }
             }}>
               <Check className="h-4 w-4" /> Save Roster
             </Button>

@@ -195,9 +195,9 @@ function OverviewBar({ overview, loading }) {
     )
   }
   const items = [
-    { label: 'School', value: overview?.schoolName || 'School ERP', icon: Building2 },
-    { label: 'Academic Year', value: overview?.academicYear || '2025-2026', icon: Calendar },
-    { label: 'Session', value: overview?.session || 'April – March', icon: Clock },
+    { label: 'School', value: overview?.schoolName || overview?.institutionName || 'School ERP', icon: Building2 },
+    { label: 'Academic Year', value: overview?.academicYear || 'N/A', icon: Calendar },
+    { label: 'Session', value: overview?.session || overview?.sessionName || 'N/A', icon: Clock },
     { label: 'Campus', value: overview?.campus || 'Main Campus', icon: Shield },
   ]
   return (
@@ -638,11 +638,11 @@ function SystemHealthTab({ health, loading }) {
   }
 
   const metrics = [
-    { label: 'Server Status', value: 'Online', status: 'online', icon: Server },
-    { label: 'Database Status', value: health?.mongoStatus === 1 ? 'Connected' : 'Disconnected', status: health?.mongoStatus === 1 ? 'connected' : 'offline', icon: Database },
-    { label: 'Server Uptime', value: formatUptime(health?.uptime), status: 'healthy', icon: Clock },
+    { label: 'Server Status', value: health?.status || 'Unknown', status: health?.status === 'Online' ? 'online' : 'warning', icon: Server },
+    { label: 'Database Status', value: health?.mongodbState || 'Unknown', status: health?.mongodbState === 'Connected' ? 'connected' : 'warning', icon: Database },
+    { label: 'Server Uptime', value: health?.uptime ? Math.floor(health.uptime / 3600) + 'h' : 'N/A', status: 'healthy', icon: Clock },
     { label: 'Node.js Version', value: health?.nodeVersion || 'N/A', status: 'healthy', icon: Zap },
-    { label: 'API Status', value: 'Operational', status: 'online', icon: Wifi },
+    { label: 'API Status', value: health?.status || 'Operational', status: 'online', icon: Wifi },
     { label: 'Last Checked', value: health?.timestamp ? new Date(health.timestamp).toLocaleTimeString('en-IN') : 'N/A', status: 'healthy', icon: RefreshCw },
   ]
 
@@ -673,9 +673,9 @@ function SystemHealthTab({ health, loading }) {
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
         <div className="flex items-center gap-2">
           <CheckCircle className="w-4 h-4 text-emerald-600" />
-          <span className="text-sm font-medium text-emerald-700">All systems operational</span>
+          <span className="text-sm font-medium text-emerald-700">{health?.status === 'Online' ? 'All systems operational' : 'System status unknown'}</span>
         </div>
-        <p className="text-xs text-emerald-600 mt-1">School ERP is running normally. All modules are connected to live MongoDB.</p>
+        <p className="text-xs text-emerald-600 mt-1">{health?.status === 'Online' ? 'School ERP is running normally. All modules are connected to live MongoDB.' : 'System health check returned non-optimal status.'}</p>
       </div>
     </div>
   )

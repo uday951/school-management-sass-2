@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useChildStore } from '@/store'
 import axiosClient from '@/config/axiosClient'
 import {
   PageContainer,
@@ -13,12 +14,15 @@ import {
 import { Book, Calendar, CreditCard, AlertCircle } from 'lucide-react'
 
 export default function ChildLibrary() {
-  const { id } = useParams()
+  const { id: paramId } = useParams()
+  const { activeChild } = useChildStore()
+  const id = paramId || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   const [issuedBooks, setIssuedBooks] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchLibraryRecords = async () => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     try {
       const res = await axiosClient.get(`/portal/child/${id}/library`)

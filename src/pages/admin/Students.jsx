@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import axiosClient from '@/config/axiosClient'
 import { 
   PageHeader, 
   PageContainer, 
@@ -98,38 +99,60 @@ export default function Students() {
     setIsDeleteOpen(true)
   }
 
-  const handleDeleteConfirm = () => {
-    setStudents(prev => prev.filter(s => s.id !== selectedStudent.id))
-    setIsDeleteOpen(false)
-    setSuccessMessage(`Successfully deleted ${selectedStudent.name}'s record.`)
-    setIsSuccessOpen(true)
+  const handleDeleteConfirm = async () => {
+    try {
+      const studentId = selectedStudent.id || selectedStudent._id
+      await axiosClient.delete(`/students/${studentId}`)
+      setStudents(prev => prev.filter(s => s.id !== studentId && s._id !== studentId))
+      setIsDeleteOpen(false)
+      setSuccessMessage(`Successfully deleted ${selectedStudent.name}'s record.`)
+      setIsSuccessOpen(true)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  const handlePromoteConfirm = (e) => {
+  const handlePromoteConfirm = async (e) => {
     e.preventDefault()
-    const targetIds = selectedStudent ? [selectedStudent.id] : selectedList.map(s => s.id)
-    setStudents(prev => prev.map(s => {
-      if (targetIds.includes(s.id)) {
-        return { ...s, class: promoteForm.targetClass, section: promoteForm.targetSection }
-      }
-      return s
-    }))
-    setIsPromoteOpen(false)
-    setSuccessMessage('Successfully promoted selected students.')
-    setIsSuccessOpen(true)
+    try {
+      const targetIds = selectedStudent ? [selectedStudent.id || selectedStudent._id] : selectedList.map(s => s.id || s._id)
+      await Promise.all(targetIds.map(studentId => 
+        axiosClient.patch(`/students/${studentId}/promote`, { 
+          targetClass: promoteForm.targetClass, 
+          targetSection: promoteForm.targetSection 
+        })
+      ))
+      setStudents(prev => prev.map(s => {
+        if (targetIds.includes(s.id || s._id)) {
+          return { ...s, class: promoteForm.targetClass, section: promoteForm.targetSection }
+        }
+        return s
+      }))
+      setIsPromoteOpen(false)
+      setSuccessMessage('Successfully promoted selected students.')
+      setIsSuccessOpen(true)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  const handleTransferConfirm = (e) => {
+  const handleTransferConfirm = async (e) => {
     e.preventDefault()
-    setStudents(prev => prev.map(s => {
-      if (s.id === selectedStudent.id) {
-        return { ...s, status: 'inactive' }
-      }
-      return s
-    }))
-    setIsTransferOpen(false)
-    setSuccessMessage(`Successfully transferred ${selectedStudent.name}.`)
-    setIsSuccessOpen(true)
+    try {
+      const studentId = selectedStudent.id || selectedStudent._id
+      await axiosClient.patch(`/students/${studentId}/transfer`, { targetCampus: 'N/A' })
+      setStudents(prev => prev.map(s => {
+        if ((s.id || s._id) === studentId) {
+          return { ...s, status: 'inactive' }
+        }
+        return s
+      }))
+      setIsTransferOpen(false)
+      setSuccessMessage(`Successfully transferred ${selectedStudent.name}.`)
+      setIsSuccessOpen(true)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   // Export handlers
@@ -464,10 +487,18 @@ export default function Students() {
           <FileUpload label="Select Import File" onFileSelect={(file) => console.log('Spreadsheet loaded', file)} />
           <div className="flex gap-2 justify-end border-t border-border pt-4">
             <Button variant="outline" onClick={() => setIsImportOpen(false)}>Cancel</Button>
-            <Button onClick={() => {
-              setIsImportOpen(false)
-              setSuccessMessage('Successfully imported 25 student profiles.')
-              setIsSuccessOpen(true)
+            <Button onClick={async () => {
+              try {
+                const formData = new FormData()
+                await axiosClient.post('/students/import', formData)
+                setIsImportOpen(false)
+                setSuccessMessage('Successfully imported student profiles.')
+                setIsSuccessOpen(true)
+              } catch (err) {
+                console.error(err)
+                setSuccessMessage('Failed to import student profiles.')
+                setIsSuccessOpen(true)
+              }
             }}>Run Spreadsheet Validation</Button>
           </div>
         </div>

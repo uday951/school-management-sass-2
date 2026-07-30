@@ -16,7 +16,7 @@ import {
   FormTextarea
 } from '@/components/shared'
 import { Check, X, ArrowLeft, CalendarDays, Plus, Clock, FileText } from 'lucide-react'
-import teacherService from '@/services/teacherService'
+
 
 export default function AttendanceLeaves() {
   const navigate = useNavigate()

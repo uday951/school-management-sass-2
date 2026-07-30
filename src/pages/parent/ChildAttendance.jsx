@@ -13,9 +13,9 @@ import {
 import { Calendar, UserCheck, UserX, AlertTriangle, ArrowLeft } from 'lucide-react'
 
 export default function ChildAttendance() {
+  const { id: paramId } = useParams()
   const { activeChild } = useChildStore()
-  const params = useParams()
-  const id = params.id || activeChild?._id || activeChild?.id
+  const id = paramId || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   
   // Data States
@@ -25,6 +25,7 @@ export default function ChildAttendance() {
 
   // Fetch child stats and calendar logs
   const fetchChildAttendance = async () => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     try {
       const logsRes = await axiosClient.get(`/portal/child/${id}/attendance`)

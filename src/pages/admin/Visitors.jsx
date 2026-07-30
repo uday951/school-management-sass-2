@@ -1,10 +1,8 @@
-import React from 'react'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Visitors() {
-  return (
-    <div className="p-6 bg-card rounded-lg border border-border shadow-sm">
-      <h1 className="text-2xl font-bold text-foreground mb-2">Gate pass logging registers</h1>
-      <p className="text-sm text-muted-foreground">Foundation Page for routing validation. Fully functional placeholder.</p>
-    </div>
-  )
+  const navigate = useNavigate()
+  useEffect(() => { navigate('/admin/dashboard', { replace: true }) }, [navigate])
+  return null
 }

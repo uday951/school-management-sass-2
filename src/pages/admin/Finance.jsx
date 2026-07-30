@@ -857,7 +857,7 @@ export default function Finance() {
                 <CreditCard className="h-5 w-5 text-primary" />
                 Daily Cash Book Statement
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Opening Balance: $50,000 | Closing Balance: ${netCashBalance.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Opening Balance: N/A | Closing Balance: ${netCashBalance.toLocaleString()}</p>
             </div>
             <Button variant="outline" onClick={handlePrint} className="flex items-center gap-1.5">
               <Printer className="h-4 w-4" />

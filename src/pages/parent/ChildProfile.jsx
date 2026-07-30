@@ -12,13 +12,14 @@ import {
 import { User, Mail, Phone, Calendar, Heart, Shield, Award } from 'lucide-react'
 
 export default function ChildProfile() {
+  const { id: paramId } = useParams()
   const { activeChild } = useChildStore()
-  const params = useParams()
-  const id = params.id || activeChild?._id || activeChild?.id
+  const id = paramId || activeChild?._id || activeChild?.id
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = async () => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     try {
       const res = await axiosClient.get(`/students/${id}/profile`)
@@ -108,7 +109,7 @@ export default function ChildProfile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-xs font-semibold leading-relaxed">
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Date of Birth</p>
-                <p className="text-foreground">{new Date(profile.dob).toLocaleDateString()}</p>
+                <p className="text-foreground">{profile.dob ? new Date(profile.dob).toLocaleDateString() : 'N/A'}</p>
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Medium of Instruction</p>
@@ -124,7 +125,7 @@ export default function ChildProfile() {
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Date of Admission</p>
-                <p className="text-foreground">{new Date(profile.admissionDate).toLocaleDateString()}</p>
+                <p className="text-foreground">{profile.admissionDate ? new Date(profile.admissionDate).toLocaleDateString() : 'N/A'}</p>
               </div>
               <div className="pb-2 border-b border-border/60">
                 <p className="text-muted-foreground uppercase text-[9px] tracking-wider mb-0.5">Class / Section</p>

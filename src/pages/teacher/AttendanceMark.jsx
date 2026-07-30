@@ -38,7 +38,7 @@ export default function AttendanceMark() {
         setStudents(res.data.data)
       } else {
         // Fetch from teacher classroom student endpoint
-        const stdRes = await axiosClient.get(`/teacher/students?class=${selectedClass}&section=${selectedSection}`)
+        const stdRes = await axiosClient.get(`/teacher/my-students?class=${selectedClass}&section=${selectedSection}`)
         if (stdRes.data?.data && Array.isArray(stdRes.data.data)) {
           setStudents(stdRes.data.data.map(s => ({
             id: s._id || s.id,

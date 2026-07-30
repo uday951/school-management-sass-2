@@ -18,9 +18,9 @@ import {
 } from 'lucide-react'
 
 export default function ChildFees() {
+  const { id: paramId } = useParams()
   const { activeChild } = useChildStore()
-  const params = useParams()
-  const id = params.id || activeChild?._id || activeChild?.id
+  const id = paramId || activeChild?._id || activeChild?.id
   const navigate = useNavigate()
   
   // Tab State
@@ -63,6 +63,7 @@ export default function ChildFees() {
   // Fetch Child Profile
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!id) { setLoading(false); return }
       try {
         const profRes = await axiosClient.get(`/students/${id}/profile`)
         if (profRes.data.success && profRes.data.data) {
@@ -77,6 +78,7 @@ export default function ChildFees() {
 
   // Fetch Fee Summary, Scholarships, Discounts, and Timeline
   const fetchFeesData = async () => {
+    if (!id) { setLoading(false); return }
     setLoading(true)
     try {
       const res = await axiosClient.get('/portal/fees')
@@ -156,10 +158,8 @@ export default function ChildFees() {
     setPaymentPage(1)
   }
 
-  // Download PDF helper
   const handleDownloadPdf = (receiptId) => {
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'
-    window.open(`${backendUrl}/parent/receipts/${receiptId}/pdf`, '_blank')
+    alert("PDF download not available");
   }
 
   const tabs = [

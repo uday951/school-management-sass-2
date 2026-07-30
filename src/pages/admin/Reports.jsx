@@ -230,8 +230,8 @@ export default function Reports() {
             <SimpleCard title="Tuition Fees collection summary">
               <PieChart 
                 data={[
-                  { label: 'Paid Collections', value: dashboardData.feeSummary?.totalPaid || 1500 },
-                  { label: 'Pending / Outstanding', value: dashboardData.feeSummary?.totalPending || 450 }
+                  { label: 'Paid Collections', value: dashboardData.feeSummary?.totalPaid || 0 },
+                  { label: 'Pending / Outstanding', value: dashboardData.feeSummary?.totalPending || 0 }
                 ]}
               />
             </SimpleCard>
@@ -247,26 +247,13 @@ export default function Reports() {
 
             <SimpleCard title="Tuition Revenue Timeline (Past 6 Months)">
               <LineChart 
-                data={[
-                  { label: 'Feb', value: 1200 },
-                  { label: 'Mar', value: 1900 },
-                  { label: 'Apr', value: 2400 },
-                  { label: 'May', value: 3100 },
-                  { label: 'Jun', value: 2900 },
-                  { label: 'Jul', value: 4500 }
-                ]}
+                data={feeReports?.monthlyTrend || feeReports?.collectionTrend || []}
               />
             </SimpleCard>
 
             <SimpleCard title="Subject Performance average Scores">
               <BarChart 
-                data={[
-                  { label: 'Math', value: 84 },
-                  { label: 'Physics', value: 89 },
-                  { label: 'English', value: 92 },
-                  { label: 'Chemistry', value: 78 },
-                  { label: 'Biology', value: 85 }
-                ]}
+                data={examReports?.subjectAverages || examReports?.subjectPerformance || []}
               />
             </SimpleCard>
           </div>
