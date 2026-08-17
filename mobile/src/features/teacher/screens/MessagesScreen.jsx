@@ -1,60 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
 import ScreenContainer from '../../../components/layout/ScreenContainer';
 import EmptyState from '../../../components/feedback/EmptyState';
 import teacherApi from '../../../services/api/teacher.api';
+import useAuthStore from '../../../store/authStore';
 import { theme } from '../../../theme';
 
 export default function MessagesScreen() {
+  const { user } = useAuthStore();
+  const currentUserId = user?._id || user?.id || '';
+
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [inputText, setInputText] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchChats = async () => {
+    try {
+      const res = await teacherApi.getMessages();
+      setChats(res.data?.data || []);
+    } catch (err) {
+      console.error('Error fetching teacher chats:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchChats = async () => {
-      setLoading(true);
-      try {
-        const res = await teacherApi.getMessages();
-        setChats(res.data?.data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchChats();
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
     fetchChats();
   }, []);
 
   const handleSendMessage = async () => {
     if (!inputText.trim() || !selectedChat) return;
+    const messageText = inputText.trim();
+    setInputText('');
+
     try {
       const payload = {
         receiverId: selectedChat.partnerId,
         receiverModel: selectedChat.partnerModel || 'Parent',
-        message: inputText.trim()
+        message: messageText
       };
-      await teacherApi.sendChatMessage(payload);
-      
-      // Update local state mock for immediate feedback
-      const updatedMessages = [
-        {
-          ...payload,
-          senderId: '6a6237bed724b22b37b5255a', // Sarah mock ID
-          senderModel: 'Teacher',
-          createdAt: new Date().toISOString()
-        },
-        ...(selectedChat.messages || [])
-      ];
-      setSelectedChat((prev) => ({ ...prev, messages: updatedMessages }));
-      setInputText('');
+      const res = await teacherApi.sendChatMessage(payload);
+      const newMsg = res.data?.data || {
+        _id: Date.now().toString(),
+        senderId: currentUserId,
+        senderModel: 'Teacher',
+        message: messageText,
+        createdAt: new Date().toISOString()
+      };
+
+      setSelectedChat((prev) => ({
+        ...prev,
+        messages: [newMsg, ...(prev?.messages || [])]
+      }));
     } catch (err) {
-      console.error(err);
+      console.error('Error sending chat message:', err);
     }
   };
 
   return (
-    <ScreenContainer title="Teacher Chat Desk" loading={loading}>
+    <ScreenContainer title="Teacher Communication Portal" loading={loading}>
       {selectedChat ? (
         <View style={styles.chatContainer}>
           <TouchableOpacity style={styles.backHeader} onPress={() => setSelectedChat(null)}>
@@ -67,7 +80,7 @@ export default function MessagesScreen() {
             keyExtractor={(item, index) => item._id || item.id || index.toString()}
             ListEmptyComponent={<EmptyState title="No Messages" message="Send a message to open conversation." />}
             renderItem={({ item }) => {
-              const isMe = item.senderModel === 'Teacher' || item.senderId === '6a6237bed724b22b37b5255a';
+              const isMe = item.senderModel === 'Teacher' || (currentUserId && item.senderId?.toString() === currentUserId.toString());
               return (
                 <View style={[styles.msgWrapper, isMe ? styles.msgMe : styles.msgOther]}>
                   <View style={[styles.msgBubble, isMe ? styles.bubbleMe : styles.bubbleOther]}>
@@ -96,11 +109,19 @@ export default function MessagesScreen() {
         <FlatList
           data={chats}
           keyExtractor={(item) => item.partnerId}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.light.primary]} />}
           ListEmptyComponent={<EmptyState title="No Conversations" message="No messages exchanged in your chat desk recently." />}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.chatRow} onPress={() => setSelectedChat(item)}>
-              <Text style={styles.chatName}>{item.partnerName || 'Parent / Staff'}</Text>
-              <Text style={styles.lastMsg}>{item.lastMessage || 'Open direct messaging channel'}</Text>
+              <View style={styles.chatHeader}>
+                <Text style={styles.chatName}>{item.partnerName || 'Parent / Staff'}</Text>
+                {item.unreadCount > 0 ? (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadText}>{item.unreadCount}</Text>
+                  </View>
+                ) : null}
+              </View>
+              <Text style={styles.lastMsg} numberOfLines={1}>{item.lastMessage || 'Open direct messaging channel'}</Text>
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.list}
@@ -123,10 +144,26 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.light.border,
     ...theme.shadows.sm
   },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
   chatName: {
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.semibold,
     color: theme.colors.light.text
+  },
+  unreadBadge: {
+    backgroundColor: theme.colors.light.primary,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2
+  },
+  unreadText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold
   },
   lastMsg: {
     fontSize: theme.typography.sizes.xs,

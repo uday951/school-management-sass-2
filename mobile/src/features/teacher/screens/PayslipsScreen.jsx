@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, RefreshControl } from 'react-native';
 import ScreenContainer from '../../../components/layout/ScreenContainer';
 import EmptyState from '../../../components/feedback/EmptyState';
 import teacherApi from '../../../services/api/teacher.api';
@@ -7,40 +7,54 @@ import { theme } from '../../../theme';
 
 export default function PayslipsScreen() {
   const [payslips, setPayslips] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchPayslips = async () => {
+    try {
+      const res = await teacherApi.getPayslips();
+      setPayslips(res.data?.data || []);
+    } catch (err) {
+      console.error('Error fetching teacher payslips:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPayslips = async () => {
-      setLoading(true);
-      try {
-        const res = await teacherApi.getPayslips();
-        setPayslips(res.data?.data || []);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchPayslips();
+  }, []);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
     fetchPayslips();
   }, []);
 
   return (
-    <ScreenContainer title="Payslip history" loading={loading}>
+    <ScreenContainer title="Payslip & Payroll Folder" loading={loading}>
       <FlatList
         data={payslips}
         keyExtractor={(item) => item._id || item.id}
-        ListEmptyComponent={<EmptyState title="No Payslips" message="No generated payroll records found in your folder." />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.light.primary]} />}
+        ListEmptyComponent={<EmptyState title="No Payslips Found" message="No generated payroll records found in your folder." />}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.header}>
-              <Text style={styles.period}>{item.month} {item.year}</Text>
+              <Text style={styles.period}>{item.month || 'Salary'} {item.year || ''}</Text>
               <View style={[styles.badge, item.status === 'paid' ? styles.paid : styles.pending]}>
                 <Text style={styles.badgeText}>{item.status?.toUpperCase() || 'PAID'}</Text>
               </View>
             </View>
+
             <View style={styles.row}>
               <Text style={styles.label}>Net Salary Amount</Text>
-              <Text style={styles.value}>${item.netSalary || item.netAmount || 0}</Text>
+              <Text style={styles.netValue}>${item.netSalary || item.netAmount || 0}</Text>
+            </View>
+
+            <View style={styles.detailsRow}>
+              <Text style={styles.detailLabel}>Gross: ${item.grossSalary || 0}</Text>
+              <Text style={styles.detailLabel}>Deductions: ${item.deductionsAmount || item.deductions || 0}</Text>
             </View>
           </View>
         )}
@@ -89,22 +103,34 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 158, 11, 0.1)'
   },
   badgeText: {
-    fontSize: theme.typography.sizes.xs,
+    fontSize: 10,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.light.text
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginBottom: 6
   },
   label: {
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.light.textMuted
   },
-  value: {
-    fontSize: theme.typography.sizes.md,
+  netValue: {
+    fontSize: theme.typography.sizes.lg,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.light.text
+    color: theme.colors.light.primary
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.light.border,
+    paddingTop: 6
+  },
+  detailLabel: {
+    fontSize: 11,
+    color: theme.colors.light.textMuted
   }
 });

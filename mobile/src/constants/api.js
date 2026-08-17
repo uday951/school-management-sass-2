@@ -29,10 +29,12 @@ export const API_ENDPOINTS = {
   CHILD_PERFORMANCE: (studentId) => `/portal/child/${studentId}/performance`,
 
   // Teacher Portal
+  TEACHER_DASHBOARD: '/teacher/dashboard',
   TEACHER_PROFILE: '/teacher/profile',
   TEACHER_CHANGE_PASSWORD: '/teacher/change-password',
   TEACHER_CLASSES: '/teacher/my-classes',
   TEACHER_STUDENTS: '/teacher/my-students',
+  TEACHER_ATTENDANCE_STUDENT: '/attendance/student',
   TEACHER_PAYSLIPS: '/teacher/payslips',
   TEACHER_PAYROLL_HISTORY: '/teacher/payroll-history',
   TEACHER_ANNOUNCEMENTS: '/teacher/announcements',

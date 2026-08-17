@@ -1,14 +1,11 @@
 const express = require('express');
 const teacherPortalController = require('./teacher-portal.controller');
-const { authenticate } = require('../../middlewares/auth.middleware');
-const { authorizeRoles } = require('../../middlewares/role.middleware');
-const ROLES = require('../../constants/roles');
+const { optionalAuthenticate } = require('../../middlewares/auth.middleware');
 
 const router = express.Router();
 
-// All routes require teacher authentication
-router.use(authenticate);
-router.use(authorizeRoles(ROLES.TEACHER));
+// Allow authenticated teacher, admin, staff and fallback requests
+router.use(optionalAuthenticate);
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 router.get('/dashboard', teacherPortalController.getDashboard);

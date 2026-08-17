@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import ScreenContainer from '../../../components/layout/ScreenContainer';
 import EmptyState from '../../../components/feedback/EmptyState';
 import teacherApi from '../../../services/api/teacher.api';
@@ -7,20 +7,30 @@ import { theme } from '../../../theme';
 
 export default function LeaveScreen() {
   const [leaves, setLeaves] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [reason, setReason] = useState('');
+  const [balances, setBalances] = useState({ total: 15, used: 0, available: 15 });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form
+  const [leaveType, setLeaveType] = useState('casual');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [reason, setReason] = useState('');
 
   const fetchLeaves = async () => {
-    setLoading(true);
     try {
       const res = await teacherApi.getLeaveHistory();
-      setLeaves(res.data?.data?.leaves || []);
+      const data = res.data?.data;
+      setLeaves(data?.leaves || []);
+      if (data?.balances) {
+        setBalances(data.balances);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching leave history:', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -28,30 +38,55 @@ export default function LeaveScreen() {
     fetchLeaves();
   }, []);
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchLeaves();
+  }, []);
+
   const handleApplyLeave = async () => {
-    if (!reason || !startDate || !endDate) {
-      Alert.alert('Required Info', 'Please specify startDate, endDate and reason.');
+    if (!startDate.trim() || !endDate.trim() || !reason.trim()) {
+      Alert.alert('Validation Error', 'Please fill in Start Date, End Date, and Reason.');
       return;
     }
+    setSubmitting(true);
     try {
       await teacherApi.applyLeave({
-        leaveType: 'casual',
-        startDate,
-        endDate,
-        reason
+        leaveType,
+        startDate: startDate.trim(),
+        endDate: endDate.trim(),
+        reason: reason.trim()
       });
-      setReason('');
+      Alert.alert('Success', 'Leave application submitted successfully.');
       setStartDate('');
       setEndDate('');
-      Alert.alert('Success', 'Leave application submitted.');
+      setReason('');
       fetchLeaves();
     } catch (err) {
       Alert.alert('Error', 'Unable to submit leave request.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <ScreenContainer title="Leave Request Desk" loading={loading} scrollable>
+    <ScreenContainer title="Leave Management Desk" loading={loading} scrollable>
+      {/* Leave Balances Cards */}
+      <View style={styles.balanceGrid}>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Allowed</Text>
+          <Text style={styles.balanceValue}>{balances.total}</Text>
+        </View>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Used</Text>
+          <Text style={[styles.balanceValue, { color: theme.colors.light.error }]}>{balances.used}</Text>
+        </View>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Available</Text>
+          <Text style={[styles.balanceValue, { color: '#10B981' }]}>{balances.available}</Text>
+        </View>
+      </View>
+
+      {/* Apply Form */}
       <View style={styles.form}>
         <Text style={styles.formTitle}>Apply for Leave</Text>
         <TextInput
@@ -75,16 +110,22 @@ export default function LeaveScreen() {
           value={reason}
           onChangeText={setReason}
         />
-        <TouchableOpacity style={styles.applyBtn} onPress={handleApplyLeave}>
-          <Text style={styles.applyBtnText}>Submit Request</Text>
+        <TouchableOpacity
+          style={[styles.applyBtn, submitting && styles.btnDisabled]}
+          disabled={submitting}
+          onPress={handleApplyLeave}
+        >
+          <Text style={styles.applyBtnText}>{submitting ? 'Submitting...' : 'Submit Leave Request'}</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.historyTitle}>Application History</Text>
+      {/* History */}
+      <Text style={styles.historyTitle}>Leave Application History</Text>
       <FlatList
         scrollEnabled={false}
         data={leaves}
         keyExtractor={(item) => item._id || item.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.light.primary]} />}
         ListEmptyComponent={<EmptyState title="No Records" message="You have no leave requests submitted in the history tracker." />}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -105,10 +146,36 @@ export default function LeaveScreen() {
 }
 
 const styles = StyleSheet.create({
+  balanceGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: theme.spacing.md
+  },
+  balanceCard: {
+    flex: 1,
+    backgroundColor: theme.colors.light.card,
+    borderRadius: 8,
+    padding: theme.spacing.sm,
+    marginHorizontal: 3,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.light.border
+  },
+  balanceLabel: {
+    fontSize: 11,
+    color: theme.colors.light.textMuted,
+    marginBottom: 2
+  },
+  balanceValue: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.light.text
+  },
   form: {
     backgroundColor: theme.colors.light.card,
     borderRadius: 8,
     padding: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.lg,
     borderWidth: 1,
     borderColor: theme.colors.light.border,
@@ -121,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md
   },
   input: {
-    height: 40,
+    height: 38,
     borderWidth: 1,
     borderColor: theme.colors.light.border,
     borderRadius: 6,
@@ -139,6 +206,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: theme.spacing.xs
   },
+  btnDisabled: {
+    opacity: 0.6
+  },
   applyBtnText: {
     color: '#FFFFFF',
     fontSize: theme.typography.sizes.sm,
@@ -149,12 +219,13 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.light.text,
     marginBottom: theme.spacing.sm,
-    paddingHorizontal: 4
+    paddingHorizontal: theme.spacing.md
   },
   card: {
     backgroundColor: theme.colors.light.card,
     borderRadius: 8,
     padding: theme.spacing.md,
+    marginHorizontal: theme.spacing.md,
     marginBottom: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.light.border,
