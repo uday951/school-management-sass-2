@@ -1,19 +1,34 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
+import { Platform, NativeModules } from 'react-native';
 import { useAuthStore } from '../../store/authStore';
 
-let API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1';
+const getMetroHostIp = () => {
+  try {
+    const scriptURL = NativeModules.SourceCode?.scriptURL;
+    if (scriptURL) {
+      const address = scriptURL.split('://')[1]?.split('/')[0];
+      const host = address?.split(':')[0];
+      if (host && host !== 'localhost' && host !== '127.0.0.1') {
+        return host;
+      }
+    }
+  } catch (_e) {
+    // Ignore error
+  }
+  return null;
+};
 
-if (API_BASE_URL.includes('10.171.37.49')) {
-  API_BASE_URL = API_BASE_URL.replace('10.171.37.49', Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-}
+const hostIp = getMetroHostIp();
+let defaultBase = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://192.168.31.201:5000/api/v1';
 
-if (Platform.OS === 'android' && API_BASE_URL.includes('localhost')) {
-  API_BASE_URL = API_BASE_URL.replace('localhost', '10.0.2.2');
+if (hostIp) {
+  defaultBase = `http://${hostIp}:5000/api/v1`;
+} else if (defaultBase.includes('localhost') || defaultBase.includes('127.0.0.1') || defaultBase.includes('10.171.37.49')) {
+  defaultBase = 'http://192.168.31.201:5000/api/v1';
 }
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: defaultBase,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -63,11 +78,13 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Structure error message
+    // Structure error message cleanly
+    const isNetworkError = !error.response || error.code === 'ERR_NETWORK' || error.message === 'Network Error';
     const apiError = {
-      status: error.response?.status || 500,
-      message: error.response?.data?.error?.message || error.response?.data?.message || 'A network error occurred. Please try again.',
+      status: error.response?.status || (isNetworkError ? 503 : 500),
+      message: error.response?.data?.error?.message || error.response?.data?.message || (isNetworkError ? 'Backend server unreachable. Using local offline mode.' : 'A network error occurred. Please try again.'),
       errors: error.response?.data?.error?.details || error.response?.data?.errors || null,
+      isNetworkError,
       originalError: error
     };
 
