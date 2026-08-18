@@ -13,6 +13,7 @@ export const colors = {
     textMuted: '#6B7280', // Slate 500
     border: '#E5E7EB',
     error: '#EF4444',
+    danger: '#EF4444',
     success: '#10B981',
     warning: '#F59E0B',
     info: '#3B82F6',
@@ -32,6 +33,7 @@ export const colors = {
     textMuted: '#94A3B8',
     border: '#334155',
     error: '#F87171',
+    danger: '#F87171',
     success: '#34D399',
     warning: '#FBBF24',
     info: '#60A5FA',

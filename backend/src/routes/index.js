@@ -1,6 +1,7 @@
 const express = require('express');
 const healthRoute = require('./health.route');
 const schoolRoutes = require('../modules/school/school.routes');
+const authRoutes = require('../modules/auth/auth.routes');
 const studentRoutes = require('../modules/student/student.routes');
 const classRoutes = require('../modules/academic/class.routes');
 const subjectRoutes = require('../modules/academic/subject.routes');
@@ -27,6 +28,7 @@ router.get('/', (_req, res) => {
 
 // ─── Mount Sub-routes ──────────────────────────────────────────────────────
 router.use('/', healthRoute);
+router.use('/auth', authRoutes);
 router.use('/', schoolRoutes);
 router.use('/', timetableRoutes);
 router.use('/', financeRoutes);
