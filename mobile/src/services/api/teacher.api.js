@@ -2,12 +2,15 @@ import apiClient from './client';
 import { API_ENDPOINTS } from '../../constants/api';
 
 export const teacherApi = {
+  getDashboard: () => apiClient.get(API_ENDPOINTS.TEACHER_DASHBOARD),
   getProfile: () => apiClient.get(API_ENDPOINTS.TEACHER_PROFILE),
   updateProfile: (data) => apiClient.put(API_ENDPOINTS.TEACHER_PROFILE, data),
   changePassword: (data) => apiClient.put(API_ENDPOINTS.TEACHER_CHANGE_PASSWORD, data),
 
   getClasses: () => apiClient.get(API_ENDPOINTS.TEACHER_CLASSES),
   getStudents: (params) => apiClient.get(API_ENDPOINTS.TEACHER_STUDENTS, { params }),
+  getStudentAttendance: (params) => apiClient.get(API_ENDPOINTS.TEACHER_ATTENDANCE_STUDENT, { params }),
+  markStudentAttendance: (payload) => apiClient.post(API_ENDPOINTS.TEACHER_ATTENDANCE_STUDENT, payload),
   getPayslips: () => apiClient.get(API_ENDPOINTS.TEACHER_PAYSLIPS),
   getPayrollHistory: () => apiClient.get(API_ENDPOINTS.TEACHER_PAYROLL_HISTORY),
   
