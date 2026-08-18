@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '../../store/authStore';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:5000/api/v1';
+let API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://10.171.37.49:5000/api/v1';
+if (API_BASE_URL.includes('localhost')) {
+  API_BASE_URL = API_BASE_URL.replace('localhost', '10.171.37.49');
+}
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -57,8 +60,8 @@ apiClient.interceptors.response.use(
     // Structure error message
     const apiError = {
       status: error.response?.status || 500,
-      message: error.response?.data?.message || 'A network error occurred. Please try again.',
-      errors: error.response?.data?.errors || null,
+      message: error.response?.data?.error?.message || error.response?.data?.message || 'A network error occurred. Please try again.',
+      errors: error.response?.data?.error?.details || error.response?.data?.errors || null,
       originalError: error
     };
 

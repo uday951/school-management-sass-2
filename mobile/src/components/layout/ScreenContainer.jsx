@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, SafeAreaView, ScrollView, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { StyleSheet, View, ScrollView, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../../theme';
 
 export default function ScreenContainer({

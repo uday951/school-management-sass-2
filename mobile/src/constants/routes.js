@@ -39,7 +39,15 @@ export const ROUTES = {
   PRINCIPAL_FINANCE: 'PrincipalFinance',
   PRINCIPAL_APPROVALS: 'PrincipalApprovals',
   PRINCIPAL_ANNOUNCEMENTS: 'PrincipalAnnouncements',
-  PRINCIPAL_PROFILE: 'PrincipalProfile'
+  PRINCIPAL_PROFILE: 'PrincipalProfile',
+  PRINCIPAL_ACADEMICS: 'PrincipalAcademics',
+  PRINCIPAL_EXAMINATIONS: 'PrincipalExaminations',
+  PRINCIPAL_FEES: 'PrincipalFees',
+  PRINCIPAL_TRANSPORT: 'PrincipalTransport',
+  PRINCIPAL_REPORTS: 'PrincipalReports',
+  PRINCIPAL_COMMUNICATION: 'PrincipalCommunication',
+  PRINCIPAL_NOTIFICATIONS: 'PrincipalNotifications',
+  PRINCIPAL_SETTINGS: 'PrincipalSettings'
 };
 
 export default ROUTES;

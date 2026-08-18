@@ -4,7 +4,11 @@ import spacing from './spacing';
 import shadows from './shadows';
 
 export const theme = {
-  colors,
+  colors: {
+    ...colors.light,
+    light: colors.light,
+    dark: colors.dark
+  },
   typography,
   spacing,
   shadows
