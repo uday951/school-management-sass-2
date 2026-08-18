@@ -72,7 +72,30 @@ export const API_ENDPOINTS = {
   ADMIN_LEAVE_STATUS: (id) => `/attendance/leaves/${id}/status`,
   ADMIN_ANNOUNCEMENTS: '/communication/announcements',
   ADMIN_ANNOUNCEMENT_CREATE: '/communication/announcements',
-  ADMIN_ANNOUNCEMENT_DELETE: (id) => `/communication/announcements/${id}`
+  ADMIN_ANNOUNCEMENT_DELETE: (id) => `/communication/announcements/${id}`,
+  
+  // Principal Directories & Logs
+  STUDENTS_LIST: '/students',
+  TEACHERS_LIST: '/teachers',
+  TEACHER_DEPARTMENTS: '/teachers/departments',
+  TEACHER_DESIGNATIONS: '/teachers/designations',
+  CLASSES_LIST: '/classes',
+  SUBJECTS_LIST: '/subjects',
+  EXAMS_LIST: '/exams',
+  EXAM_SCHEDULES: '/exams/schedules/all',
+  FINANCE_EXPENSES: '/finance/expenses',
+  FINANCE_INCOME: '/finance/income',
+  FINANCE_TRANSACTIONS: '/finance/transactions',
+  TRANSPORT_VEHICLES: '/transport/vehicles',
+  TRANSPORT_ROUTES: '/transport/routes',
+  REPORTS_LIST: '/reports',
+  REPORTS_STUDENT: '/reports/students',
+  REPORTS_TEACHER: '/reports/teachers',
+  REPORTS_ATTENDANCE: '/reports/attendance',
+  REPORTS_FINANCE: '/reports/finance',
+  COMMUNICATION_NOTICES: '/communication/notices',
+  COMMUNICATION_EVENTS: '/communication/events',
+  COMMUNICATION_NOTIFICATIONS: '/communication/notifications'
 };
 
 export default API_ENDPOINTS;

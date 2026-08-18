@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import authService from '../../../services/auth/auth.service';
 import { theme } from '../../../theme';
 
@@ -10,13 +11,14 @@ export default function LoginScreen({ navigation }) {
   const [selectedMockRole, setSelectedMockRole] = useState(null);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    const cleanedEmail = email.trim();
+    if (!cleanedEmail || !password) {
       Alert.alert('Required Info', 'Please enter your email and password.');
       return;
     }
     setLoading(true);
     try {
-      await authService.login(email, password);
+      await authService.login(cleanedEmail, password);
     } catch (error) {
       Alert.alert('Authentication Failed', error.message || 'Unable to sign in. Please verify credentials.');
     } finally {
