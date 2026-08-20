@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import ScreenContainer from '../../../components/layout/ScreenContainer';
 import teacherApi from '../../../services/api/teacher.api';
+import ROUTES from '../../../constants/routes';
 import { theme } from '../../../theme';
 
 export default function HomeScreen({ navigation }) {
@@ -113,7 +114,7 @@ export default function HomeScreen({ navigation }) {
         {/* Today's Schedule */}
         <View style={styles.sectionRow}>
           <Text style={styles.sectionHeader}>Today's Schedule</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate?.('Classes')}>
+          <TouchableOpacity onPress={() => navigation?.navigate?.(ROUTES.TEACHER_CLASSES)}>
             <Text style={styles.linkText}>View All Classes →</Text>
           </TouchableOpacity>
         </View>
@@ -139,7 +140,7 @@ export default function HomeScreen({ navigation }) {
         {/* Recent Announcements */}
         <View style={styles.sectionRow}>
           <Text style={styles.sectionHeader}>Announcements</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate?.('Announcements')}>
+          <TouchableOpacity onPress={() => navigation?.navigate?.(ROUTES.TEACHER_ANNOUNCEMENTS)}>
             <Text style={styles.linkText}>See All →</Text>
           </TouchableOpacity>
         </View>

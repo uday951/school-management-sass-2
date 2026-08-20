@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, Alert, RefreshControl, ScrollView } from 'react-native';
 import ScreenContainer from '../../../components/layout/ScreenContainer';
 import EmptyState from '../../../components/feedback/EmptyState';
+import DatePickerModal from '../../../components/common/DatePickerModal';
 import teacherApi from '../../../services/api/teacher.api';
 import { theme } from '../../../theme';
 
@@ -13,6 +14,7 @@ export default function AttendanceScreen() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Fetch Teacher's Assigned Classes
   const fetchClasses = async () => {
@@ -107,9 +109,15 @@ export default function AttendanceScreen() {
 
   return (
     <ScreenContainer title="Student Roll Call Register" loading={loading}>
-      {/* Class Selector Bar */}
+      {/* Class & Date Selector Bar */}
       <View style={styles.selectorBar}>
-        <Text style={styles.selectorTitle}>Select Assigned Class Section:</Text>
+        <View style={styles.topSelectorRow}>
+          <Text style={styles.selectorTitle}>Assigned Class Section:</Text>
+          <TouchableOpacity style={styles.dateChip} onPress={() => setShowDatePicker(true)}>
+            <Text style={styles.dateChipText}>📅 {attendanceDate}</Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.classChips}>
           {classes.map((cls, idx) => {
             const isSelected = selectedClass && (selectedClass._id === cls._id || selectedClass.className === cls.className);
@@ -127,6 +135,14 @@ export default function AttendanceScreen() {
           })}
         </ScrollView>
       </View>
+
+      {/* Date Picker Modal */}
+      <DatePickerModal
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelectDate={(dateStr) => setAttendanceDate(dateStr)}
+        title="Select Roll Call Date"
+      />
 
       {/* Roster Table */}
       <FlatList
@@ -193,11 +209,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.light.border
   },
+  topSelectorRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6
+  },
   selectorTitle: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.light.textMuted,
-    marginBottom: 6
+    color: theme.colors.light.textMuted
+  },
+  dateChip: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 3,
+    backgroundColor: theme.colors.light.primary + '15',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.light.primary + '30'
+  },
+  dateChipText: {
+    fontSize: 11,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.light.primary
   },
   classChips: {
     flexDirection: 'row'
